@@ -7,6 +7,7 @@ import AuthLayout from '../layouts/AuthLayout';
 
 // Pages
 import Login from '../pages/Login';
+import Register from '../pages/Register'; // Đã import Register chuẩn
 import Dashboard from '../pages/Dashboard';
 import Bookings from '../pages/Bookings';
 import Tasks from '../pages/Tasks';
@@ -17,9 +18,10 @@ import ProtectedRoute from './ProtectedRoute';
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Public Auth Routes */}
+      {/* Public Auth Routes - Cả Login và Register đều dùng chung AuthLayout */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} /> {/* <--- Đã đưa vào đây hợp lệ */}
       </Route>
 
       {/* Protected Main Routes */}

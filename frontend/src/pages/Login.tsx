@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Button from '../components/Button';
-import api from '../services/api';
+import { authService } from '../services/authService';
 
 const Login: React.FC = () => {
   const auth = useContext(AuthContext);
@@ -26,10 +26,14 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      // API call to authentication endpoint
-      const response = await api.post('/auth/login', { username, password });
-      auth.login(response.data);
+      setError('');
+      setLoading(true);
+
+      // Gọi hàm đăng nhập thông qua authService đã được import ở trên
+      const userData = await authService.login({ username, password });
+      auth.login(userData);
       navigate('/');
+
     } catch (err: any) {
       console.error(err);
       // Fallback for testing frontend before backend is fully running
@@ -37,9 +41,9 @@ const Login: React.FC = () => {
         console.warn('Backend is offline. Logging in with mock credentials.');
         auth.login({
           id: 1,
-          username: username,
+          fullName: username,
           email: `${username}@example.com`,
-          role: 'Admin',
+          role: 'ADMIN',
           token: 'mock-jwt-token'
         });
         navigate('/');
@@ -90,13 +94,13 @@ const Login: React.FC = () => {
       <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
-            Tài khoản
+            Tài khoản / Email
           </label>
           <input
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="admin"
+            placeholder="Tài khoản hoặc email..."
             className="input-field"
           />
         </div>

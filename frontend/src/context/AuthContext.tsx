@@ -6,6 +6,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (userData: User) => void;
   logout: () => void;
+  updateUserContext: (fullName: string, phoneNumber: string) => void; // <-- Thêm hàm này
   loading: boolean;
 }
 
@@ -38,8 +39,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('user');
   };
 
+  // Cập nhật thông tin cục bộ sau khi gọi API thành công mà không bắt Re-login
+  const updateUserContext = (fullName: string, phoneNumber: string) => {
+    if (user) {
+      const updated = { ...user, fullName, phoneNumber };
+      setUser(updated);
+      localStorage.setItem('user', JSON.stringify(updated));
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, updateUserContext, loading }}>
       {children}
     </AuthContext.Provider>
   );

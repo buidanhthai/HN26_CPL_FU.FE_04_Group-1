@@ -10,6 +10,7 @@ namespace backend.Entities
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
         public string Role { get; set; } = "USER"; // ADMIN, STAFF, USER
+        public string? PhoneNumber { get; set; } // <-- THÊM DÒNG NÀY (Cho phép null lúc đăng ký)
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
