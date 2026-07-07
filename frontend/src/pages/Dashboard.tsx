@@ -39,7 +39,7 @@ const Dashboard: React.FC = () => {
             Đang hoạt động
           </p>
           <div style={{ fontSize: '0.85rem', color: 'var(--nature-accent)', fontWeight: '600' }}>
-            Tài khoản: {user?.username} ({user?.role})
+            Tài khoản: {user?.fullName} ({user?.role})
           </div>
         </div>
 

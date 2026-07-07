@@ -121,7 +121,7 @@ const Navbar: React.FC = () => {
       {user && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '0.95rem' }}>
           <span style={{ color: 'var(--secondary-text)' }}>
-            Xin chào, <strong style={{ color: 'var(--primary-text)' }}>{user.username}</strong>
+            Xin chào, <strong style={{ color: 'var(--primary-text)' }}>{user.fullName}</strong>
           </span>
           <button 
             onClick={logout}

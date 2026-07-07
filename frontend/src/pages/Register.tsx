@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/authService';
+import Button from '../components/Button';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -81,197 +82,145 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <h2 style={styles.title}>Tạo tài khoản mới</h2>
-          <p style={styles.subtitle}>Sử dụng email cá nhân hoặc doanh nghiệp để đăng ký</p>
+    <div>
+      <h2 style={{ 
+        textAlign: 'center', 
+        marginBottom: '8px', 
+        color: 'var(--primary-text)', 
+        fontFamily: 'var(--font-title)',
+        fontSize: '2rem',
+        fontWeight: 'bold'
+      }}>
+        Đăng ký
+      </h2>
+      <p style={{ 
+        textAlign: 'center', 
+        color: 'var(--secondary-text)', 
+        fontSize: '0.9rem', 
+        marginBottom: '30px' 
+      }}>
+        Tạo tài khoản mới để bắt đầu sử dụng hệ thống
+      </p>
+
+      {/* Thông báo lỗi nếu có */}
+      {error && (
+        <div style={{
+          backgroundColor: 'rgba(224, 122, 95, 0.12)',
+          color: '#e07a5f',
+          border: '1px solid rgba(224, 122, 95, 0.4)',
+          borderRadius: '8px',
+          padding: '12px',
+          marginBottom: '20px',
+          fontSize: '0.85rem',
+          textAlign: 'center'
+        }}>
+          {error}
         </div>
+      )}
 
-        {/* Thông báo lỗi nếu có */}
-        {error && <div style={styles.errorAlert}>{error}</div>}
+      {/* Thông báo thành công nếu có */}
+      {success && (
+        <div style={{
+          backgroundColor: 'rgba(122, 134, 106, 0.12)',
+          color: 'var(--nature-accent)',
+          border: '1px solid rgba(122, 134, 106, 0.4)',
+          borderRadius: '8px',
+          padding: '12px',
+          marginBottom: '20px',
+          fontSize: '0.85rem',
+          textAlign: 'center'
+        }}>
+          {success}
+        </div>
+      )}
 
-        {/* Thông báo thành công nếu có */}
-        {success && <div style={styles.successAlert}>{success}</div>}
-
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.inputGroup}>
-            <label htmlFor="fullName" style={styles.label}>Họ và tên</label>
-            <input
-              type="text"
-              id="fullName"
-              name="fullName"
-              placeholder="Nguyễn Văn A"
-              value={formData.fullName}
-              onChange={handleChange}
-              style={styles.input}
-              disabled={isLoading}
-            />
-          </div>
-
-          <div style={styles.inputGroup}>
-            <label htmlFor="email" style={styles.label}>Địa chỉ Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="example@company.com"
-              value={formData.email}
-              onChange={handleChange}
-              style={styles.input}
-              disabled={isLoading}
-            />
-          </div>
-
-          <div style={styles.inputGroup}>
-            <label htmlFor="password" style={styles.label}>Mật khẩu</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              style={styles.input}
-              disabled={isLoading}
-            />
-          </div>
-
-          <div style={styles.inputGroup}>
-            <label htmlFor="confirmPassword" style={styles.label}>Xác nhận mật khẩu</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              placeholder="••••••••"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              style={styles.input}
-              disabled={isLoading}
-            />
-          </div>
-
-          <button
-            type="submit"
-            style={{
-              ...styles.submitBtn,
-              opacity: isLoading ? 0.7 : 1,
-              cursor: isLoading ? 'not-allowed' : 'pointer'
-            }}
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <label htmlFor="fullName" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
+            Họ và tên
+          </label>
+          <input
+            type="text"
+            id="fullName"
+            name="fullName"
+            placeholder="Nguyễn Văn A"
+            value={formData.fullName}
+            onChange={handleChange}
+            className="input-field"
             disabled={isLoading}
-          >
-            {isLoading ? 'Đang xử lý...' : 'Đăng ký tài khoản'}
-          </button>
-        </form>
-
-        <div style={styles.footer}>
-          <span>Bạn đã có tài khoản? </span>
-          <Link to="/login" style={styles.link}>Đăng nhập ngay</Link>
+          />
         </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <label htmlFor="email" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
+            Địa chỉ Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="example@company.com"
+            value={formData.email}
+            onChange={handleChange}
+            className="input-field"
+            disabled={isLoading}
+          />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <label htmlFor="password" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
+            Mật khẩu
+          </label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            value={formData.password}
+            onChange={handleChange}
+            className="input-field"
+            disabled={isLoading}
+          />
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <label htmlFor="confirmPassword" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
+            Xác nhận mật khẩu
+          </label>
+          <input
+            type="password"
+            id="confirmPassword"
+            name="confirmPassword"
+            placeholder="••••••••"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            className="input-field"
+            disabled={isLoading}
+          />
+        </div>
+
+        <Button
+          type="submit"
+          disabled={isLoading}
+          style={{ marginTop: '10px', width: '100%' }}
+        >
+          {isLoading ? 'Đang xử lý...' : 'Đăng ký tài khoản'}
+        </Button>
+      </form>
+
+      <div style={{
+        textAlign: 'center',
+        marginTop: '24px',
+        fontSize: '0.9rem',
+        color: 'var(--secondary-text)'
+      }}>
+        <span>Bạn đã có tài khoản? </span>
+        <Link to="/login" style={{ color: 'var(--accent-color)', fontWeight: '600', textDecoration: 'none' }}>
+          Đăng nhập ngay
+        </Link>
       </div>
     </div>
   );
-};
-
-// CSS-in-JS Styles để đảm bảo giao diện đẹp đẽ, cân đối và độc lập không phụ thuộc thư viện ngoài
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    backgroundColor: '#f3f4f6',
-    fontFamily: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-    padding: '20px',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    padding: '40px',
-    borderRadius: '10px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-    width: '100%',
-    maxWidth: '450px',
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '24px',
-  },
-  title: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#1f2937',
-    margin: '0 0 8px 0',
-  },
-  subtitle: {
-    fontSize: '14px',
-    color: '#6b7280',
-    margin: 0,
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  },
-  label: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#374151',
-  },
-  input: {
-    padding: '10px 14px',
-    borderRadius: '6px',
-    border: '1px solid #d1d5db',
-    fontSize: '14px',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-  },
-  errorAlert: {
-    backgroundColor: '#fef2f2',
-    border: '1px solid #fee2e2',
-    color: '#dc2626',
-    padding: '12px',
-    borderRadius: '6px',
-    fontSize: '14px',
-    marginBottom: '16px',
-    textAlign: 'center',
-  },
-  successAlert: {
-    backgroundColor: '#f0fdf4',
-    border: '1px solid #dcfce7',
-    color: '#16a34a',
-    padding: '12px',
-    borderRadius: '6px',
-    fontSize: '14px',
-    marginBottom: '16px',
-    textAlign: 'center',
-  },
-  submitBtn: {
-    backgroundColor: '#2563eb',
-    color: '#ffffff',
-    padding: '12px',
-    borderRadius: '6px',
-    border: 'none',
-    fontSize: '16px',
-    fontWeight: '600',
-    marginTop: '8px',
-    transition: 'background-color 0.2s',
-  },
-  footer: {
-    textAlign: 'center',
-    marginTop: '24px',
-    fontSize: '14px',
-    color: '#4b5563',
-  },
-  link: {
-    color: '#2563eb',
-    textDecoration: 'none',
-    fontWeight: '600',
-  }
 };
 
 export default Register;
