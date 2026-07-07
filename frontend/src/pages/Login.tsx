@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Button from '../components/Button';
 import api from '../services/api';
+import { authService } from '../services/authService';
 
 const Login: React.FC = () => {
   const auth = useContext(AuthContext);
@@ -26,10 +27,14 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      // API call to authentication endpoint
-      const response = await api.post('/auth/login', { username, password });
-      auth.login(response.data);
+      setError('');
+      setLoading(true);
+
+      // Gọi hàm đăng nhập thông qua authService đã được import ở trên
+      const userData = await authService.login({ username, password });
+      auth.login(userData);
       navigate('/');
+
     } catch (err: any) {
       console.error(err);
       // Fallback for testing frontend before backend is fully running
@@ -74,12 +79,12 @@ const Login: React.FC = () => {
 
       <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <label style={{ fontSize: '0.85rem', color: '#a2a5b9' }}>Username</label>
+          <label style={{ fontSize: '0.85rem', color: '#a2a5b9' }}>Địa chỉ Email</label>
           <input
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="admin"
+            placeholder="example@gmail.com"
             style={{
               padding: '10px',
               borderRadius: '4px',
