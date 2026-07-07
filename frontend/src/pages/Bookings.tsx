@@ -78,69 +78,80 @@ const Bookings: React.FC = () => {
 
   return (
     <div>
-      <h1 style={{ fontSize: '1.8rem', margin: '0 0 10px 0', color: '#00e1d9' }}>Bookings</h1>
-      <p style={{ color: '#a2a5b9', margin: '0 0 24px 0' }}>Manage calendar and appointments bookings.</p>
+      <h1 style={{ fontSize: '2rem', margin: '0 0 8px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+        Lịch đặt chỗ
+      </h1>
+      <p style={{ color: 'var(--secondary-text)', margin: '0 0 30px 0', fontSize: '0.95rem' }}>
+        Quản lý lịch làm việc và đặt chỗ của bạn tại Cozy Space.
+      </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '30px', alignItems: 'start' }}>
         {/* Bookings List */}
         <div style={{
-          backgroundColor: '#151521',
-          borderRadius: '8px',
-          border: '1px solid #2d2d3f',
-          padding: '24px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.15)'
+          backgroundColor: 'var(--surface-color)',
+          borderRadius: '16px',
+          border: '1px solid var(--border-color)',
+          padding: '30px 24px',
+          boxShadow: 'var(--shadow)'
         }}>
-          <h2 style={{ fontSize: '1.2rem', margin: '0 0 16px 0', color: '#fff' }}>Upcoming Appointments</h2>
+          <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+            Danh sách đặt chỗ sắp tới
+          </h2>
 
           {loading ? (
-            <p style={{ color: '#a2a5b9' }}>Loading bookings...</p>
+            <p style={{ color: 'var(--secondary-text)' }}>Đang tải danh sách đặt chỗ...</p>
           ) : bookings.length === 0 ? (
-            <p style={{ color: '#a2a5b9' }}>No bookings found.</p>
+            <p style={{ color: 'var(--secondary-text)' }}>Chưa có lịch đặt chỗ nào.</p>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: '#d1d2db' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: 'var(--primary-text)' }}>
               <thead>
-                <tr style={{ borderBottom: '2px solid #2d2d3f', color: '#a2a5b9', fontSize: '0.85rem' }}>
-                  <th style={{ padding: '12px 8px' }}>Title</th>
-                  <th style={{ padding: '12px 8px' }}>Description</th>
-                  <th style={{ padding: '12px 8px' }}>Date</th>
-                  <th style={{ padding: '12px 8px' }}>Status</th>
-                  <th style={{ padding: '12px 8px', textAlign: 'right' }}>Actions</th>
+                <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--secondary-text)', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                  <th style={{ padding: '12px 8px' }}>Tiêu đề</th>
+                  <th style={{ padding: '12px 8px' }}>Mô tả</th>
+                  <th style={{ padding: '12px 8px' }}>Ngày đặt</th>
+                  <th style={{ padding: '12px 8px' }}>Trạng thái</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'right' }}>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
                 {bookings.map((b) => (
-                  <tr key={b.id} style={{ borderBottom: '1px solid #2d2d3f', fontSize: '0.9rem' }}>
-                    <td style={{ padding: '12px 8px', fontWeight: '500' }}>{b.title}</td>
-                    <td style={{ padding: '12px 8px', color: '#a2a5b9' }}>{b.description}</td>
-                    <td style={{ padding: '12px 8px' }}>{b.bookingDate}</td>
-                    <td style={{ padding: '12px 8px' }}>
+                  <tr key={b.id} style={{ borderBottom: '1px solid var(--border-color)', fontSize: '0.9rem' }}>
+                    <td style={{ padding: '14px 8px', fontWeight: '600', color: 'var(--primary-text)' }}>{b.title}</td>
+                    <td style={{ padding: '14px 8px', color: 'var(--secondary-text)' }}>{b.description}</td>
+                    <td style={{ padding: '14px 8px' }}>{b.bookingDate}</td>
+                    <td style={{ padding: '14px 8px' }}>
                       <span style={{
-                        padding: '3px 8px',
-                        borderRadius: '12px',
+                        padding: '4px 10px',
+                        borderRadius: '20px',
                         fontSize: '0.75rem',
+                        fontWeight: '600',
                         backgroundColor: 
-                          b.status === 'Confirmed' ? 'rgba(0, 225, 217, 0.15)' :
-                          b.status === 'Cancelled' ? 'rgba(255, 92, 117, 0.15)' : 'rgba(255, 193, 7, 0.15)',
+                          b.status === 'Confirmed' ? 'rgba(122, 134, 106, 0.15)' :
+                          b.status === 'Cancelled' ? 'rgba(224, 122, 95, 0.15)' : 'rgba(212, 163, 115, 0.15)',
                         color: 
-                          b.status === 'Confirmed' ? '#00e1d9' :
-                          b.status === 'Cancelled' ? '#ff5c75' : '#ffc107',
+                          b.status === 'Confirmed' ? 'var(--nature-accent)' :
+                          b.status === 'Cancelled' ? '#e07a5f' : 'var(--accent-color)',
                       }}>
-                        {b.status}
+                        {b.status === 'Confirmed' ? 'Đã xác nhận' :
+                         b.status === 'Cancelled' ? 'Đã hủy' : 'Chờ duyệt'}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 8px', textAlign: 'right' }}>
+                    <td style={{ padding: '14px 8px', textAlign: 'right' }}>
                       <button 
                         onClick={() => handleDelete(b.id)}
                         style={{
                           backgroundColor: 'transparent',
-                          color: '#ff5c75',
+                          color: '#e07a5f',
                           border: 'none',
                           cursor: 'pointer',
                           fontSize: '0.85rem',
-                          fontWeight: 'bold'
+                          fontWeight: 'bold',
+                          transition: 'var(--transition)'
                         }}
+                        onMouseOver={(e) => (e.currentTarget.style.color = '#c65f45')}
+                        onMouseOut={(e) => (e.currentTarget.style.color = '#e07a5f')}
                       >
-                        Delete
+                        Xóa
                       </button>
                     </td>
                   </tr>
@@ -152,74 +163,57 @@ const Bookings: React.FC = () => {
 
         {/* Create Booking Form */}
         <div style={{
-          backgroundColor: '#151521',
-          borderRadius: '8px',
-          border: '1px solid #2d2d3f',
-          padding: '24px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.15)'
+          backgroundColor: 'var(--surface-color)',
+          borderRadius: '16px',
+          border: '1px solid var(--border-color)',
+          padding: '30px 24px',
+          boxShadow: 'var(--shadow)'
         }}>
-          <h2 style={{ fontSize: '1.2rem', margin: '0 0 16px 0', color: '#00e1d9' }}>Add Appointment</h2>
+          <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+            Thêm lịch đặt mới
+          </h2>
 
           {error && (
-            <div style={{ color: '#ff5c75', fontSize: '0.85rem', marginBottom: '10px' }}>{error}</div>
+            <div style={{ color: '#e07a5f', fontSize: '0.85rem', marginBottom: '15px', fontWeight: '500' }}>{error}</div>
           )}
 
-          <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <label style={{ fontSize: '0.85rem', color: '#a2a5b9' }}>Title</label>
+          <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Tiêu đề</label>
               <input 
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Daily Standup"
-                style={{
-                  padding: '8px 10px',
-                  borderRadius: '4px',
-                  border: '1px solid #2d2d3f',
-                  backgroundColor: '#1c1c28',
-                  color: '#fff',
-                  outline: 'none'
-                }}
+                placeholder="Ví dụ: Họp nhóm dự án"
+                className="input-field"
               />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <label style={{ fontSize: '0.85rem', color: '#a2a5b9' }}>Description</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Mô tả</label>
               <textarea 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Details..."
+                placeholder="Chi tiết lịch đặt..."
+                className="input-field"
                 style={{
-                  padding: '8px 10px',
-                  borderRadius: '4px',
-                  border: '1px solid #2d2d3f',
-                  backgroundColor: '#1c1c28',
-                  color: '#fff',
-                  outline: 'none',
                   resize: 'vertical',
-                  minHeight: '60px'
+                  minHeight: '80px'
                 }}
               />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <label style={{ fontSize: '0.85rem', color: '#a2a5b9' }}>Date</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Ngày đặt</label>
               <input 
                 type="date"
                 value={bookingDate}
                 onChange={(e) => setBookingDate(e.target.value)}
-                style={{
-                  padding: '8px 10px',
-                  borderRadius: '4px',
-                  border: '1px solid #2d2d3f',
-                  backgroundColor: '#1c1c28',
-                  color: '#fff',
-                  outline: 'none'
-                }}
+                className="input-field"
               />
             </div>
 
-            <Button type="submit" style={{ marginTop: '10px' }}>Create Appointment</Button>
+            <Button type="submit" style={{ marginTop: '10px' }}>Tạo lịch đặt</Button>
           </form>
         </div>
       </div>

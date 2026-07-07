@@ -10,38 +10,50 @@ const Navbar: React.FC = () => {
 
   return (
     <nav style={{
-      height: '60px',
-      backgroundColor: '#1e1e2d',
-      color: '#fff',
+      height: '70px',
+      backgroundColor: 'var(--background-color)',
+      color: 'var(--primary-text)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '0 20px',
-      borderBottom: '1px solid #2d2d3f',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      padding: '0 30px',
+      borderBottom: '1px solid var(--border-color)',
+      boxShadow: '0 2px 8px rgba(60, 42, 33, 0.04)',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1000,
+      boxSizing: 'border-box'
     }}>
-      <div style={{ fontWeight: 'bold', fontSize: '1.2rem', color: '#00e1d9' }}>
-        Antigravity Portal
+      <div style={{ 
+        fontFamily: 'var(--font-title)', 
+        fontWeight: 'bold', 
+        fontSize: '1.6rem', 
+        color: 'var(--primary-text)' 
+      }}>
+        CozySpace.
       </div>
       {user && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-          <span>Welcome, <strong>{user.username}</strong> ({user.role})</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '0.95rem' }}>
+          <span style={{ color: 'var(--secondary-text)' }}>
+            Xin chào, <strong style={{ color: 'var(--primary-text)' }}>{user.username}</strong> ({user.role})
+          </span>
           <button 
             onClick={logout}
             style={{
-              backgroundColor: '#ff5c75',
+              backgroundColor: '#e07a5f',
               color: '#fff',
               border: 'none',
-              padding: '6px 12px',
-              borderRadius: '4px',
+              padding: '8px 16px',
+              borderRadius: '20px',
               cursor: 'pointer',
               fontWeight: '500',
-              transition: 'background-color 0.2s'
+              fontSize: '0.85rem',
+              transition: 'all 0.2s ease-in-out'
             }}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e04b61')}
-            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ff5c75')}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#c65f45')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#e07a5f')}
           >
-            Logout
+            Đăng xuất
           </button>
         </div>
       )}

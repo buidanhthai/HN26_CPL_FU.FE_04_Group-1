@@ -53,64 +53,69 @@ const Login: React.FC = () => {
 
   return (
     <div>
-      <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#00e1d9', margin: '0 0 10px 0' }}>Login</h2>
-      <p style={{ textAlign: 'center', color: '#a2a5b9', fontSize: '0.85rem', marginBottom: '24px' }}>
-        Enter credentials to access your dashboard
+      <h2 style={{ 
+        textAlign: 'center', 
+        marginBottom: '8px', 
+        color: 'var(--primary-text)', 
+        fontFamily: 'var(--font-title)',
+        fontSize: '2rem',
+        fontWeight: 'bold'
+      }}>
+        Đăng nhập
+      </h2>
+      <p style={{ 
+        textAlign: 'center', 
+        color: 'var(--secondary-text)', 
+        fontSize: '0.9rem', 
+        marginBottom: '30px' 
+      }}>
+        Nhập thông tin tài khoản để truy cập hệ thống
       </p>
 
       {error && (
         <div style={{
-          backgroundColor: 'rgba(255, 92, 117, 0.15)',
-          color: '#ff5c75',
-          border: '1px solid #ff5c75',
-          borderRadius: '4px',
-          padding: '10px',
-          marginBottom: '15px',
-          fontSize: '0.85rem'
+          backgroundColor: 'rgba(224, 122, 95, 0.12)',
+          color: '#e07a5f',
+          border: '1px solid rgba(224, 122, 95, 0.4)',
+          borderRadius: '8px',
+          padding: '12px',
+          marginBottom: '20px',
+          fontSize: '0.85rem',
+          textAlign: 'center'
         }}>
           {error}
         </div>
       )}
 
-      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <label style={{ fontSize: '0.85rem', color: '#a2a5b9' }}>Username</label>
+      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
+            Tài khoản
+          </label>
           <input
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="admin"
-            style={{
-              padding: '10px',
-              borderRadius: '4px',
-              border: '1px solid #2d2d3f',
-              backgroundColor: '#1c1c28',
-              color: '#fff',
-              outline: 'none'
-            }}
+            className="input-field"
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          <label style={{ fontSize: '0.85rem', color: '#a2a5b9' }}>Password</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
+            Mật khẩu
+          </label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            style={{
-              padding: '10px',
-              borderRadius: '4px',
-              border: '1px solid #2d2d3f',
-              backgroundColor: '#1c1c28',
-              color: '#fff',
-              outline: 'none'
-            }}
+            className="input-field"
           />
         </div>
 
-        <Button type="submit" disabled={loading} style={{ marginTop: '10px', width: '100%' }}>
-          {loading ? 'Logging in...' : 'Sign In'}
+        <Button type="submit" disabled={loading} style={{ marginTop: '15px', width: '100%' }}>
+          {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
         </Button>
       </form>
     </div>

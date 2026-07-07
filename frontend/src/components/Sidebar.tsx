@@ -3,34 +3,37 @@ import { NavLink } from 'react-router-dom';
 
 const Sidebar: React.FC = () => {
   const linkStyle = ({ isActive }: { isActive: boolean }) => ({
-    display: 'block',
-    padding: '12px 20px',
-    color: isActive ? '#00e1d9' : '#a2a5b9',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '14px 24px',
+    color: isActive ? 'var(--primary-text)' : 'var(--secondary-text)',
     textDecoration: 'none',
-    fontWeight: isActive ? '600' : '400',
-    backgroundColor: isActive ? 'rgba(0, 225, 217, 0.08)' : 'transparent',
-    borderLeft: isActive ? '4px solid #00e1d9' : '4px solid transparent',
-    transition: 'all 0.2s',
+    fontWeight: isActive ? '600' : '500',
+    backgroundColor: isActive ? 'rgba(212, 163, 115, 0.15)' : 'transparent',
+    borderLeft: isActive ? '4px solid var(--accent-color)' : '4px solid transparent',
+    transition: 'var(--transition)',
+    fontSize: '0.95rem'
   });
 
   return (
     <aside style={{
       width: '240px',
-      backgroundColor: '#151521',
-      minHeight: 'calc(100vh - 60px)',
-      borderRight: '1px solid #2d2d3f',
-      paddingTop: '20px',
+      backgroundColor: 'var(--surface-color)',
+      minHeight: 'calc(100vh - 70px)',
+      borderRight: '1px solid var(--border-color)',
+      paddingTop: '25px',
       boxSizing: 'border-box'
     }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
         <NavLink to="/" end style={linkStyle}>
-          📊 Dashboard
+          📊 Bảng điều khiển
         </NavLink>
         <NavLink to="/bookings" style={linkStyle}>
-          📅 Bookings
+          📅 Lịch đặt chỗ
         </NavLink>
         <NavLink to="/tasks" style={linkStyle}>
-          ✅ Tasks
+          📋 Công việc của tôi
         </NavLink>
       </div>
     </aside>

@@ -5,7 +5,7 @@ import Sidebar from '../components/Sidebar';
 
 const MainLayout: React.FC = () => {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#12121a', color: '#fff' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--background-color)', color: 'var(--primary-text)' }}>
       <Navbar />
       <div style={{ display: 'flex', flex: 1 }}>
         <Sidebar />

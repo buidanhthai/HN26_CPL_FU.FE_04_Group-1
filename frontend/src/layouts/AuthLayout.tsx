@@ -8,21 +8,22 @@ const AuthLayout: React.FC = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#0c0c14',
-      color: '#fff',
-      fontFamily: 'Inter, sans-serif',
+      backgroundColor: 'var(--surface-color)',
+      color: 'var(--primary-text)',
+      fontFamily: 'var(--font-ui)',
       padding: '20px',
       boxSizing: 'border-box'
     }}>
       <div style={{
         width: '100%',
-        maxWidth: '400px',
-        backgroundColor: '#151521',
-        borderRadius: '8px',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-        padding: '30px',
+        maxWidth: '420px',
+        backgroundColor: 'var(--background-color)',
+        borderRadius: '16px',
+        boxShadow: 'var(--shadow)',
+        padding: '40px 30px',
         boxSizing: 'border-box',
-        border: '1px solid #2d2d3f'
+        border: '1px solid var(--border-color)',
+        transition: 'var(--transition)'
       }}>
         <Outlet />
       </div>

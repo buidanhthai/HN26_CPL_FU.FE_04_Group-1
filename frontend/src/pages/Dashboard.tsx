@@ -10,74 +10,95 @@ const Dashboard: React.FC = () => {
 
   return (
     <div>
-      <h1 style={{ fontSize: '1.8rem', margin: '0 0 10px 0', color: '#00e1d9' }}>Dashboard</h1>
-      <p style={{ color: '#a2a5b9', margin: '0 0 24px 0' }}>Welcome back to your workspace.</p>
+      <h1 style={{ fontSize: '2rem', margin: '0 0 8px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+        Bảng điều khiển
+      </h1>
+      <p style={{ color: 'var(--secondary-text)', margin: '0 0 30px 0', fontSize: '0.95rem' }}>
+        Chào mừng quay trở lại không gian làm việc của bạn.
+      </p>
 
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '20px',
-        marginBottom: '30px'
+        gap: '24px',
+        marginBottom: '35px'
       }}>
         {/* Card 1 */}
         <div style={{
-          backgroundColor: '#151521',
+          backgroundColor: 'var(--surface-color)',
           padding: '24px',
-          borderRadius: '8px',
-          border: '1px solid #2d2d3f',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.15)'
-        }}>
-          <h3 style={{ margin: '0 0 8px 0', color: '#a2a5b9', fontSize: '0.9rem', textTransform: 'uppercase' }}>Current Session</h3>
-          <p style={{ margin: '0', fontSize: '1.4rem', fontWeight: 'bold' }}>Active</p>
-          <div style={{ marginTop: '12px', fontSize: '0.85rem', color: '#00e1d9' }}>
-            Logged in as: {user?.username} ({user?.role})
+          borderRadius: '16px',
+          border: '1px solid var(--border-color)',
+          boxShadow: 'var(--shadow)',
+          transition: 'var(--transition)'
+        }} className="hover-lift">
+          <h3 style={{ margin: '0 0 10px 0', color: 'var(--secondary-text)', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Phiên làm việc hiện tại
+          </h3>
+          <p style={{ margin: '0 0 10px 0', fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+            Đang hoạt động
+          </p>
+          <div style={{ fontSize: '0.85rem', color: 'var(--nature-accent)', fontWeight: '600' }}>
+            Tài khoản: {user?.username} ({user?.role})
           </div>
         </div>
 
         {/* Card 2 */}
         <div style={{
-          backgroundColor: '#151521',
+          backgroundColor: 'var(--surface-color)',
           padding: '24px',
-          borderRadius: '8px',
-          border: '1px solid #2d2d3f',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.15)'
-        }}>
-          <h3 style={{ margin: '0 0 8px 0', color: '#a2a5b9', fontSize: '0.9rem', textTransform: 'uppercase' }}>Bookings Status</h3>
-          <p style={{ margin: '0', fontSize: '1.4rem', fontWeight: 'bold' }}>5 Pending</p>
-          <div style={{ marginTop: '12px', fontSize: '0.85rem', color: '#a2a5b9' }}>
-            Next appointment: Tomorrow at 10:00 AM
+          borderRadius: '16px',
+          border: '1px solid var(--border-color)',
+          boxShadow: 'var(--shadow)',
+          transition: 'var(--transition)'
+        }} className="hover-lift">
+          <h3 style={{ margin: '0 0 10px 0', color: 'var(--secondary-text)', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Trạng thái đặt chỗ
+          </h3>
+          <p style={{ margin: '0 0 10px 0', fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+            5 Chờ duyệt
+          </p>
+          <div style={{ fontSize: '0.85rem', color: 'var(--secondary-text)' }}>
+            Lịch tiếp theo: Ngày mai lúc 10:00 sáng
           </div>
         </div>
 
         {/* Card 3 */}
         <div style={{
-          backgroundColor: '#151521',
+          backgroundColor: 'var(--surface-color)',
           padding: '24px',
-          borderRadius: '8px',
-          border: '1px solid #2d2d3f',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.15)'
-        }}>
-          <h3 style={{ margin: '0 0 8px 0', color: '#a2a5b9', fontSize: '0.9rem', textTransform: 'uppercase' }}>Task Progress</h3>
-          <p style={{ margin: '0', fontSize: '1.4rem', fontWeight: 'bold' }}>80% Done</p>
-          <div style={{ marginTop: '12px', fontSize: '0.85rem', color: '#00e1d9' }}>
-            4 tasks completed today
+          borderRadius: '16px',
+          border: '1px solid var(--border-color)',
+          boxShadow: 'var(--shadow)',
+          transition: 'var(--transition)'
+        }} className="hover-lift">
+          <h3 style={{ margin: '0 0 10px 0', color: 'var(--secondary-text)', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Tiến độ công việc
+          </h3>
+          <p style={{ margin: '0 0 10px 0', fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+            Hoàn thành 80%
+          </p>
+          <div style={{ fontSize: '0.85rem', color: 'var(--nature-accent)', fontWeight: '600' }}>
+            4 công việc đã xong hôm nay
           </div>
         </div>
       </div>
 
       <div style={{
-        backgroundColor: '#151521',
-        padding: '24px',
-        borderRadius: '8px',
-        border: '1px solid #2d2d3f',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.15)'
+        backgroundColor: 'var(--surface-color)',
+        padding: '30px',
+        borderRadius: '16px',
+        border: '1px solid var(--border-color)',
+        boxShadow: 'var(--shadow)'
       }}>
-        <h2 style={{ fontSize: '1.2rem', margin: '0 0 12px 0', color: '#00e1d9' }}>Project Information</h2>
-        <p style={{ margin: '0 0 12px 0', color: '#d1d2db', fontSize: '0.95rem', lineHeight: '1.6' }}>
-          This boilerplate layout integrates a Vite-based React 19 Frontend with a .NET 10.0 Web API Backend. The project supports TypeScript definitions, shared route configurations, CORS setups, and basic relational mapping schemas.
+        <h2 style={{ fontSize: '1.4rem', margin: '0 0 15px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+          Hệ thống đặt chỗ Cozy Space
+        </h2>
+        <p style={{ margin: '0 0 15px 0', color: 'var(--secondary-text)', fontSize: '0.95rem', lineHeight: '1.7' }}>
+          Chào mừng đến với Cozy Space. Hệ thống đặt chỗ làm việc on-demand được thiết kế đậm chất chill cafe, hỗ trợ tối đa việc tập trung làm việc linh hoạt, giảm thiểu cô lập xã hội. Bạn có thể dễ dàng quản lý lịch hẹn (Bookings) và công việc hàng ngày (Tasks) ngay trên thanh điều hướng bên trái.
         </p>
-        <p style={{ margin: '0', color: '#a2a5b9', fontSize: '0.85rem' }}>
-          Navigate to <strong>Bookings</strong> or <strong>Tasks</strong> via the sidebar to view mock implementations of services and state mapping.
+        <p style={{ margin: '0', color: 'var(--secondary-text)', fontSize: '0.85rem', fontStyle: 'italic' }}>
+          Sử dụng các menu <strong>Lịch đặt chỗ</strong> hoặc <strong>Công việc của tôi</strong> trên thanh menu để bắt đầu trải nghiệm dịch vụ.
         </p>
       </div>
     </div>

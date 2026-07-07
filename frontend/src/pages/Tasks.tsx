@@ -89,24 +89,30 @@ const Tasks: React.FC = () => {
 
   return (
     <div>
-      <h1 style={{ fontSize: '1.8rem', margin: '0 0 10px 0', color: '#00e1d9' }}>Tasks</h1>
-      <p style={{ color: '#a2a5b9', margin: '0 0 24px 0' }}>Organize your daily checklists and milestones.</p>
+      <h1 style={{ fontSize: '2rem', margin: '0 0 8px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+        Công việc của tôi
+      </h1>
+      <p style={{ color: 'var(--secondary-text)', margin: '0 0 30px 0', fontSize: '0.95rem' }}>
+        Sắp xếp danh sách kiểm tra hàng ngày và các cột mốc quan trọng của bạn.
+      </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '30px', alignItems: 'start' }}>
         {/* Tasks List */}
         <div style={{
-          backgroundColor: '#151521',
-          borderRadius: '8px',
-          border: '1px solid #2d2d3f',
-          padding: '24px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.15)'
+          backgroundColor: 'var(--surface-color)',
+          borderRadius: '16px',
+          border: '1px solid var(--border-color)',
+          padding: '30px 24px',
+          boxShadow: 'var(--shadow)'
         }}>
-          <h2 style={{ fontSize: '1.2rem', margin: '0 0 16px 0', color: '#fff' }}>Pending & Completed Tasks</h2>
+          <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+            Danh sách công việc
+          </h2>
 
           {loading ? (
-            <p style={{ color: '#a2a5b9' }}>Loading tasks...</p>
+            <p style={{ color: 'var(--secondary-text)' }}>Đang tải danh sách công việc...</p>
           ) : tasks.length === 0 ? (
-            <p style={{ color: '#a2a5b9' }}>No tasks found.</p>
+            <p style={{ color: 'var(--secondary-text)' }}>Chưa có công việc nào.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               {tasks.map((t) => (
@@ -116,24 +122,25 @@ const Tasks: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '15px',
-                    borderRadius: '6px',
-                    backgroundColor: t.isCompleted ? 'rgba(255, 255, 255, 0.02)' : '#1e1e2d',
-                    border: '1px solid #2d2d3f',
-                    opacity: t.isCompleted ? 0.6 : 1,
-                    transition: 'all 0.2s'
+                    padding: '16px 20px',
+                    borderRadius: '12px',
+                    backgroundColor: t.isCompleted ? 'rgba(111, 78, 55, 0.05)' : 'var(--background-color)',
+                    border: '1px solid var(--border-color)',
+                    opacity: t.isCompleted ? 0.75 : 1,
+                    transition: 'var(--transition)',
+                    boxShadow: '0 2px 4px rgba(60, 42, 33, 0.02)'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <input 
                       type="checkbox"
                       checked={t.isCompleted}
                       onChange={() => handleToggleComplete(t)}
                       style={{
-                        width: '18px',
-                        height: '18px',
+                        width: '20px',
+                        height: '20px',
                         cursor: 'pointer',
-                        accentColor: '#00e1d9'
+                        accentColor: 'var(--nature-accent)'
                       }}
                     />
                     <div>
@@ -141,18 +148,19 @@ const Tasks: React.FC = () => {
                         fontWeight: '600',
                         fontSize: '0.95rem',
                         textDecoration: t.isCompleted ? 'line-through' : 'none',
-                        color: t.isCompleted ? '#a2a5b9' : '#fff'
+                        color: t.isCompleted ? 'var(--secondary-text)' : 'var(--primary-text)',
+                        transition: 'var(--transition)'
                       }}>
                         {t.title}
                       </div>
                       {t.description && (
-                        <div style={{ fontSize: '0.85rem', color: '#a2a5b9', marginTop: '2px' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--secondary-text)', marginTop: '4px' }}>
                           {t.description}
                         </div>
                       )}
                       {t.dueDate && (
-                        <div style={{ fontSize: '0.75rem', color: '#00e1d9', marginTop: '4px' }}>
-                          📅 Due: {t.dueDate}
+                        <div style={{ fontSize: '0.75rem', color: 'var(--nature-accent)', marginTop: '6px', fontWeight: '500' }}>
+                          📅 Hạn chót: {t.dueDate}
                         </div>
                       )}
                     </div>
@@ -161,13 +169,17 @@ const Tasks: React.FC = () => {
                     onClick={() => handleDelete(t.id)}
                     style={{
                       backgroundColor: 'transparent',
-                      color: '#ff5c75',
+                      color: '#e07a5f',
                       border: 'none',
                       cursor: 'pointer',
-                      fontSize: '0.85rem'
+                      fontSize: '0.85rem',
+                      fontWeight: 'bold',
+                      transition: 'var(--transition)'
                     }}
+                    onMouseOver={(e) => (e.currentTarget.style.color = '#c65f45')}
+                    onMouseOut={(e) => (e.currentTarget.style.color = '#e07a5f')}
                   >
-                    Delete
+                    Xóa
                   </button>
                 </div>
               ))}
@@ -177,74 +189,57 @@ const Tasks: React.FC = () => {
 
         {/* Create Task Form */}
         <div style={{
-          backgroundColor: '#151521',
-          borderRadius: '8px',
-          border: '1px solid #2d2d3f',
-          padding: '24px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.15)'
+          backgroundColor: 'var(--surface-color)',
+          borderRadius: '16px',
+          border: '1px solid var(--border-color)',
+          padding: '30px 24px',
+          boxShadow: 'var(--shadow)'
         }}>
-          <h2 style={{ fontSize: '1.2rem', margin: '0 0 16px 0', color: '#00e1d9' }}>Create Task</h2>
+          <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+            Tạo công việc mới
+          </h2>
 
           {error && (
-            <div style={{ color: '#ff5c75', fontSize: '0.85rem', marginBottom: '10px' }}>{error}</div>
+            <div style={{ color: '#e07a5f', fontSize: '0.85rem', marginBottom: '15px', fontWeight: '500' }}>{error}</div>
           )}
 
-          <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <label style={{ fontSize: '0.85rem', color: '#a2a5b9' }}>Title</label>
+          <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Tiêu đề</label>
               <input 
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Write unit tests"
-                style={{
-                  padding: '8px 10px',
-                  borderRadius: '4px',
-                  border: '1px solid #2d2d3f',
-                  backgroundColor: '#1c1c28',
-                  color: '#fff',
-                  outline: 'none'
-                }}
+                placeholder="Ví dụ: Thiết kế Layout sơ đồ"
+                className="input-field"
               />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <label style={{ fontSize: '0.85rem', color: '#a2a5b9' }}>Description</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Mô tả</label>
               <textarea 
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="e.g. Focus on service classes"
+                placeholder="Chi tiết công việc..."
+                className="input-field"
                 style={{
-                  padding: '8px 10px',
-                  borderRadius: '4px',
-                  border: '1px solid #2d2d3f',
-                  backgroundColor: '#1c1c28',
-                  color: '#fff',
-                  outline: 'none',
                   resize: 'vertical',
-                  minHeight: '60px'
+                  minHeight: '80px'
                 }}
               />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-              <label style={{ fontSize: '0.85rem', color: '#a2a5b9' }}>Due Date</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Hạn chót</label>
               <input 
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                style={{
-                  padding: '8px 10px',
-                  borderRadius: '4px',
-                  border: '1px solid #2d2d3f',
-                  backgroundColor: '#1c1c28',
-                  color: '#fff',
-                  outline: 'none'
-                }}
+                className="input-field"
               />
             </div>
 
-            <Button type="submit" style={{ marginTop: '10px' }}>Create Task</Button>
+            <Button type="submit" style={{ marginTop: '10px' }}>Tạo công việc</Button>
           </form>
         </div>
       </div>
