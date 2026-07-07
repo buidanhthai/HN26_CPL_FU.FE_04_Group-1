@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Button from '../components/Button';
 import { authService } from '../services/authService';
@@ -122,6 +122,18 @@ const Login: React.FC = () => {
           {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
         </Button>
       </form>
+
+      <div style={{
+        textAlign: 'center',
+        marginTop: '24px',
+        fontSize: '0.9rem',
+        color: 'var(--secondary-text)'
+      }}>
+        <span>Bạn chưa có tài khoản? </span>
+        <Link to="/register" style={{ color: 'var(--accent-color)', fontWeight: '600', textDecoration: 'none' }}>
+          Đăng ký ngay
+        </Link>
+      </div>
     </div>
   );
 };
