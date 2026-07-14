@@ -44,6 +44,11 @@ const Bookings: React.FC = () => {
   const [mapSelectedRoom, setMapSelectedRoom] = useState<any | null>(null);
   const [mapHoveredRoom, setMapHoveredRoom] = useState<any | null>(null);
   const [mapMousePos, setMapMousePos] = useState({ x: 0, y: 0 });
+
+  const [activeTab, setActiveTab] = useState<'history' | 'timeline'>('history');
+  const [timelineDate, setTimelineDate] = useState(new Date().toISOString().split('T')[0]);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [checkoutDetails, setCheckoutDetails] = useState<{
     booking: Booking;
     services: any[];
@@ -120,6 +125,7 @@ const Bookings: React.FC = () => {
 
     const selectedAsset = spaceAssets.find(a => a.id === assetId);
     const basePrice = selectedAsset ? selectedAsset.basePrice : 300000;
+    const isStaffOrAdmin = user?.role === 'ADMIN' || user?.role === 'STAFF';
 
     const request: CreateBookingRequest = {
       userId: user?.id || 0,
@@ -128,7 +134,10 @@ const Bookings: React.FC = () => {
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
       snapshotBasePrice: basePrice,
-      snapshotPriceModifier: layoutId === 1 ? 50000 : 0
+      snapshotPriceModifier: layoutId === 1 ? 50000 : 0,
+      customerName: isStaffOrAdmin ? customerName : undefined,
+      customerPhone: isStaffOrAdmin ? customerPhone : undefined,
+      createdByUserId: isStaffOrAdmin ? user?.id : undefined
     };
 
     try {
@@ -137,6 +146,8 @@ const Bookings: React.FC = () => {
       setSuccess('Đặt chỗ thành công! Vui lòng thanh toán trong vòng 10 phút.');
       setStartDate('');
       setEndDate('');
+      setCustomerName('');
+      setCustomerPhone('');
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.message || 'Có lỗi xảy ra khi đặt chỗ.');
@@ -153,6 +164,18 @@ const Bookings: React.FC = () => {
     }
   };
 
+  const getOverlappingBooking = (assetId: number, hour: number) => {
+    const targetStart = new Date(`${timelineDate}T${String(hour).padStart(2, '0')}:00:00Z`);
+    const targetEnd = new Date(`${timelineDate}T${String(hour + 1).padStart(2, '0')}:00:00Z`);
+
+    return bookings.find((b) => {
+      if (b.assetId !== assetId || b.bookingStatus === 'Cancelled') return false;
+      const bStart = new Date(b.startTime);
+      const bEnd = new Date(b.endTime);
+      return bStart < targetEnd && bEnd > targetStart;
+    });
+  };
+
   return (
     <div>
       <h1 style={{ fontSize: '2rem', margin: '0 0 8px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
@@ -162,18 +185,57 @@ const Bookings: React.FC = () => {
         Quản lý lịch làm việc và đặt chỗ của bạn tại Cozy Space.
       </p>
 
+      {(user?.role === 'ADMIN' || user?.role === 'STAFF') && (
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+          <button
+            type="button"
+            onClick={() => setActiveTab('history')}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: activeTab === 'history' ? 'var(--accent-color)' : 'transparent',
+              color: activeTab === 'history' ? '#fff' : 'var(--primary-text)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              transition: 'var(--transition)'
+            }}
+          >
+            📋 Lịch sử đặt chỗ
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('timeline')}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: activeTab === 'timeline' ? 'var(--accent-color)' : 'transparent',
+              color: activeTab === 'timeline' ? '#fff' : 'var(--primary-text)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              transition: 'var(--transition)'
+            }}
+          >
+            📅 Sơ đồ Timeline hoạt động
+          </button>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '30px', alignItems: 'start' }}>
-        {/* Bookings List */}
-        <div style={{
-          backgroundColor: 'var(--surface-color)',
-          borderRadius: '16px',
-          border: '1px solid var(--border-color)',
-          padding: '30px 24px',
-          boxShadow: 'var(--shadow)'
-        }}>
-          <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
-            Danh sách đặt chỗ sắp tới
-          </h2>
+        {/* Left Column */}
+        {activeTab === 'history' ? (
+          /* Bookings List */
+          <div style={{
+            backgroundColor: 'var(--surface-color)',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color)',
+            padding: '30px 24px',
+            boxShadow: 'var(--shadow)'
+          }}>
+            <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+              Danh sách đặt chỗ sắp tới
+            </h2>
 
           {loading ? (
             <p style={{ color: 'var(--secondary-text)' }}>Đang tải danh sách đặt chỗ...</p>
@@ -436,6 +498,145 @@ const Bookings: React.FC = () => {
             </div>
           )}
         </div>
+        ) : (
+          /* Sơ đồ Timeline hoạt động */
+          <div style={{
+            backgroundColor: 'var(--surface-color)',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color)',
+            padding: '30px 24px',
+            boxShadow: 'var(--shadow)',
+            overflowX: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '1.4rem', margin: 0, color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+                📅 Sơ đồ Timeline hoạt động
+              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Chọn ngày:</span>
+                <input 
+                  type="date" 
+                  value={timelineDate} 
+                  onChange={(e) => setTimelineDate(e.target.value)}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'var(--surface-color)',
+                    color: 'var(--primary-text)',
+                    fontSize: '0.9rem'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ overflowX: 'auto' }}>
+              <div style={{ minWidth: '800px' }}>
+                {/* Header row representing hours */}
+                <div style={{ display: 'grid', gridTemplateColumns: '220px repeat(15, 1fr)', borderBottom: '2px solid var(--border-color)', paddingBottom: '10px', marginBottom: '10px' }}>
+                  <div style={{ fontWeight: 'bold', color: 'var(--secondary-text)', fontSize: '0.9rem' }}>Phòng họp / Không gian</div>
+                  {[8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map((h) => (
+                    <div key={h} style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '0.8rem', color: 'var(--secondary-text)' }}>
+                      {String(h).padStart(2, '0')}:00
+                    </div>
+                  ))}
+                </div>
+
+                {/* Rooms rows */}
+                {spaceAssets.map((asset) => (
+                  <div 
+                    key={asset.id} 
+                    style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: '220px repeat(15, 1fr)', 
+                      alignItems: 'center', 
+                      padding: '10px 0', 
+                      borderBottom: '1px solid var(--border-color)' 
+                    }}
+                  >
+                    <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>
+                      {asset.assetName} 
+                      <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--secondary-text)', fontWeight: 'normal' }}>
+                        👤 Sức chứa: {asset.capacity} • {asset.locationName}
+                      </span>
+                    </div>
+
+                    {[8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map((h) => {
+                      const booking = getOverlappingBooking(asset.id, h);
+                      const isBooked = !!booking;
+                      
+                      let cellBg = 'transparent';
+                      let cellBorder = '1px solid var(--border-color)';
+                      let tooltipContent = '';
+
+                      if (booking) {
+                        cellBorder = 'none';
+                        const status = booking.bookingStatus;
+                        
+                        if (status === 'Confirmed' || status === 'Checked_In') {
+                          cellBg = 'var(--nature-accent)'; 
+                        } else if (status === 'Awaiting_Payment' || status === 'Pending') {
+                          cellBg = 'var(--accent-color)'; 
+                        } else {
+                          cellBg = '#6c757d'; 
+                        }
+
+                        const guestInfo = booking.customerName ? `Khách: ${booking.customerName} (${booking.customerPhone})` : `User ID: ${booking.userId}`;
+                        const creatorInfo = booking.createdByUserId ? `\n(Tạo bởi Staff ID: ${booking.createdByUserId})` : '';
+                        tooltipContent = `Đơn đặt #${booking.id}\n📍 Trạng thái: ${status}\n👤 ${guestInfo}${creatorInfo}\n⏰ Giờ: ${new Date(booking.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(booking.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}\n📝 Ghi chú: ${booking.customSetupNote || 'Không có'}`;
+                      }
+
+                      return (
+                        <div 
+                          key={h}
+                          title={tooltipContent}
+                          style={{
+                            height: '35px',
+                            margin: '2px',
+                            borderRadius: '4px',
+                            backgroundColor: cellBg,
+                            border: cellBorder,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: isBooked ? '#fff' : 'transparent',
+                            fontSize: '0.7rem',
+                            fontWeight: 'bold',
+                            cursor: isBooked ? 'pointer' : 'default',
+                            transition: 'var(--transition)'
+                          }}
+                          onClick={() => {
+                            if (booking) {
+                              setSelectedBookingDetails({ booking, services: [], logs: [], invoices: [] } as any);
+                            }
+                          }}
+                        >
+                          {isBooked ? `B#${booking.id}` : ''}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Legend guide */}
+            <div style={{ display: 'flex', gap: '20px', marginTop: '20px', fontSize: '0.85rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ width: '16px', height: '16px', backgroundColor: 'var(--nature-accent)', borderRadius: '3px' }}></div>
+                <span>Đã xác nhận / Đang sử dụng</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ width: '16px', height: '16px', backgroundColor: 'var(--accent-color)', borderRadius: '3px' }}></div>
+                <span>Chờ thanh toán / Chờ duyệt</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ width: '16px', height: '16px', border: '1px solid var(--border-color)', borderRadius: '3px' }}></div>
+                <span>Trống</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Create Booking Form */}
         <div style={{
@@ -458,6 +659,31 @@ const Bookings: React.FC = () => {
 
           <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             
+            {(user?.role === 'ADMIN' || user?.role === 'STAFF') && (
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Tên khách hàng</label>
+                  <input 
+                    type="text" 
+                    value={customerName} 
+                    onChange={(e) => setCustomerName(e.target.value)} 
+                    placeholder="Nhập tên khách hàng"
+                    className="input-field" 
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Số điện thoại</label>
+                  <input 
+                    type="text" 
+                    value={customerPhone} 
+                    onChange={(e) => setCustomerPhone(e.target.value)} 
+                    placeholder="Nhập SĐT khách hàng"
+                    className="input-field" 
+                  />
+                </div>
+              </>
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Không gian</label>
@@ -733,6 +959,30 @@ const Bookings: React.FC = () => {
                   {new Date(selectedBookingDetails.booking.endTime).toLocaleString()}
                 </p>
               </div>
+              {selectedBookingDetails.booking.customerName && (
+                <div>
+                  <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Tên khách (Đại diện):</span>
+                  <p style={{ margin: '4px 0 0 0', fontWeight: '600' }}>
+                    {selectedBookingDetails.booking.customerName}
+                  </p>
+                </div>
+              )}
+              {selectedBookingDetails.booking.customerPhone && (
+                <div>
+                  <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>SĐT khách:</span>
+                  <p style={{ margin: '4px 0 0 0', fontWeight: '600' }}>
+                    {selectedBookingDetails.booking.customerPhone}
+                  </p>
+                </div>
+              )}
+              {selectedBookingDetails.booking.createdByUserId && (
+                <div style={{ gridColumn: 'span 2' }}>
+                  <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Nhân viên tạo yêu cầu:</span>
+                  <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: 'var(--accent-color)', fontWeight: 'bold' }}>
+                    Staff ID #{selectedBookingDetails.booking.createdByUserId}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Customer information (non-USER only) */}

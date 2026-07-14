@@ -54,16 +54,20 @@ namespace backend.Controllers
                     SnapshotBasePrice = b.SnapshotBasePrice,
                     SnapshotPriceModifier = b.SnapshotPriceModifier,
                     CreatedAt = b.CreatedAt,
-                    CheckInVerificationCode = b.CheckInVerificationCode
+                    CheckInVerificationCode = b.CheckInVerificationCode,
+                    CustomerName = b.CustomerName,
+                    CustomerPhone = b.CustomerPhone,
+                    CreatedByUserId = b.CreatedByUserId
                 }).ToListAsync();
 
             return Ok(bookings);
         }
 
         [HttpPost]
-        [Authorize(Roles = "USER,ADMIN")]
+        [Authorize(Roles = "USER,ADMIN,STAFF")]
         public async Task<IActionResult> CreateBooking([FromBody] CreateBookingDto dto)
         {
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             int currentUserId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
 
@@ -95,9 +99,11 @@ namespace backend.Controllers
                 return Conflict(new { message = "Khung giờ này đã có người đặt hoặc đang trong thời gian chuẩn bị phòng. Vui lòng chọn giờ khác." });
             }
 
+            var isStaffOrAdmin = userRole == "ADMIN" || userRole == "STAFF";
+
             var booking = new Booking
             {
-                UserId = currentUserId > 0 ? currentUserId : dto.UserId,
+                UserId = (dto.UserId > 0) ? dto.UserId : (userRole == "USER" ? currentUserId : 3),
                 AssetId = dto.AssetId,
                 LayoutId = dto.LayoutId,
                 StartTime = dto.StartTime,
@@ -106,7 +112,10 @@ namespace backend.Controllers
                 SnapshotBasePrice = dto.SnapshotBasePrice,
                 SnapshotPriceModifier = dto.SnapshotPriceModifier,
                 BookingStatus = "Awaiting_Payment",
-                PaymentDeadline = backend.Helpers.TimeHelper.GetVietnamTime().AddMinutes(10) 
+                PaymentDeadline = backend.Helpers.TimeHelper.GetVietnamTime().AddMinutes(10),
+                CustomerName = isStaffOrAdmin ? dto.CustomerName : null,
+                CustomerPhone = isStaffOrAdmin ? dto.CustomerPhone : null,
+                CreatedByUserId = isStaffOrAdmin ? currentUserId : null
             };
 
             _context.Bookings.Add(booking);
@@ -123,6 +132,9 @@ namespace backend.Controllers
                 StartTime = booking.StartTime,
                 EndTime = booking.EndTime,
                 BookingStatus = booking.BookingStatus,
+                CustomerName = booking.CustomerName,
+                CustomerPhone = booking.CustomerPhone,
+                CreatedByUserId = booking.CreatedByUserId,
                 PaymentDeadline = booking.PaymentDeadline,
                 CustomSetupNote = booking.CustomSetupNote,
                 SnapshotBasePrice = booking.SnapshotBasePrice,

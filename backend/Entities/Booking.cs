@@ -21,6 +21,9 @@ namespace backend.Entities
         public DateTime? CheckedInAt { get; set; }
         public int? CheckedInByAdminId { get; set; }
         public string? CheckInVerificationCode { get; set; }
+        public string? CustomerName { get; set; }
+        public string? CustomerPhone { get; set; }
+        public int? CreatedByUserId { get; set; }
 
         // Navigation properties
         public User? User { get; set; }

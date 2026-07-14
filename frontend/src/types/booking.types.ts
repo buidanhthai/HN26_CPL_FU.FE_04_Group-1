@@ -12,6 +12,9 @@ export interface Booking {
   snapshotPriceModifier: number;
   createdAt: string;
   checkInVerificationCode?: string;
+  customerName?: string;
+  customerPhone?: string;
+  createdByUserId?: number;
 }
 
 export interface CreateBookingRequest {
@@ -23,4 +26,7 @@ export interface CreateBookingRequest {
   customSetupNote?: string;
   snapshotBasePrice: number;
   snapshotPriceModifier: number;
+  customerName?: string;
+  customerPhone?: string;
+  createdByUserId?: number;
 }
