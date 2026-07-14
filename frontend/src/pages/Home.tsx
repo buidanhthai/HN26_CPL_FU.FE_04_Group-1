@@ -13,7 +13,7 @@ const Home: React.FC = () => {
 
   const isAuthenticated = authContext?.isAuthenticated ?? false;
 
-  const scrollToSection = (elementRef: React.RefObject<HTMLDivElement>) => {
+  const scrollToSection = (elementRef: React.RefObject<HTMLDivElement | null>) => {
     elementRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 

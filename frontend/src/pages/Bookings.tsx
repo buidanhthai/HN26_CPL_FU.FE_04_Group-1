@@ -1,8 +1,23 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { bookingService } from '../services/bookingService';
+import api from '../services/api';
 import type { Booking, CreateBookingRequest } from '../types/booking.types';
 import Button from '../components/Button';
+
+const ROOM_LAYOUTS: Record<number, { top: string; left: string; width: string; height: string }> = {
+  1: { top: '65%', left: '26%', width: '22%', height: '24%' }, 
+  2: { top: '75%', left: '54%', width: '16%', height: '17%' }, 
+  3: { top: '75%', left: '71%', width: '21%', height: '17%' }, 
+  4: { top: '40%', left: '23%', width: '12%', height: '14%' }, 
+  5: { top: '44%', left: '36%', width: '12%', height: '12%' }, 
+  6: { top: '44%', left: '67%', width: '11%', height: '13%' }, 
+  7: { top: '44%', left: '79%', width: '12%', height: '13%' }, 
+  8: { top: '12%', left: '23%', width: '13%', height: '15%' }, 
+  9: { top: '16%', left: '38%', width: '10%', height: '12%' }, 
+  10: { top: '17%', left: '60%', width: '14%', height: '15%' }, 
+  11: { top: '19%', left: '77%', width: '14%', height: '14%' }
+};
 
 const Bookings: React.FC = () => {
   const authContext = useContext(AuthContext);
@@ -11,7 +26,7 @@ const Bookings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   
   // Form state
-  const [assetId, setAssetId] = useState(2); // Default to Meeting Room A
+  const [assetId, setAssetId] = useState(2); // Default to Meeting Room A (Họp Chiến Lược 102)
   const [layoutId, setLayoutId] = useState(1); // Default to Chữ U
   const [startDate, setStartDate] = useState('');
   const [startTimeStr, setStartTimeStr] = useState('09:00');
@@ -21,6 +36,13 @@ const Bookings: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [checkinCodes, setCheckinCodes] = useState<{[key: number]: string}>({});
+  
+  const [spaceAssets, setSpaceAssets] = useState<any[]>([]);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [mapCurrentFloor, setMapCurrentFloor] = useState('Lầu 1');
+  const [mapSelectedRoom, setMapSelectedRoom] = useState<any | null>(null);
+  const [mapHoveredRoom, setMapHoveredRoom] = useState<any | null>(null);
+  const [mapMousePos, setMapMousePos] = useState({ x: 0, y: 0 });
   const [checkoutDetails, setCheckoutDetails] = useState<{
     booking: Booking;
     services: any[];
@@ -48,8 +70,33 @@ const Bookings: React.FC = () => {
     }
   };
 
+  const fetchSpaceAssets = async () => {
+    try {
+      const res = await api.get<any[]>('/space-assets');
+      setSpaceAssets(res.data);
+    } catch (err) {
+      console.error('Error fetching space assets:', err);
+      // Fallback to mock space assets matching the database seed and FloorSelection layout
+      const mockAssets = [
+        { id: 1, locationName: 'Lầu 1', assetName: 'Hội Trường Lớn 101', assetType: 'Meeting_Room', basePrice: 300000, capacity: 15, dimensions: '6m x 5m', areaM2: 30, isActive: true },
+        { id: 2, locationName: 'Lầu 1', assetName: 'Họp Chiến Lược 102', assetType: 'Meeting_Room', basePrice: 250000, capacity: 10, dimensions: '5m x 4m', areaM2: 20, isActive: true },
+        { id: 3, locationName: 'Lầu 1', assetName: 'Tiếp Khách VIP 103', assetType: 'Meeting_Room', basePrice: 200000, capacity: 6, dimensions: '4m x 4m', areaM2: 16, isActive: true },
+        { id: 4, locationName: 'Lầu 2', assetName: 'Phòng Dự Án 201', assetType: 'Meeting_Room', basePrice: 150000, capacity: 6, dimensions: '4m x 3m', areaM2: 12, isActive: true },
+        { id: 5, locationName: 'Lầu 2', assetName: 'Phòng Dự Án 202', assetType: 'Meeting_Room', basePrice: 150000, capacity: 6, dimensions: '4m x 3m', areaM2: 12, isActive: true },
+        { id: 6, locationName: 'Lầu 2', assetName: 'Phòng Phỏng Vấn 203', assetType: 'Meeting_Room', basePrice: 100000, capacity: 4, dimensions: '3m x 3m', areaM2: 9, isActive: true },
+        { id: 7, locationName: 'Lầu 2', assetName: 'Phòng Nghiên Cứu 204', assetType: 'Meeting_Room', basePrice: 200000, capacity: 8, dimensions: '4m x 4m', areaM2: 16, isActive: true },
+        { id: 8, locationName: 'Lầu 3', assetName: 'Họp Nhóm A', assetType: 'Meeting_Room', basePrice: 120000, capacity: 5, dimensions: '3.5m x 3m', areaM2: 10.5, isActive: true },
+        { id: 9, locationName: 'Lầu 3', assetName: 'Họp Nhóm B', assetType: 'Meeting_Room', basePrice: 120000, capacity: 5, dimensions: '3.5m x 3m', areaM2: 10.5, isActive: true },
+        { id: 10, locationName: 'Lầu 3', assetName: 'Hội Thảo 303', assetType: 'Meeting_Room', basePrice: 250000, capacity: 12, dimensions: '5m x 5m', areaM2: 25, isActive: true },
+        { id: 11, locationName: 'Lầu 3', assetName: 'Đào Tạo 304', assetType: 'Meeting_Room', basePrice: 400000, capacity: 20, dimensions: '8m x 5m', areaM2: 40, isActive: true }
+      ];
+      setSpaceAssets(mockAssets);
+    }
+  };
+
   useEffect(() => {
     fetchBookings();
+    fetchSpaceAssets();
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -70,13 +117,16 @@ const Bookings: React.FC = () => {
       return;
     }
 
+    const selectedAsset = spaceAssets.find(a => a.id === assetId);
+    const basePrice = selectedAsset ? selectedAsset.basePrice : 300000;
+
     const request: CreateBookingRequest = {
       userId: user?.id || 0,
       assetId,
       layoutId,
       startTime: startDateTime.toISOString(),
       endTime: endDateTime.toISOString(),
-      snapshotBasePrice: assetId === 1 ? 50000 : 300000,
+      snapshotBasePrice: basePrice,
       snapshotPriceModifier: layoutId === 1 ? 50000 : 0
     };
 
@@ -161,7 +211,7 @@ const Bookings: React.FC = () => {
                         }}
                         title="Click để xem chi tiết"
                       >
-                        {b.assetId === 1 ? 'Hot Desk 101' : 'Meeting Room A'}
+                        {spaceAssets.find(a => a.id === b.assetId)?.assetName || `Phòng #${b.assetId}`}
                       </td>
                       <td style={{ padding: '14px 8px', color: 'var(--secondary-text)' }}>{new Date(b.startTime).toLocaleString()}</td>
                       <td style={{ padding: '14px 8px', color: 'var(--secondary-text)' }}>{new Date(b.endTime).toLocaleString()}</td>
@@ -408,15 +458,35 @@ const Bookings: React.FC = () => {
           <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Không gian</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Không gian</label>
+                <button
+                  type="button"
+                  onClick={() => setIsMapModalOpen(true)}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: 'var(--accent-color)',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    fontWeight: 'bold',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  🗺️ Chọn qua sơ đồ
+                </button>
+              </div>
               <select 
                 value={assetId} 
                 onChange={(e) => setAssetId(Number(e.target.value))}
                 className="input-field"
                 style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}
               >
-                <option value={1}>Hot Desk 101 (Cá nhân)</option>
-                <option value={2}>Meeting Room A (Phòng họp)</option>
+                {spaceAssets.map((asset) => (
+                  <option key={asset.id} value={asset.id}>
+                    {asset.assetName} ({asset.locationName}) - {asset.basePrice.toLocaleString()}đ/h
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -503,7 +573,7 @@ const Bookings: React.FC = () => {
             <div style={{ marginBottom: '15px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '6px' }}>
                 <span style={{ fontWeight: '600' }}>Phòng đặt:</span>
-                <span>{checkoutDetails.booking.assetId === 1 ? 'Hot Desk 101' : 'Meeting Room A'}</span>
+                <span>{spaceAssets.find(a => a.id === checkoutDetails.booking.assetId)?.assetName || `Phòng #${checkoutDetails.booking.assetId}`}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '6px' }}>
                 <span style={{ fontWeight: '600' }}>Thời gian:</span>
@@ -637,7 +707,7 @@ const Bookings: React.FC = () => {
               <div>
                 <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Phòng đặt:</span>
                 <p style={{ margin: '4px 0 0 0', fontWeight: '600' }}>
-                  {selectedBookingDetails.booking.assetId === 1 ? 'Hot Desk 101' : 'Meeting Room A'}
+                  {spaceAssets.find(a => a.id === selectedBookingDetails.booking.assetId)?.assetName || `Phòng #${selectedBookingDetails.booking.assetId}`}
                 </p>
               </div>
               <div>
@@ -839,6 +909,229 @@ const Bookings: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Visual Floor Map Selector Modal */}
+      {isMapModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            backgroundColor: 'var(--surface-color)',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color)',
+            padding: '24px',
+            width: '1000px',
+            maxWidth: '95%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            color: 'var(--primary-text)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '10px', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontFamily: 'var(--font-title)', fontSize: '1.4rem' }}>🗺️ Sơ đồ chọn phòng họp</h3>
+              <button 
+                type="button"
+                onClick={() => setIsMapModalOpen(false)}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: 'var(--secondary-text)',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Floor Selection Buttons */}
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+              {['Lầu 1', 'Lầu 2', 'Lầu 3'].map((floor) => (
+                <button
+                  key={floor}
+                  type="button"
+                  onClick={() => {
+                    setMapCurrentFloor(floor);
+                    setMapSelectedRoom(null);
+                    setMapHoveredRoom(null);
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: mapCurrentFloor === floor ? 'var(--accent-color)' : 'transparent',
+                    color: mapCurrentFloor === floor ? '#fff' : 'var(--primary-text)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold',
+                    transition: 'var(--transition)'
+                  }}
+                >
+                  {floor}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '20px', alignItems: 'start' }}>
+              
+              {/* Left Column: Interactive Map */}
+              <div style={{ position: 'relative', border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden' }}>
+                <img 
+                  src="/src/assets/thebuilding.png" 
+                  alt="Sơ đồ Cozy Space" 
+                  style={{ width: '100%', display: 'block', height: 'auto' }} 
+                />
+                
+                {spaceAssets
+                  .filter(asset => asset.locationName === mapCurrentFloor)
+                  .map((asset) => {
+                    const layout = ROOM_LAYOUTS[asset.id];
+                    if (!layout) return null;
+
+                    const isCurrentSelected = mapSelectedRoom?.id === asset.id;
+
+                    return (
+                      <div
+                        key={asset.id}
+                        onClick={() => setMapSelectedRoom(asset)}
+                        style={{
+                          position: 'absolute',
+                          top: layout.top,
+                          left: layout.left,
+                          width: layout.width,
+                          height: layout.height,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.15s ease',
+                          borderRadius: '4px',
+                          backgroundColor: isCurrentSelected ? 'rgba(0, 86, 179, 0.35)' : 'transparent',
+                          border: isCurrentSelected ? '2px solid #0056b3' : '2px dashed transparent'
+                        }}
+                        onMouseEnter={(e) => {
+                          setMapHoveredRoom(asset);
+                          if (!isCurrentSelected) {
+                            e.currentTarget.style.backgroundColor = 'rgba(40, 167, 69, 0.2)';
+                            e.currentTarget.style.borderColor = '#28a745';
+                          }
+                        }}
+                        onMouseMove={(e) => {
+                          setMapMousePos({ x: e.clientX, y: e.clientY });
+                        }}
+                        onMouseLeave={(e) => {
+                          setMapHoveredRoom(null);
+                          if (!isCurrentSelected) {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                            e.currentTarget.style.borderColor = 'transparent';
+                          }
+                        }}
+                      >
+                        {(mapHoveredRoom?.id === asset.id || isCurrentSelected) && (
+                          <span style={{
+                            backgroundColor: 'var(--surface-color)',
+                            color: 'var(--primary-text)',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            boxShadow: 'var(--shadow)',
+                            border: '1px solid var(--border-color)',
+                            pointerEvents: 'none'
+                          }}>
+                            {asset.assetName}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+              </div>
+
+              {/* Right Column: Selected Room Details & Confirm Button */}
+              <div style={{ padding: '20px', border: '1px solid var(--border-color)', borderRadius: '8px', backgroundColor: 'rgba(0,0,0,0.02)' }}>
+                <h4 style={{ margin: '0 0 15px 0', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', fontFamily: 'var(--font-title)' }}>
+                  Chi tiết phòng chọn
+                </h4>
+                
+                {mapSelectedRoom ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9rem' }}>
+                    <p style={{ margin: 0 }}><strong>Tên phòng:</strong> {mapSelectedRoom.assetName}</p>
+                    <p style={{ margin: 0 }}><strong>Vị trí:</strong> {mapSelectedRoom.locationName}</p>
+                    <p style={{ margin: 0 }}><strong>Sức chứa:</strong> {mapSelectedRoom.capacity} người</p>
+                    <p style={{ margin: 0 }}><strong>Kích thước:</strong> {mapSelectedRoom.dimensions || 'N/A'} ({mapSelectedRoom.areaM2 || 'N/A'} m²)</p>
+                    <p style={{ margin: 0 }}><strong>Giá thuê:</strong> <span style={{ color: '#e07a5f', fontWeight: 'bold' }}>{(mapSelectedRoom.basePrice ?? 0).toLocaleString()}đ/h</span></p>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAssetId(mapSelectedRoom.id);
+                        setIsMapModalOpen(false);
+                      }}
+                      style={{
+                        marginTop: '15px',
+                        padding: '10px',
+                        backgroundColor: 'var(--nature-accent)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '6px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        width: '100%'
+                      }}
+                    >
+                      Xác nhận chọn phòng
+                    </button>
+                  </div>
+                ) : (
+                  <p style={{ color: 'var(--secondary-text)', fontStyle: 'italic', margin: 0, fontSize: '0.85rem' }}>
+                    Rê chuột vào sơ đồ và click để chọn phòng.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Hover Tooltip */}
+      {mapHoveredRoom && (
+        <div style={{
+          position: 'fixed',
+          top: mapMousePos.y + 15,
+          left: mapMousePos.x + 15,
+          backgroundColor: 'rgba(23, 23, 23, 0.95)',
+          color: '#fff',
+          padding: '12px 16px',
+          borderRadius: '6px',
+          fontSize: '13px',
+          zIndex: 9999,
+          pointerEvents: 'none',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+          lineHeight: '1.6',
+          minWidth: '220px'
+        }}>
+          <b style={{ color: '#4ba35b', fontSize: '14px', display: 'block', marginBottom: '4px' }}>
+            🏢 {mapHoveredRoom.assetName}
+          </b>
+          <div style={{ borderBottom: '1px solid #444', marginBottom: '8px' }}></div>
+          <p style={{ margin: '2px 0' }}>📍 <strong>Vị trí:</strong> {mapHoveredRoom.locationName}</p>
+          <p style={{ margin: '2px 0' }}>👥 <strong>Sức chứa:</strong> {mapHoveredRoom.capacity} người</p>
+          <p style={{ margin: '2px 0' }}>📐 <strong>Diện tích:</strong> {mapHoveredRoom.areaM2} m² ({mapHoveredRoom.dimensions})</p>
+          <p style={{ margin: '4px 0 0 0', fontSize: '13px' }}>
+            💰 <strong>Giá thuê:</strong> <span style={{ color: '#ffdd57', fontWeight: 'bold' }}>{(mapHoveredRoom.basePrice ?? 0).toLocaleString()}đ/h</span>
+          </p>
         </div>
       )}
       </div>

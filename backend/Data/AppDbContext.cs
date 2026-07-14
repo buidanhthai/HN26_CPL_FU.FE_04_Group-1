@@ -222,8 +222,17 @@ namespace backend.Data
 
             // Seed SpaceAssets
             modelBuilder.Entity<SpaceAsset>().HasData(
-                new SpaceAsset { Id = 1, LocationName = "Lầu 1", AssetName = "Hot Desk 101", AssetType = "Hot_Desk", BasePrice = 50000m, Capacity = 1, Dimensions = "1.2m x 0.8m", AreaM2 = 0.96m, IsActive = true },
-                new SpaceAsset { Id = 2, LocationName = "Lầu 2", AssetName = "Meeting Room A", AssetType = "Meeting_Room", BasePrice = 300000m, Capacity = 10, Dimensions = "5m x 4m", AreaM2 = 20.00m, IsActive = true }
+                new SpaceAsset { Id = 1, LocationName = "Lầu 1", AssetName = "Hội Trường Lớn 101", AssetType = "Meeting_Room", BasePrice = 300000m, Capacity = 15, Dimensions = "6m x 5m", AreaM2 = 30.00m, IsActive = true },
+                new SpaceAsset { Id = 2, LocationName = "Lầu 1", AssetName = "Họp Chiến Lược 102", AssetType = "Meeting_Room", BasePrice = 250000m, Capacity = 10, Dimensions = "5m x 4m", AreaM2 = 20.00m, IsActive = true },
+                new SpaceAsset { Id = 3, LocationName = "Lầu 1", AssetName = "Tiếp Khách VIP 103", AssetType = "Meeting_Room", BasePrice = 200000m, Capacity = 6, Dimensions = "4m x 4m", AreaM2 = 16.00m, IsActive = true },
+                new SpaceAsset { Id = 4, LocationName = "Lầu 2", AssetName = "Phòng Dự Án 201", AssetType = "Meeting_Room", BasePrice = 150000m, Capacity = 6, Dimensions = "4m x 3m", AreaM2 = 12.00m, IsActive = true },
+                new SpaceAsset { Id = 5, LocationName = "Lầu 2", AssetName = "Phòng Dự Án 202", AssetType = "Meeting_Room", BasePrice = 150000m, Capacity = 6, Dimensions = "4m x 3m", AreaM2 = 12.00m, IsActive = true },
+                new SpaceAsset { Id = 6, LocationName = "Lầu 2", AssetName = "Phòng Phỏng Vấn 203", AssetType = "Meeting_Room", BasePrice = 100000m, Capacity = 4, Dimensions = "3m x 3m", AreaM2 = 9.00m, IsActive = true },
+                new SpaceAsset { Id = 7, LocationName = "Lầu 2", AssetName = "Phòng Nghiên Cứu 204", AssetType = "Meeting_Room", BasePrice = 200000m, Capacity = 8, Dimensions = "4m x 4m", AreaM2 = 16.00m, IsActive = true },
+                new SpaceAsset { Id = 8, LocationName = "Lầu 3", AssetName = "Họp Nhóm A", AssetType = "Meeting_Room", BasePrice = 120000m, Capacity = 5, Dimensions = "3.5m x 3m", AreaM2 = 10.50m, IsActive = true },
+                new SpaceAsset { Id = 9, LocationName = "Lầu 3", AssetName = "Họp Nhóm B", AssetType = "Meeting_Room", BasePrice = 120000m, Capacity = 5, Dimensions = "3.5m x 3m", AreaM2 = 10.50m, IsActive = true },
+                new SpaceAsset { Id = 10, LocationName = "Lầu 3", AssetName = "Hội Thảo 303", AssetType = "Meeting_Room", BasePrice = 250000m, Capacity = 12, Dimensions = "5m x 5m", AreaM2 = 25.00m, IsActive = true },
+                new SpaceAsset { Id = 11, LocationName = "Lầu 3", AssetName = "Đào Tạo 304", AssetType = "Meeting_Room", BasePrice = 400000m, Capacity = 20, Dimensions = "8m x 5m", AreaM2 = 40.00m, IsActive = true }
             );
 
             // Seed AddOnServices

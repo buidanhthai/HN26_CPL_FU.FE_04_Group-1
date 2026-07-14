@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { taskService } from '../services/taskService';
-import type { Task, CreateTaskRequest } from '../types/task.types';
+import type { Task } from '../types/task.types';
 import Button from '../components/Button';
 import { AuthContext } from '../context/AuthContext';
 
@@ -57,7 +57,7 @@ const Tasks: React.FC = () => {
 
   const handleUpdateStatus = async (task: Task, newStatus: string) => {
     try {
-      await taskService.updateTask(task.id, { taskStatus: newStatus });
+      await taskService.updateTask(task.id, { taskStatus: newStatus as any });
       setTasks(tasks.map((t) => (t.id === task.id ? { ...t, taskStatus: newStatus as any } : t)));
     } catch (err) {
       console.error(err);
