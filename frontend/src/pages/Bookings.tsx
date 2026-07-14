@@ -3,22 +3,12 @@ import { AuthContext } from '../context/AuthContext';
 import { bookingService } from '../services/bookingService';
 import api from '../services/api';
 import type { Booking, CreateBookingRequest } from '../types/booking.types';
-import Button from '../components/Button';
-import theBuildingImg from '../assets/thebuilding.png';
-
-const ROOM_LAYOUTS: Record<number, { top: string; left: string; width: string; height: string }> = {
-  1: { top: '65%', left: '26%', width: '22%', height: '24%' }, 
-  2: { top: '75%', left: '54%', width: '16%', height: '17%' }, 
-  3: { top: '75%', left: '71%', width: '21%', height: '17%' }, 
-  4: { top: '40%', left: '23%', width: '12%', height: '14%' }, 
-  5: { top: '44%', left: '36%', width: '12%', height: '12%' }, 
-  6: { top: '44%', left: '67%', width: '11%', height: '13%' }, 
-  7: { top: '44%', left: '79%', width: '12%', height: '13%' }, 
-  8: { top: '12%', left: '23%', width: '13%', height: '15%' }, 
-  9: { top: '16%', left: '38%', width: '10%', height: '12%' }, 
-  10: { top: '17%', left: '60%', width: '14%', height: '15%' }, 
-  11: { top: '19%', left: '77%', width: '14%', height: '14%' }
-};
+import { VisualFloorMapModal } from '../components/bookings/VisualFloorMapModal';
+import { BookingDetailModal } from '../components/bookings/BookingDetailModal';
+import { BookingCheckoutModal } from '../components/bookings/BookingCheckoutModal';
+import { BookingTimeline } from '../components/bookings/BookingTimeline';
+import { BookingHistoryTable } from '../components/bookings/BookingHistoryTable';
+import { BookingForm } from '../components/bookings/BookingForm';
 
 const Bookings: React.FC = () => {
   const authContext = useContext(AuthContext);
@@ -36,14 +26,21 @@ const Bookings: React.FC = () => {
   
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [checkinCodes, setCheckinCodes] = useState<{[key: number]: string}>({});
   
   const [spaceAssets, setSpaceAssets] = useState<any[]>([]);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+<<<<<<< Updated upstream
   const [mapCurrentFloor, setMapCurrentFloor] = useState('Lầu 1');
   const [mapSelectedRoom, setMapSelectedRoom] = useState<any | null>(null);
   const [mapHoveredRoom, setMapHoveredRoom] = useState<any | null>(null);
   const [mapMousePos, setMapMousePos] = useState({ x: 0, y: 0 });
+=======
+
+  const [activeTab, setActiveTab] = useState<'history' | 'timeline'>('history');
+  const [timelineDate, setTimelineDate] = useState(new Date().toISOString().split('T')[0]);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+>>>>>>> Stashed changes
   const [checkoutDetails, setCheckoutDetails] = useState<{
     booking: Booking;
     services: any[];
@@ -64,7 +61,6 @@ const Bookings: React.FC = () => {
       setBookings(data);
     } catch (err: any) {
       console.error(err);
-      // Fallback
       setBookings([]);
     } finally {
       setLoading(false);
@@ -98,6 +94,15 @@ const Bookings: React.FC = () => {
   useEffect(() => {
     fetchBookings();
     fetchSpaceAssets();
+
+    // Polling setup: refresh booking list every 30 seconds
+    const intervalId = setInterval(() => {
+      fetchBookings();
+    }, 30000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -163,6 +168,7 @@ const Bookings: React.FC = () => {
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '30px', alignItems: 'start' }}>
+<<<<<<< Updated upstream
         {/* Bookings List */}
         <div style={{
           backgroundColor: 'var(--surface-color)',
@@ -531,59 +537,99 @@ const Bookings: React.FC = () => {
             <Button type="submit" style={{ marginTop: '10px' }}>Đặt chỗ ngay</Button>
           </form>
         </div>
+=======
+        {/* Left Column: History list or Timeline schedule */}
+        {activeTab === 'history' ? (
+          <BookingHistoryTable
+            bookings={bookings}
+            spaceAssets={spaceAssets}
+            user={user}
+            onViewDetails={async (id) => {
+              try {
+                const details = await bookingService.getBookingDetails(id);
+                setSelectedBookingDetails(details);
+              } catch (err: any) {
+                alert('Lỗi khi tải chi tiết đặt chỗ.');
+              }
+            }}
+            onPayment={async (id) => {
+              try {
+                await bookingService.confirmPayment(id);
+                alert('Thanh toán giả lập thành công!');
+                fetchBookings();
+              } catch (e: any) {
+                alert(e.response?.data?.message || 'Lỗi thanh toán');
+              }
+            }}
+            onCheckout={async (b) => {
+              try {
+                const services = await bookingService.getIncurredServices(b.id);
+                const resData = await bookingService.checkoutBooking(b.id);
+                setCheckoutDetails({
+                  booking: b,
+                  services: services,
+                  invoice: resData.invoice
+                });
+              } catch (e: any) {
+                alert(e.response?.data?.message || 'Lỗi khi checkout');
+              }
+            }}
+            onDelete={handleDelete}
+            loading={loading}
+          />
+        ) : (
+          <BookingTimeline
+            bookings={bookings}
+            spaceAssets={spaceAssets}
+            timelineDate={timelineDate}
+            setTimelineDate={setTimelineDate}
+            onSelectBooking={setSelectedBookingDetails}
+          />
+        )}
+
+        {/* Right Column: Booking Creation Form */}
+        <BookingForm
+          user={user}
+          spaceAssets={spaceAssets}
+          assetId={assetId}
+          setAssetId={setAssetId}
+          layoutId={layoutId}
+          setLayoutId={setLayoutId}
+          startDate={startDate}
+          setStartDate={setStartDate}
+          startTimeStr={startTimeStr}
+          setStartTimeStr={setStartTimeStr}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          endTimeStr={endTimeStr}
+          setEndTimeStr={setEndTimeStr}
+          customerName={customerName}
+          setCustomerName={setCustomerName}
+          customerPhone={customerPhone}
+          setCustomerPhone={setCustomerPhone}
+          onSubmit={handleCreate}
+          onOpenMapModal={() => setIsMapModalOpen(true)}
+          error={error}
+          success={success}
+        />
+>>>>>>> Stashed changes
       </div>
 
-      {/* Checkout Invoice Modal */}
-      {checkoutDetails && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000,
-        }}>
-          <div style={{
-            backgroundColor: 'var(--surface-color)',
-            borderRadius: '16px',
-            border: '1px solid var(--border-color)',
-            padding: '30px',
-            width: '500px',
-            maxWidth: '90%',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            color: 'var(--primary-text)',
-          }}>
-            <h3 style={{
-              fontSize: '1.5rem',
-              margin: '0 0 20px 0',
-              fontFamily: 'var(--font-title)',
-              textAlign: 'center',
-              color: 'var(--nature-accent)',
-              borderBottom: '2px solid var(--border-color)',
-              paddingBottom: '10px'
-            }}>
-              CHI TIẾT HÓA ĐƠN THANH TOÁN
-            </h3>
+      {/* Modals */}
+      <VisualFloorMapModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        spaceAssets={spaceAssets}
+        onSelectRoom={(room) => setAssetId(room.id)}
+      />
 
-            {/* Room Info */}
-            <div style={{ marginBottom: '15px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '6px' }}>
-                <span style={{ fontWeight: '600' }}>Phòng đặt:</span>
-                <span>{spaceAssets.find(a => a.id === checkoutDetails.booking.assetId)?.assetName || `Phòng #${checkoutDetails.booking.assetId}`}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '6px' }}>
-                <span style={{ fontWeight: '600' }}>Thời gian:</span>
-                <span style={{ color: 'var(--secondary-text)' }}>
-                  {new Date(checkoutDetails.booking.startTime).toLocaleTimeString()} - {new Date(checkoutDetails.booking.endTime).toLocaleTimeString()} ({new Date(checkoutDetails.booking.startTime).toLocaleDateString()})
-                </span>
-              </div>
-            </div>
+      <BookingDetailModal
+        details={selectedBookingDetails}
+        onClose={() => setSelectedBookingDetails(null)}
+        spaceAssets={spaceAssets}
+      />
 
+<<<<<<< Updated upstream
             {/* Room fee detail */}
             <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '15px' }}>
               <h4 style={{ fontSize: '0.95rem', margin: '0 0 8px 0', fontWeight: 'bold' }}>Chi phí phòng thuê</h4>
@@ -1136,6 +1182,17 @@ const Bookings: React.FC = () => {
         </div>
       )}
       </div>
+=======
+      <BookingCheckoutModal
+        details={checkoutDetails}
+        onClose={() => {
+          setCheckoutDetails(null);
+          fetchBookings();
+        }}
+        spaceAssets={spaceAssets}
+      />
+    </div>
+>>>>>>> Stashed changes
   );
 };
 
