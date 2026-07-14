@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260713083302_AddCheckInVerificationCode")]
+    partial class AddCheckInVerificationCode
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -151,13 +154,13 @@ namespace backend.Migrations
                             Id = 1,
                             AssetId = 1,
                             BookingStatus = "Awaiting_Payment",
-                            CreatedAt = new DateTime(2026, 7, 13, 8, 59, 14, 959, DateTimeKind.Utc).AddTicks(1898),
-                            EndTime = new DateTime(2026, 7, 14, 10, 59, 14, 959, DateTimeKind.Utc).AddTicks(1265),
+                            CreatedAt = new DateTime(2026, 7, 13, 8, 33, 1, 795, DateTimeKind.Utc).AddTicks(1809),
+                            EndTime = new DateTime(2026, 7, 14, 10, 33, 1, 795, DateTimeKind.Utc).AddTicks(1161),
                             LayoutId = 1,
-                            PaymentDeadline = new DateTime(2026, 7, 13, 9, 9, 14, 959, DateTimeKind.Utc).AddTicks(1717),
+                            PaymentDeadline = new DateTime(2026, 7, 13, 8, 43, 1, 795, DateTimeKind.Utc).AddTicks(1627),
                             SnapshotBasePrice = 50000m,
                             SnapshotPriceModifier = 0m,
-                            StartTime = new DateTime(2026, 7, 14, 8, 59, 14, 959, DateTimeKind.Utc).AddTicks(1088),
+                            StartTime = new DateTime(2026, 7, 14, 8, 33, 1, 795, DateTimeKind.Utc).AddTicks(987),
                             UserId = 3
                         },
                         new
@@ -165,12 +168,12 @@ namespace backend.Migrations
                             Id = 2,
                             AssetId = 2,
                             BookingStatus = "Confirmed",
-                            CreatedAt = new DateTime(2026, 7, 13, 8, 59, 14, 959, DateTimeKind.Utc).AddTicks(2009),
-                            EndTime = new DateTime(2026, 7, 15, 12, 59, 14, 959, DateTimeKind.Utc).AddTicks(2008),
+                            CreatedAt = new DateTime(2026, 7, 13, 8, 33, 1, 795, DateTimeKind.Utc).AddTicks(1922),
+                            EndTime = new DateTime(2026, 7, 15, 12, 33, 1, 795, DateTimeKind.Utc).AddTicks(1920),
                             LayoutId = 1,
                             SnapshotBasePrice = 1200000m,
                             SnapshotPriceModifier = 50000m,
-                            StartTime = new DateTime(2026, 7, 15, 8, 59, 14, 959, DateTimeKind.Utc).AddTicks(2007),
+                            StartTime = new DateTime(2026, 7, 15, 8, 33, 1, 795, DateTimeKind.Utc).AddTicks(1919),
                             UserId = 4
                         },
                         new
@@ -178,47 +181,14 @@ namespace backend.Migrations
                             Id = 3,
                             AssetId = 2,
                             BookingStatus = "Checked_In",
-                            CreatedAt = new DateTime(2026, 7, 13, 8, 59, 14, 959, DateTimeKind.Utc).AddTicks(2014),
-                            EndTime = new DateTime(2026, 7, 13, 10, 59, 14, 959, DateTimeKind.Utc).AddTicks(2013),
+                            CreatedAt = new DateTime(2026, 7, 13, 8, 33, 1, 795, DateTimeKind.Utc).AddTicks(1925),
+                            EndTime = new DateTime(2026, 7, 13, 10, 33, 1, 795, DateTimeKind.Utc).AddTicks(1924),
                             LayoutId = 2,
                             SnapshotBasePrice = 900000m,
                             SnapshotPriceModifier = 0m,
-                            StartTime = new DateTime(2026, 7, 13, 7, 59, 14, 959, DateTimeKind.Utc).AddTicks(2013),
+                            StartTime = new DateTime(2026, 7, 13, 7, 33, 1, 795, DateTimeKind.Utc).AddTicks(1924),
                             UserId = 3
                         });
-                });
-
-            modelBuilder.Entity("backend.Entities.BookingLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ActionDescription")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("BookingId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Timestamp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("UserFullName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId");
-
-                    b.ToTable("Booking_Log", (string)null);
                 });
 
             modelBuilder.Entity("backend.Entities.BookingServiceDetail", b =>
@@ -304,7 +274,7 @@ namespace backend.Migrations
                         {
                             Id = 1,
                             BookingId = 2,
-                            CreatedAt = new DateTime(2026, 7, 13, 8, 59, 14, 959, DateTimeKind.Utc).AddTicks(3132),
+                            CreatedAt = new DateTime(2026, 7, 13, 8, 33, 1, 795, DateTimeKind.Utc).AddTicks(3037),
                             RequiredStaffCount = 1,
                             TaskCategory = "LOGISTICS",
                             TaskDescription = "Setup Chữ U cho Booking #2 (Bob)",
@@ -314,7 +284,7 @@ namespace backend.Migrations
                         {
                             Id = 2,
                             BookingId = 3,
-                            CreatedAt = new DateTime(2026, 7, 13, 8, 59, 14, 959, DateTimeKind.Utc).AddTicks(3245),
+                            CreatedAt = new DateTime(2026, 7, 13, 8, 33, 1, 795, DateTimeKind.Utc).AddTicks(3147),
                             RequiredStaffCount = 1,
                             TaskCategory = "CLEANING",
                             TaskDescription = "Dọn phòng sau khi Booking #3 (Alice) checkout",
@@ -574,7 +544,7 @@ namespace backend.Migrations
                             CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@example.com",
                             FullName = "System Admin",
-                            PasswordHash = "$2a$11$P50GLA6CBU.nD9JM96TkMuDG./6WWeJOCnlmg3Xmo5Umzr.Dynh7G",
+                            PasswordHash = "$2a$11$r.6njro2KuERtO3x576kMOai0TYjZ1mPfa/U50/msnHNnzVJgdeb2",
                             Role = "ADMIN"
                         },
                         new
@@ -583,7 +553,7 @@ namespace backend.Migrations
                             CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "staff@example.com",
                             FullName = "John Staff",
-                            PasswordHash = "$2a$11$P50GLA6CBU.nD9JM96TkMuDG./6WWeJOCnlmg3Xmo5Umzr.Dynh7G",
+                            PasswordHash = "$2a$11$r.6njro2KuERtO3x576kMOai0TYjZ1mPfa/U50/msnHNnzVJgdeb2",
                             Role = "STAFF"
                         },
                         new
@@ -592,7 +562,7 @@ namespace backend.Migrations
                             CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "alice@example.com",
                             FullName = "Alice User",
-                            PasswordHash = "$2a$11$P50GLA6CBU.nD9JM96TkMuDG./6WWeJOCnlmg3Xmo5Umzr.Dynh7G",
+                            PasswordHash = "$2a$11$r.6njro2KuERtO3x576kMOai0TYjZ1mPfa/U50/msnHNnzVJgdeb2",
                             Role = "USER"
                         },
                         new
@@ -601,7 +571,7 @@ namespace backend.Migrations
                             CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "bob@example.com",
                             FullName = "Bob User",
-                            PasswordHash = "$2a$11$P50GLA6CBU.nD9JM96TkMuDG./6WWeJOCnlmg3Xmo5Umzr.Dynh7G",
+                            PasswordHash = "$2a$11$r.6njro2KuERtO3x576kMOai0TYjZ1mPfa/U50/msnHNnzVJgdeb2",
                             Role = "USER"
                         });
                 });
@@ -638,17 +608,6 @@ namespace backend.Migrations
                     b.Navigation("SpaceAsset");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("backend.Entities.BookingLog", b =>
-                {
-                    b.HasOne("backend.Entities.Booking", "Booking")
-                        .WithMany("BookingLogs")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
                 });
 
             modelBuilder.Entity("backend.Entities.BookingServiceDetail", b =>
@@ -729,8 +688,6 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Entities.Booking", b =>
                 {
-                    b.Navigation("BookingLogs");
-
                     b.Navigation("BookingServiceDetails");
 
                     b.Navigation("InternalTasks");

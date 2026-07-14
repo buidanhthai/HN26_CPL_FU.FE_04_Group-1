@@ -12,8 +12,8 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260706090937_InitialDbSetup")]
-    partial class InitialDbSetup
+    [Migration("20260713082606_AddCheckInVerification")]
+    partial class AddCheckInVerification
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,9 +21,9 @@ namespace backend.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "9.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("backend.Entities.AddOnService", b =>
                 {
@@ -31,22 +31,22 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ChargeMethod")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<bool>("IsAvailable")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("bit")
                         .HasDefaultValue(true);
 
                     b.Property<string>("ServiceName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(12, 2)
@@ -81,7 +81,7 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AssetId")
                         .HasColumnType("int");
@@ -90,25 +90,31 @@ namespace backend.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(25)
-                        .HasColumnType("varchar(25)")
+                        .HasColumnType("nvarchar(25)")
                         .HasDefaultValue("Pending");
+
+                    b.Property<DateTime?>("CheckedInAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CheckedInByAdminId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("CustomSetupNote")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("LayoutId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("PaymentDeadline")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("SnapshotBasePrice")
                         .HasPrecision(12, 2)
@@ -121,7 +127,7 @@ namespace backend.Migrations
                         .HasDefaultValue(0m);
 
                     b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -130,11 +136,55 @@ namespace backend.Migrations
 
                     b.HasIndex("AssetId");
 
+                    b.HasIndex("CheckedInByAdminId");
+
                     b.HasIndex("LayoutId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Booking", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AssetId = 1,
+                            BookingStatus = "Awaiting_Payment",
+                            CreatedAt = new DateTime(2026, 7, 13, 8, 26, 5, 651, DateTimeKind.Utc).AddTicks(5684),
+                            EndTime = new DateTime(2026, 7, 14, 10, 26, 5, 651, DateTimeKind.Utc).AddTicks(5046),
+                            LayoutId = 1,
+                            PaymentDeadline = new DateTime(2026, 7, 13, 8, 36, 5, 651, DateTimeKind.Utc).AddTicks(5502),
+                            SnapshotBasePrice = 50000m,
+                            SnapshotPriceModifier = 0m,
+                            StartTime = new DateTime(2026, 7, 14, 8, 26, 5, 651, DateTimeKind.Utc).AddTicks(4875),
+                            UserId = 3
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AssetId = 2,
+                            BookingStatus = "Confirmed",
+                            CreatedAt = new DateTime(2026, 7, 13, 8, 26, 5, 651, DateTimeKind.Utc).AddTicks(5798),
+                            EndTime = new DateTime(2026, 7, 15, 12, 26, 5, 651, DateTimeKind.Utc).AddTicks(5796),
+                            LayoutId = 1,
+                            SnapshotBasePrice = 1200000m,
+                            SnapshotPriceModifier = 50000m,
+                            StartTime = new DateTime(2026, 7, 15, 8, 26, 5, 651, DateTimeKind.Utc).AddTicks(5796),
+                            UserId = 4
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AssetId = 2,
+                            BookingStatus = "Checked_In",
+                            CreatedAt = new DateTime(2026, 7, 13, 8, 26, 5, 651, DateTimeKind.Utc).AddTicks(5801),
+                            EndTime = new DateTime(2026, 7, 13, 10, 26, 5, 651, DateTimeKind.Utc).AddTicks(5800),
+                            LayoutId = 2,
+                            SnapshotBasePrice = 900000m,
+                            SnapshotPriceModifier = 0m,
+                            StartTime = new DateTime(2026, 7, 13, 7, 26, 5, 651, DateTimeKind.Utc).AddTicks(5799),
+                            UserId = 3
+                        });
                 });
 
             modelBuilder.Entity("backend.Entities.BookingServiceDetail", b =>
@@ -147,14 +197,14 @@ namespace backend.Migrations
 
                     b.Property<bool>("IsIncurred")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false);
 
                     b.Property<string>("PaymentStatus")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Unpaid");
 
                     b.Property<int>("Quantity")
@@ -179,14 +229,14 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BookingId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("RequiredStaffCount")
@@ -197,16 +247,16 @@ namespace backend.Migrations
                     b.Property<string>("TaskCategory")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("TaskDescription")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TaskStatus")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(25)
-                        .HasColumnType("varchar(25)")
+                        .HasColumnType("nvarchar(25)")
                         .HasDefaultValue("Unassigned");
 
                     b.HasKey("Id");
@@ -214,6 +264,28 @@ namespace backend.Migrations
                     b.HasIndex("BookingId");
 
                     b.ToTable("Internal_Tasks", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            BookingId = 2,
+                            CreatedAt = new DateTime(2026, 7, 13, 8, 26, 5, 651, DateTimeKind.Utc).AddTicks(7234),
+                            RequiredStaffCount = 1,
+                            TaskCategory = "LOGISTICS",
+                            TaskDescription = "Setup Chữ U cho Booking #2 (Bob)",
+                            TaskStatus = "Unassigned"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            BookingId = 3,
+                            CreatedAt = new DateTime(2026, 7, 13, 8, 26, 5, 651, DateTimeKind.Utc).AddTicks(7371),
+                            RequiredStaffCount = 1,
+                            TaskCategory = "CLEANING",
+                            TaskDescription = "Dọn phòng sau khi Booking #3 (Alice) checkout",
+                            TaskStatus = "Unassigned"
+                        });
                 });
 
             modelBuilder.Entity("backend.Entities.Invoice", b =>
@@ -222,14 +294,14 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BookingId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<decimal>("FinalDue")
@@ -239,7 +311,7 @@ namespace backend.Migrations
                     b.Property<string>("InvoiceType")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<decimal>("PaidUpfront")
                         .ValueGeneratedOnAdd()
@@ -251,7 +323,7 @@ namespace backend.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Unpaid");
 
                     b.Property<decimal>("TotalAmount")
@@ -271,7 +343,7 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AssetId")
                         .HasColumnType("int");
@@ -279,7 +351,7 @@ namespace backend.Migrations
                     b.Property<string>("LayoutName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("MaxCapacity")
                         .HasColumnType("int");
@@ -326,7 +398,7 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("AreaM2")
                         .HasPrecision(6, 2)
@@ -335,12 +407,12 @@ namespace backend.Migrations
                     b.Property<string>("AssetName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("AssetType")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<decimal>("BasePrice")
                         .HasPrecision(12, 2)
@@ -350,22 +422,22 @@ namespace backend.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Dimensions")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("bit")
                         .HasDefaultValue(true);
 
                     b.Property<string>("LocationName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -408,7 +480,7 @@ namespace backend.Migrations
 
                     b.Property<DateTime>("JoinedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.HasKey("TaskId", "StaffId");
@@ -424,32 +496,35 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
@@ -465,7 +540,7 @@ namespace backend.Migrations
                             CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@example.com",
                             FullName = "System Admin",
-                            PasswordHash = "admin_pwd_hash",
+                            PasswordHash = "$2a$11$XAxTaSlU4z0u6zd1GrWK2OJQCozOUQ2mcbX6JKThp.nZ8OLc2hCnO",
                             Role = "ADMIN"
                         },
                         new
@@ -474,7 +549,7 @@ namespace backend.Migrations
                             CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "staff@example.com",
                             FullName = "John Staff",
-                            PasswordHash = "staff_pwd_hash",
+                            PasswordHash = "$2a$11$XAxTaSlU4z0u6zd1GrWK2OJQCozOUQ2mcbX6JKThp.nZ8OLc2hCnO",
                             Role = "STAFF"
                         },
                         new
@@ -483,7 +558,16 @@ namespace backend.Migrations
                             CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "alice@example.com",
                             FullName = "Alice User",
-                            PasswordHash = "user_pwd_hash",
+                            PasswordHash = "$2a$11$XAxTaSlU4z0u6zd1GrWK2OJQCozOUQ2mcbX6JKThp.nZ8OLc2hCnO",
+                            Role = "USER"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "bob@example.com",
+                            FullName = "Bob User",
+                            PasswordHash = "$2a$11$XAxTaSlU4z0u6zd1GrWK2OJQCozOUQ2mcbX6JKThp.nZ8OLc2hCnO",
                             Role = "USER"
                         });
                 });
@@ -496,6 +580,11 @@ namespace backend.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("backend.Entities.User", "CheckedInByAdmin")
+                        .WithMany()
+                        .HasForeignKey("CheckedInByAdminId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("backend.Entities.RoomLayout", "RoomLayout")
                         .WithMany("Bookings")
                         .HasForeignKey("LayoutId")
@@ -507,6 +596,8 @@ namespace backend.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("CheckedInByAdmin");
 
                     b.Navigation("RoomLayout");
 

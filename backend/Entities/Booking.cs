@@ -18,12 +18,18 @@ namespace backend.Entities
         public decimal SnapshotPriceModifier { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        public DateTime? CheckedInAt { get; set; }
+        public int? CheckedInByAdminId { get; set; }
+        public string? CheckInVerificationCode { get; set; }
+
         // Navigation properties
         public User? User { get; set; }
+        public User? CheckedInByAdmin { get; set; }
         public SpaceAsset? SpaceAsset { get; set; }
         public RoomLayout? RoomLayout { get; set; }
         public ICollection<BookingServiceDetail> BookingServiceDetails { get; set; } = new List<BookingServiceDetail>();
         public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
         public ICollection<InternalTask> InternalTasks { get; set; } = new List<InternalTask>();
+        public ICollection<BookingLog> BookingLogs { get; set; } = new List<BookingLog>();
     }
 }

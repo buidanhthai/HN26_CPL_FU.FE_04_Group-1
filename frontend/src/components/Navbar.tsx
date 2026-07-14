@@ -25,14 +25,15 @@ const Navbar: React.FC = () => {
       zIndex: 1000,
       boxSizing: 'border-box'
     }}>
-      <div style={{ 
+      <NavLink to="/" style={{ 
         fontFamily: 'var(--font-title)', 
         fontWeight: 'bold', 
         fontSize: '1.6rem', 
-        color: 'var(--primary-text)' 
+        color: 'var(--primary-text)',
+        textDecoration: 'none'
       }}>
         CozySpace.
-      </div>
+      </NavLink>
 
       {user && (
         <div style={{ display: 'flex', gap: '30px', listStyle: 'none' }}>
@@ -115,6 +116,60 @@ const Navbar: React.FC = () => {
           >
             📋 Công việc
           </NavLink>
+          <NavLink 
+            to="/profile" 
+            style={({ isActive }) => ({
+              textDecoration: 'none',
+              fontWeight: isActive ? '600' : '500',
+              fontSize: '0.95rem',
+              color: isActive ? 'var(--primary-text)' : 'var(--secondary-text)',
+              borderBottom: isActive ? '2px solid var(--accent-color)' : '2px solid transparent',
+              padding: '6px 0',
+              transition: 'var(--transition)'
+            })}
+            onMouseOver={(e) => {
+              if (e.currentTarget.style.color !== 'var(--primary-text)') {
+                e.currentTarget.style.color = 'var(--accent-color)';
+              }
+            }}
+            onMouseOut={(e) => {
+              if (e.currentTarget.style.borderBottomColor === 'transparent') {
+                e.currentTarget.style.color = 'var(--secondary-text)';
+              } else {
+                e.currentTarget.style.color = 'var(--primary-text)';
+              }
+            }}
+          >
+            👤 Hồ sơ
+          </NavLink>
+          {(user.role === 'ADMIN' || user.role === 'STAFF') && (
+            <NavLink 
+              to="/space-assets" 
+              style={({ isActive }) => ({
+                textDecoration: 'none',
+                fontWeight: isActive ? '600' : '500',
+                fontSize: '0.95rem',
+                color: isActive ? 'var(--primary-text)' : 'var(--secondary-text)',
+                borderBottom: isActive ? '2px solid var(--accent-color)' : '2px solid transparent',
+                padding: '6px 0',
+                transition: 'var(--transition)'
+              })}
+              onMouseOver={(e) => {
+                if (e.currentTarget.style.color !== 'var(--primary-text)') {
+                  e.currentTarget.style.color = 'var(--accent-color)';
+                }
+              }}
+              onMouseOut={(e) => {
+                if (e.currentTarget.style.borderBottomColor === 'transparent') {
+                  e.currentTarget.style.color = 'var(--secondary-text)';
+                } else {
+                  e.currentTarget.style.color = 'var(--primary-text)';
+                }
+              }}
+            >
+              🏢 Quản lý Tài sản
+            </NavLink>
+          )}
         </div>
       )}
 

@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { taskService } from '../services/taskService';
-import type { Task } from '../types/task.types';
+import type { Task, CreateTaskRequest } from '../types/task.types';
 import Button from '../components/Button';
+import { AuthContext } from '../context/AuthContext';
 
 const Tasks: React.FC = () => {
+  const { user } = useContext(AuthContext) || {};
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  
+  const [bookingId, setBookingId] = useState<number>(1);
+  const [taskCategory, setTaskCategory] = useState('LOGISTICS');
+  const [taskDescription, setTaskDescription] = useState('');
+  const [requiredStaffCount, setRequiredStaffCount] = useState(1);
+  
   const [error, setError] = useState('');
 
   const fetchTasks = async () => {
@@ -18,13 +23,7 @@ const Tasks: React.FC = () => {
       setTasks(data);
     } catch (err: any) {
       console.error(err);
-      // Fallback mock tasks
-      const mockTasks: Task[] = [
-        { id: 1, userId: 1, title: 'Implement JWT Auth', description: 'Write authentication controllers and front hooks', isCompleted: false, dueDate: '2026-07-08' },
-        { id: 2, userId: 1, title: 'Set up MySQL database', description: 'Create EF Core migration for schema creation', isCompleted: true, dueDate: '2026-07-05' },
-        { id: 3, userId: 1, title: 'Configure CORS headers', description: 'Enable react domain calls on dot net controllers', isCompleted: false, dueDate: '2026-07-07' },
-      ];
-      setTasks(mockTasks);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -36,44 +35,32 @@ const Tasks: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title) {
-      setError('Title is required');
+    if (!taskDescription) {
+      setError('Mô tả công việc là bắt buộc');
       return;
     }
     setError('');
 
     try {
-      const newTask = await taskService.createTask({ title, description, isCompleted: false, dueDate });
+      const newTask = await taskService.createTask({
+        bookingId,
+        taskCategory,
+        taskDescription,
+        requiredStaffCount
+      });
       setTasks([...tasks, newTask]);
-      setTitle('');
-      setDescription('');
-      setDueDate('');
+      setTaskDescription('');
     } catch (err) {
       console.error(err);
-      // Fallback
-      const mockNew: Task = {
-        id: Date.now(),
-        userId: 1,
-        title,
-        description,
-        isCompleted: false,
-        dueDate,
-      };
-      setTasks([...tasks, mockNew]);
-      setTitle('');
-      setDescription('');
-      setDueDate('');
     }
   };
 
-  const handleToggleComplete = async (task: Task) => {
-    const updatedStatus = !task.isCompleted;
+  const handleUpdateStatus = async (task: Task, newStatus: string) => {
     try {
-      await taskService.updateTask(task.id, { isCompleted: updatedStatus });
-      setTasks(tasks.map((t) => (t.id === task.id ? { ...t, isCompleted: updatedStatus } : t)));
+      await taskService.updateTask(task.id, { taskStatus: newStatus });
+      setTasks(tasks.map((t) => (t.id === task.id ? { ...t, taskStatus: newStatus as any } : t)));
     } catch (err) {
       console.error(err);
-      setTasks(tasks.map((t) => (t.id === task.id ? { ...t, isCompleted: updatedStatus } : t)));
     }
   };
 
@@ -83,20 +70,19 @@ const Tasks: React.FC = () => {
       setTasks(tasks.filter((t) => t.id !== id));
     } catch (err) {
       console.error(err);
-      setTasks(tasks.filter((t) => t.id !== id));
     }
   };
 
   return (
     <div>
       <h1 style={{ fontSize: '2rem', margin: '0 0 8px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
-        Công việc của tôi
+        Điều phối Hậu cần & Nhiệm vụ
       </h1>
       <p style={{ color: 'var(--secondary-text)', margin: '0 0 30px 0', fontSize: '0.95rem' }}>
-        Sắp xếp danh sách kiểm tra hàng ngày và các cột mốc quan trọng của bạn.
+        Quản lý và thực thi các công việc chuẩn bị cho phòng họp / chỗ ngồi.
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '30px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '30px', alignItems: 'start' }}>
         {/* Tasks List */}
         <div style={{
           backgroundColor: 'var(--surface-color)',
@@ -106,7 +92,7 @@ const Tasks: React.FC = () => {
           boxShadow: 'var(--shadow)'
         }}>
           <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
-            Danh sách công việc
+            Task Pool (Hàng đợi tự nhận việc)
           </h2>
 
           {loading ? (
@@ -124,63 +110,100 @@ const Tasks: React.FC = () => {
                     justifyContent: 'space-between',
                     padding: '16px 20px',
                     borderRadius: '12px',
-                    backgroundColor: t.isCompleted ? 'rgba(111, 78, 55, 0.05)' : 'var(--background-color)',
+                    backgroundColor: t.taskStatus === 'Completed' ? 'rgba(111, 78, 55, 0.05)' : 'var(--background-color)',
                     border: '1px solid var(--border-color)',
-                    opacity: t.isCompleted ? 0.75 : 1,
+                    opacity: t.taskStatus === 'Completed' ? 0.75 : 1,
                     transition: 'var(--transition)',
                     boxShadow: '0 2px 4px rgba(60, 42, 33, 0.02)'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <input 
-                      type="checkbox"
-                      checked={t.isCompleted}
-                      onChange={() => handleToggleComplete(t)}
-                      style={{
-                        width: '20px',
-                        height: '20px',
-                        cursor: 'pointer',
-                        accentColor: 'var(--nature-accent)'
-                      }}
-                    />
-                    <div>
-                      <div style={{
-                        fontWeight: '600',
-                        fontSize: '0.95rem',
-                        textDecoration: t.isCompleted ? 'line-through' : 'none',
-                        color: t.isCompleted ? 'var(--secondary-text)' : 'var(--primary-text)',
-                        transition: 'var(--transition)'
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{
+                        padding: '4px 8px',
+                        backgroundColor: 'var(--surface-color)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '4px',
+                        fontSize: '0.75rem',
+                        fontWeight: 'bold',
+                        color: 'var(--secondary-text)'
                       }}>
-                        {t.title}
-                      </div>
-                      {t.description && (
-                        <div style={{ fontSize: '0.85rem', color: 'var(--secondary-text)', marginTop: '4px' }}>
-                          {t.description}
-                        </div>
-                      )}
-                      {t.dueDate && (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--nature-accent)', marginTop: '6px', fontWeight: '500' }}>
-                          📅 Hạn chót: {t.dueDate}
-                        </div>
-                      )}
+                        {t.taskCategory}
+                      </span>
+                      <span style={{
+                        fontSize: '0.8rem',
+                        fontWeight: '600',
+                        color: 
+                          t.taskStatus === 'Unassigned' ? '#e07a5f' :
+                          t.taskStatus === 'In_Progress' ? 'var(--accent-color)' : 'var(--nature-accent)'
+                      }}>
+                        {t.taskStatus}
+                      </span>
+                    </div>
+                    <div style={{
+                      fontWeight: '600',
+                      fontSize: '0.95rem',
+                      textDecoration: t.taskStatus === 'Completed' ? 'line-through' : 'none',
+                      color: t.taskStatus === 'Completed' ? 'var(--secondary-text)' : 'var(--primary-text)'
+                    }}>
+                      {t.taskDescription}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--secondary-text)' }}>
+                      Mã đặt chỗ: #{t.bookingId} | Số nhân viên yêu cầu: {t.requiredStaffCount}
                     </div>
                   </div>
-                  <button 
-                    onClick={() => handleDelete(t.id)}
-                    style={{
-                      backgroundColor: 'transparent',
-                      color: '#e07a5f',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '0.85rem',
-                      fontWeight: 'bold',
-                      transition: 'var(--transition)'
-                    }}
-                    onMouseOver={(e) => (e.currentTarget.style.color = '#c65f45')}
-                    onMouseOut={(e) => (e.currentTarget.style.color = '#e07a5f')}
-                  >
-                    Xóa
-                  </button>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+                    {t.taskStatus === 'Unassigned' && user?.role === 'STAFF' && (
+                      <button 
+                        onClick={() => handleUpdateStatus(t, 'In_Progress')}
+                        style={{
+                          backgroundColor: 'var(--accent-color)',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Nhận việc
+                      </button>
+                    )}
+                    {t.taskStatus === 'In_Progress' && user?.role === 'STAFF' && (
+                      <button 
+                        onClick={() => handleUpdateStatus(t, 'Completed')}
+                        style={{
+                          backgroundColor: 'var(--nature-accent)',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Hoàn thành
+                      </button>
+                    )}
+                    {(user?.role === 'ADMIN' || user?.role === 'STAFF') && (
+                      <button 
+                        onClick={() => handleDelete(t.id)}
+                        style={{
+                          backgroundColor: 'transparent',
+                          color: '#e07a5f',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '0.8rem',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        Xóa
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -196,7 +219,7 @@ const Tasks: React.FC = () => {
           boxShadow: 'var(--shadow)'
         }}>
           <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
-            Tạo công việc mới
+            Tạo Task thủ công
           </h2>
 
           {error && (
@@ -204,23 +227,28 @@ const Tasks: React.FC = () => {
           )}
 
           <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Tiêu đề</label>
-              <input 
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ví dụ: Thiết kế Layout sơ đồ"
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Phân loại nhiệm vụ</label>
+              <select 
+                value={taskCategory} 
+                onChange={(e) => setTaskCategory(e.target.value)}
                 className="input-field"
-              />
+                style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+              >
+                <option value="FRONT DESK">FRONT DESK (Lễ tân)</option>
+                <option value="TECHNICAL">TECHNICAL (Kỹ thuật)</option>
+                <option value="F&B">F&B (Phục vụ nước/trà)</option>
+                <option value="LOGISTICS">LOGISTICS (Hậu cần/Bàn ghế)</option>
+              </select>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Mô tả</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Mô tả chi tiết</label>
               <textarea 
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Chi tiết công việc..."
+                value={taskDescription}
+                onChange={(e) => setTaskDescription(e.target.value)}
+                placeholder="Ví dụ: Chuẩn bị trà, set up máy chiếu..."
                 className="input-field"
                 style={{
                   resize: 'vertical',
@@ -229,14 +257,25 @@ const Tasks: React.FC = () => {
               />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Hạn chót</label>
-              <input 
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="input-field"
-              />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Mã Booking ID</label>
+                <input 
+                  type="number"
+                  value={bookingId}
+                  onChange={(e) => setBookingId(Number(e.target.value))}
+                  className="input-field"
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Số NV cần thiết</label>
+                <input 
+                  type="number"
+                  value={requiredStaffCount}
+                  onChange={(e) => setRequiredStaffCount(Number(e.target.value))}
+                  className="input-field"
+                />
+              </div>
             </div>
 
             <Button type="submit" style={{ marginTop: '10px' }}>Tạo công việc</Button>

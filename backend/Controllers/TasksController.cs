@@ -7,10 +7,13 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace backend.Controllers
 {
     [ApiController]
     [Route("api/tasks")]
+    [Authorize(Roles = "STAFF,ADMIN")]
     public class TasksController : ControllerBase
     {
         private readonly AppDbContext _context;

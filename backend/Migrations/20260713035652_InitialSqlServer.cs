@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -9,91 +8,74 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace backend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialDbSetup : Migration
+    public partial class InitialSqlServer : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterDatabase()
-                .Annotation("MySql:CharSet", "utf8mb4");
-
             migrationBuilder.CreateTable(
                 name: "Add_on_Service",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    ServiceName = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    ChargeMethod = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ServiceName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    ChargeMethod = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
                     UnitPrice = table.Column<decimal>(type: "decimal(12,2)", precision: 12, scale: 2, nullable: false),
-                    IsAvailable = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: true)
+                    IsAvailable = table.Column<bool>(type: "bit", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Add_on_Service", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Space_Asset",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    LocationName = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    AssetName = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    AssetType = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    LocationName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    AssetName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    AssetType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     BasePrice = table.Column<decimal>(type: "decimal(12,2)", precision: 12, scale: 2, nullable: false),
                     Capacity = table.Column<int>(type: "int", nullable: false),
-                    Dimensions = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Dimensions = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     AreaM2 = table.Column<decimal>(type: "decimal(6,2)", precision: 6, scale: 2, nullable: false),
-                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: true),
-                    Description = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Space_Asset", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    FullName = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Email = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    PasswordHash = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Role = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FullName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Room_Layout",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     AssetId = table.Column<int>(type: "int", nullable: false),
-                    LayoutName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    LayoutName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     MaxCapacity = table.Column<int>(type: "int", nullable: false),
                     SetupDurationMinutes = table.Column<int>(type: "int", nullable: false),
                     PriceModifier = table.Column<decimal>(type: "decimal(12,2)", precision: 12, scale: 2, nullable: false, defaultValue: 0m)
@@ -107,28 +89,25 @@ namespace backend.Migrations
                         principalTable: "Space_Asset",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Booking",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     AssetId = table.Column<int>(type: "int", nullable: false),
                     LayoutId = table.Column<int>(type: "int", nullable: false),
-                    StartTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    EndTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    BookingStatus = table.Column<string>(type: "varchar(25)", maxLength: 25, nullable: false, defaultValue: "Pending")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    PaymentDeadline = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    CustomSetupNote = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    StartTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    BookingStatus = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: false, defaultValue: "Pending"),
+                    PaymentDeadline = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CustomSetupNote = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SnapshotBasePrice = table.Column<decimal>(type: "decimal(12,2)", precision: 12, scale: 2, nullable: false),
                     SnapshotPriceModifier = table.Column<decimal>(type: "decimal(12,2)", precision: 12, scale: 2, nullable: false, defaultValue: 0m),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -151,8 +130,7 @@ namespace backend.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Booking_Service_Detail",
@@ -162,9 +140,8 @@ namespace backend.Migrations
                     ServiceId = table.Column<int>(type: "int", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
                     SnapshotUnitPrice = table.Column<decimal>(type: "decimal(12,2)", precision: 12, scale: 2, nullable: false),
-                    IsIncurred = table.Column<bool>(type: "tinyint(1)", nullable: false, defaultValue: false),
-                    PaymentStatus = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false, defaultValue: "Unpaid")
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    IsIncurred = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    PaymentStatus = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Unpaid")
                 },
                 constraints: table =>
                 {
@@ -181,24 +158,20 @@ namespace backend.Migrations
                         principalTable: "Booking",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Internal_Tasks",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     BookingId = table.Column<int>(type: "int", nullable: false),
-                    TaskCategory = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    TaskDescription = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    TaskCategory = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    TaskDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RequiredStaffCount = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
-                    TaskStatus = table.Column<string>(type: "varchar(25)", maxLength: 25, nullable: false, defaultValue: "Unassigned")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    TaskStatus = table.Column<string>(type: "nvarchar(25)", maxLength: 25, nullable: false, defaultValue: "Unassigned"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -209,24 +182,21 @@ namespace backend.Migrations
                         principalTable: "Booking",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Invoice",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     BookingId = table.Column<int>(type: "int", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(12,2)", precision: 12, scale: 2, nullable: false),
                     PaidUpfront = table.Column<decimal>(type: "decimal(12,2)", precision: 12, scale: 2, nullable: false, defaultValue: 0m),
                     FinalDue = table.Column<decimal>(type: "decimal(12,2)", precision: 12, scale: 2, nullable: false),
-                    InvoiceType = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    PaymentStatus = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false, defaultValue: "Unpaid")
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    InvoiceType = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    PaymentStatus = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Unpaid"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -237,8 +207,7 @@ namespace backend.Migrations
                         principalTable: "Booking",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "Task_Allocations",
@@ -246,7 +215,7 @@ namespace backend.Migrations
                 {
                     TaskId = table.Column<int>(type: "int", nullable: false),
                     StaffId = table.Column<int>(type: "int", nullable: false),
-                    JoinedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    JoinedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -263,8 +232,7 @@ namespace backend.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.InsertData(
                 table: "Add_on_Service",
@@ -286,12 +254,13 @@ namespace backend.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "CreatedAt", "Email", "FullName", "PasswordHash", "Role" },
+                columns: new[] { "Id", "CreatedAt", "Email", "FullName", "PasswordHash", "PhoneNumber", "Role" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc), "admin@example.com", "System Admin", "admin_pwd_hash", "ADMIN" },
-                    { 2, new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc), "staff@example.com", "John Staff", "staff_pwd_hash", "STAFF" },
-                    { 3, new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc), "alice@example.com", "Alice User", "user_pwd_hash", "USER" }
+                    { 1, new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc), "admin@example.com", "System Admin", "$2a$11$oXJahW8iQJCHJtDpVwVBoOyBpBO9Shrc/SQxDQvnXvRPhhuYJ7AeO", null, "ADMIN" },
+                    { 2, new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc), "staff@example.com", "John Staff", "$2a$11$oXJahW8iQJCHJtDpVwVBoOyBpBO9Shrc/SQxDQvnXvRPhhuYJ7AeO", null, "STAFF" },
+                    { 3, new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc), "alice@example.com", "Alice User", "$2a$11$oXJahW8iQJCHJtDpVwVBoOyBpBO9Shrc/SQxDQvnXvRPhhuYJ7AeO", null, "USER" },
+                    { 4, new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc), "bob@example.com", "Bob User", "$2a$11$oXJahW8iQJCHJtDpVwVBoOyBpBO9Shrc/SQxDQvnXvRPhhuYJ7AeO", null, "USER" }
                 });
 
             migrationBuilder.InsertData(
@@ -303,6 +272,30 @@ namespace backend.Migrations
                 table: "Room_Layout",
                 columns: new[] { "Id", "AssetId", "LayoutName", "MaxCapacity", "SetupDurationMinutes" },
                 values: new object[] { 2, 2, "Lớp học", 10, 20 });
+
+            migrationBuilder.InsertData(
+                table: "Booking",
+                columns: new[] { "Id", "AssetId", "BookingStatus", "CreatedAt", "CustomSetupNote", "EndTime", "LayoutId", "PaymentDeadline", "SnapshotBasePrice", "StartTime", "UserId" },
+                values: new object[] { 1, 1, "Awaiting_Payment", new DateTime(2026, 7, 13, 3, 56, 51, 765, DateTimeKind.Utc).AddTicks(3503), null, new DateTime(2026, 7, 14, 5, 56, 51, 765, DateTimeKind.Utc).AddTicks(2811), 1, new DateTime(2026, 7, 13, 4, 6, 51, 765, DateTimeKind.Utc).AddTicks(3305), 50000m, new DateTime(2026, 7, 14, 3, 56, 51, 765, DateTimeKind.Utc).AddTicks(2615), 3 });
+
+            migrationBuilder.InsertData(
+                table: "Booking",
+                columns: new[] { "Id", "AssetId", "BookingStatus", "CreatedAt", "CustomSetupNote", "EndTime", "LayoutId", "PaymentDeadline", "SnapshotBasePrice", "SnapshotPriceModifier", "StartTime", "UserId" },
+                values: new object[] { 2, 2, "Confirmed", new DateTime(2026, 7, 13, 3, 56, 51, 765, DateTimeKind.Utc).AddTicks(3628), null, new DateTime(2026, 7, 15, 7, 56, 51, 765, DateTimeKind.Utc).AddTicks(3626), 1, null, 1200000m, 50000m, new DateTime(2026, 7, 15, 3, 56, 51, 765, DateTimeKind.Utc).AddTicks(3626), 4 });
+
+            migrationBuilder.InsertData(
+                table: "Booking",
+                columns: new[] { "Id", "AssetId", "BookingStatus", "CreatedAt", "CustomSetupNote", "EndTime", "LayoutId", "PaymentDeadline", "SnapshotBasePrice", "StartTime", "UserId" },
+                values: new object[] { 3, 2, "Checked_In", new DateTime(2026, 7, 13, 3, 56, 51, 765, DateTimeKind.Utc).AddTicks(3631), null, new DateTime(2026, 7, 13, 5, 56, 51, 765, DateTimeKind.Utc).AddTicks(3630), 2, null, 900000m, new DateTime(2026, 7, 13, 2, 56, 51, 765, DateTimeKind.Utc).AddTicks(3630), 3 });
+
+            migrationBuilder.InsertData(
+                table: "Internal_Tasks",
+                columns: new[] { "Id", "BookingId", "CreatedAt", "RequiredStaffCount", "TaskCategory", "TaskDescription", "TaskStatus" },
+                values: new object[,]
+                {
+                    { 1, 2, new DateTime(2026, 7, 13, 3, 56, 51, 765, DateTimeKind.Utc).AddTicks(4794), 1, "LOGISTICS", "Setup Chữ U cho Booking #2 (Bob)", "Unassigned" },
+                    { 2, 3, new DateTime(2026, 7, 13, 3, 56, 51, 765, DateTimeKind.Utc).AddTicks(4903), 1, "CLEANING", "Dọn phòng sau khi Booking #3 (Alice) checkout", "Unassigned" }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Booking_AssetId",

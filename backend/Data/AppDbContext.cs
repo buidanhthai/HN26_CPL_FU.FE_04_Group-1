@@ -10,6 +10,11 @@ namespace backend.Data
         {
         }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+        }
+
         public DbSet<User> Users { get; set; }
         public DbSet<SpaceAsset> SpaceAssets { get; set; }
         public DbSet<AddOnService> AddOnServices { get; set; }
@@ -19,6 +24,7 @@ namespace backend.Data
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InternalTask> InternalTasks { get; set; }
         public DbSet<TaskAllocation> TaskAllocations { get; set; }
+        public DbSet<BookingLog> BookingLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,6 +40,7 @@ namespace backend.Data
             modelBuilder.Entity<Invoice>().ToTable("Invoice");
             modelBuilder.Entity<InternalTask>().ToTable("Internal_Tasks");
             modelBuilder.Entity<TaskAllocation>().ToTable("Task_Allocations");
+            modelBuilder.Entity<BookingLog>().ToTable("Booking_Log");
 
             // User mapping
             modelBuilder.Entity<User>(entity =>
@@ -91,6 +98,7 @@ namespace backend.Data
                 entity.Property(e => e.SnapshotBasePrice).HasPrecision(12, 2);
                 entity.Property(e => e.SnapshotPriceModifier).HasPrecision(12, 2).HasDefaultValue(0);
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.CheckInVerificationCode).HasMaxLength(10);
 
                 entity.HasOne(e => e.User)
                       .WithMany(u => u.Bookings)
@@ -105,6 +113,11 @@ namespace backend.Data
                 entity.HasOne(e => e.RoomLayout)
                       .WithMany(r => r.Bookings)
                       .HasForeignKey(e => e.LayoutId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.CheckedInByAdmin)
+                      .WithMany()
+                      .HasForeignKey(e => e.CheckedInByAdminId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -177,17 +190,34 @@ namespace backend.Data
                       .OnDelete(DeleteBehavior.Restrict);
             });
 
+            // BookingLog mapping
+            modelBuilder.Entity<BookingLog>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.UserFullName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ActionDescription).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.Timestamp).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(e => e.Booking)
+                      .WithMany(b => b.BookingLogs)
+                      .HasForeignKey(e => e.BookingId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
             // Seed Data
             SeedInitialData(modelBuilder);
         }
 
         private void SeedInitialData(ModelBuilder modelBuilder)
         {
+            var defaultPasswordHash = BCrypt.Net.BCrypt.HashPassword("123456");
+
             // Seed Users
             modelBuilder.Entity<User>().HasData(
-                new User { Id = 1, FullName = "System Admin", Email = "admin@example.com", PasswordHash = "admin_pwd_hash", Role = "ADMIN", CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, DateTimeKind.Utc) },
-                new User { Id = 2, FullName = "John Staff", Email = "staff@example.com", PasswordHash = "staff_pwd_hash", Role = "STAFF", CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, DateTimeKind.Utc) },
-                new User { Id = 3, FullName = "Alice User", Email = "alice@example.com", PasswordHash = "user_pwd_hash", Role = "USER", CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, DateTimeKind.Utc) }
+                new User { Id = 1, FullName = "System Admin", Email = "admin@example.com", PasswordHash = defaultPasswordHash, Role = "ADMIN", CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, DateTimeKind.Utc) },
+                new User { Id = 2, FullName = "John Staff", Email = "staff@example.com", PasswordHash = defaultPasswordHash, Role = "STAFF", CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, DateTimeKind.Utc) },
+                new User { Id = 3, FullName = "Alice User", Email = "alice@example.com", PasswordHash = defaultPasswordHash, Role = "USER", CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, DateTimeKind.Utc) },
+                new User { Id = 4, FullName = "Bob User", Email = "bob@example.com", PasswordHash = defaultPasswordHash, Role = "USER", CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, DateTimeKind.Utc) }
             );
 
             // Seed SpaceAssets
@@ -206,6 +236,19 @@ namespace backend.Data
             modelBuilder.Entity<RoomLayout>().HasData(
                 new RoomLayout { Id = 1, AssetId = 2, LayoutName = "Chữ U", MaxCapacity = 8, SetupDurationMinutes = 15, PriceModifier = 50000m },
                 new RoomLayout { Id = 2, AssetId = 2, LayoutName = "Lớp học", MaxCapacity = 10, SetupDurationMinutes = 20, PriceModifier = 0m }
+            );
+
+            // Seed Bookings
+            modelBuilder.Entity<Booking>().HasData(
+                new Booking { Id = 1, UserId = 3, AssetId = 1, LayoutId = 1, StartTime = DateTime.UtcNow.AddDays(1), EndTime = DateTime.UtcNow.AddDays(1).AddHours(2), BookingStatus = "Awaiting_Payment", SnapshotBasePrice = 50000m, SnapshotPriceModifier = 0m, PaymentDeadline = DateTime.UtcNow.AddMinutes(10), CreatedAt = DateTime.UtcNow },
+                new Booking { Id = 2, UserId = 4, AssetId = 2, LayoutId = 1, StartTime = DateTime.UtcNow.AddDays(2), EndTime = DateTime.UtcNow.AddDays(2).AddHours(4), BookingStatus = "Confirmed", SnapshotBasePrice = 1200000m, SnapshotPriceModifier = 50000m, CreatedAt = DateTime.UtcNow },
+                new Booking { Id = 3, UserId = 3, AssetId = 2, LayoutId = 2, StartTime = DateTime.UtcNow.AddHours(-1), EndTime = DateTime.UtcNow.AddHours(2), BookingStatus = "Checked_In", SnapshotBasePrice = 900000m, SnapshotPriceModifier = 0m, CreatedAt = DateTime.UtcNow }
+            );
+
+            // Seed Tasks
+            modelBuilder.Entity<InternalTask>().HasData(
+                new InternalTask { Id = 1, BookingId = 2, TaskCategory = "LOGISTICS", TaskDescription = "Setup Chữ U cho Booking #2 (Bob)", RequiredStaffCount = 1, TaskStatus = "Unassigned", CreatedAt = DateTime.UtcNow },
+                new InternalTask { Id = 2, BookingId = 3, TaskCategory = "CLEANING", TaskDescription = "Dọn phòng sau khi Booking #3 (Alice) checkout", RequiredStaffCount = 1, TaskStatus = "Unassigned", CreatedAt = DateTime.UtcNow }
             );
         }
     }

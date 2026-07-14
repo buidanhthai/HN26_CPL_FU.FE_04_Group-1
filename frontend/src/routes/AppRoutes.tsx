@@ -12,6 +12,9 @@ import Register from '../pages/Register'; // Đã import Register chuẩn
 import Dashboard from '../pages/Dashboard';
 import Bookings from '../pages/Bookings';
 import Tasks from '../pages/Tasks';
+import Profile from '../pages/Profile';
+
+import SpaceAssets from '../pages/SpaceAssets';
 
 // Guards
 import ProtectedRoute from './ProtectedRoute';
@@ -34,6 +37,8 @@ const AppRoutes: React.FC = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/bookings" element={<Bookings />} />
           <Route path="/tasks" element={<Tasks />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/space-assets" element={<SpaceAssets />} />
         </Route>
       </Route>
 

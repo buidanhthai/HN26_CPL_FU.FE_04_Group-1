@@ -89,7 +89,8 @@ const Dashboard: React.FC = () => {
         padding: '30px',
         borderRadius: '16px',
         border: '1px solid var(--border-color)',
-        boxShadow: 'var(--shadow)'
+        boxShadow: 'var(--shadow)',
+        marginBottom: '24px'
       }}>
         <h2 style={{ fontSize: '1.4rem', margin: '0 0 15px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
           Hệ thống đặt chỗ Cozy Space
@@ -101,6 +102,49 @@ const Dashboard: React.FC = () => {
           Sử dụng các menu <strong>Lịch đặt chỗ</strong> hoặc <strong>Công việc của tôi</strong> trên thanh menu để bắt đầu trải nghiệm dịch vụ.
         </p>
       </div>
+
+      {user?.role === 'ADMIN' && (
+        <div style={{
+          backgroundColor: 'rgba(212, 163, 115, 0.1)',
+          padding: '30px',
+          borderRadius: '16px',
+          border: '1px solid rgba(212, 163, 115, 0.3)',
+          boxShadow: 'var(--shadow)'
+        }}>
+          <h2 style={{ fontSize: '1.4rem', margin: '0 0 15px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+            Quản trị viên (Admin Panel)
+          </h2>
+          <p style={{ margin: '0 0 15px 0', color: 'var(--secondary-text)', fontSize: '0.95rem', lineHeight: '1.7' }}>
+            Khu vực dành riêng cho Quản trị viên để quản lý toàn bộ hệ thống. Background service tự động hủy lịch chưa thanh toán sau 10 phút đang hoạt động.
+          </p>
+          <div style={{ display: 'flex', gap: '15px' }}>
+             <a href="/space-assets" style={{
+                display: 'inline-block',
+                textDecoration: 'none',
+                backgroundColor: 'var(--accent-color)',
+                color: '#fff',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                fontSize: '0.9rem'
+             }}>
+               Quản lý Tài sản (Space Assets)
+             </a>
+             <button style={{
+                backgroundColor: 'var(--surface-color)',
+                color: 'var(--primary-text)',
+                border: '1px solid var(--border-color)',
+                padding: '10px 20px',
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                fontSize: '0.9rem',
+                cursor: 'pointer'
+             }} onClick={() => alert('Chức năng Báo cáo doanh thu đang được phát triển.')}>
+               Báo cáo Doanh thu
+             </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import api from './api';
-import type { Task } from '../types/task.types';
+import type { Task, CreateTaskRequest } from '../types/task.types';
 
 export const taskService = {
   async getTasks(): Promise<Task[]> {
@@ -7,7 +7,7 @@ export const taskService = {
     return response.data;
   },
 
-  async createTask(task: Omit<Task, 'id' | 'userId'>): Promise<Task> {
+  async createTask(task: CreateTaskRequest): Promise<Task> {
     const response = await api.post<Task>('/tasks', task);
     return response.data;
   },

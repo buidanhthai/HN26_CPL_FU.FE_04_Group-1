@@ -16,6 +16,7 @@ namespace backend.DTOs
         public decimal SnapshotBasePrice { get; set; }
         public decimal SnapshotPriceModifier { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string? CheckInVerificationCode { get; set; }
     }
 
     public class CreateBookingDto
