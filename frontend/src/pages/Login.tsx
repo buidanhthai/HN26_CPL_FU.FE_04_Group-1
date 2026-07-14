@@ -56,44 +56,23 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div>
-      <h2 style={{ 
-        textAlign: 'center', 
-        marginBottom: '8px', 
-        color: 'var(--primary-text)', 
-        fontFamily: 'var(--font-title)',
-        fontSize: '2rem',
-        fontWeight: 'bold'
-      }}>
+    <div className="auth-container">
+      <h2 className="panel-title" style={{ textAlign: 'center', fontSize: '2rem', marginBottom: '8px' }}>
         Đăng nhập
       </h2>
-      <p style={{ 
-        textAlign: 'center', 
-        color: 'var(--secondary-text)', 
-        fontSize: '0.9rem', 
-        marginBottom: '30px' 
-      }}>
+      <p className="page-desc" style={{ textAlign: 'center' }}>
         Nhập thông tin tài khoản để truy cập hệ thống
       </p>
 
       {error && (
-        <div style={{
-          backgroundColor: 'rgba(224, 122, 95, 0.12)',
-          color: '#e07a5f',
-          border: '1px solid rgba(224, 122, 95, 0.4)',
-          borderRadius: '8px',
-          padding: '12px',
-          marginBottom: '20px',
-          fontSize: '0.85rem',
-          textAlign: 'center'
-        }}>
+        <div className="badge-unassigned" style={{ display: 'block', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.85rem', textAlign: 'center' }}>
           {error}
         </div>
       )}
 
-      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
+      <form onSubmit={handleLogin} className="form-container">
+        <div className="form-group">
+          <label className="form-label">
             Tài khoản / Email
           </label>
           <input
@@ -101,12 +80,12 @@ const Login: React.FC = () => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Tài khoản hoặc email..."
-            className="input-field"
+            className="form-input"
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
+        <div className="form-group">
+          <label className="form-label">
             Mật khẩu
           </label>
           <input
@@ -114,23 +93,18 @@ const Login: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="input-field"
+            className="form-input"
           />
         </div>
 
-        <Button type="submit" disabled={loading} style={{ marginTop: '15px', width: '100%' }}>
+        <Button type="submit" disabled={loading} style={{ marginTop: '15px' }}>
           {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
         </Button>
       </form>
 
-      <div style={{
-        textAlign: 'center',
-        marginTop: '24px',
-        fontSize: '0.9rem',
-        color: 'var(--secondary-text)'
-      }}>
+      <div className="auth-footer">
         <span>Bạn chưa có tài khoản? </span>
-        <Link to="/register" style={{ color: 'var(--accent-color)', fontWeight: '600', textDecoration: 'none' }}>
+        <Link to="/register" className="btn-link-primary">
           Đăng ký ngay
         </Link>
       </div>

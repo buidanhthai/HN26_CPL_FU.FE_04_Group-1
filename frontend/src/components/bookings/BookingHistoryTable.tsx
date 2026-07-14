@@ -8,6 +8,8 @@ interface BookingHistoryTableProps {
   onViewDetails: (id: number) => void;
   onPayment: (id: number) => void;
   onCheckout: (booking: Booking) => void;
+  onRequestCheckin: (id: number) => Promise<void>;
+  onCheckin: (id: number, code: string) => Promise<void>;
   onDelete: (id: number) => void;
   loading: boolean;
 }
@@ -19,41 +21,38 @@ export const BookingHistoryTable: React.FC<BookingHistoryTableProps> = ({
   onViewDetails,
   onPayment,
   onCheckout,
+  onRequestCheckin,
+  onCheckin,
   onDelete,
   loading
 }) => {
+  const [checkinCodes, setCheckinCodes] = React.useState<{[key: number]: string}>({});
   return (
-    <div style={{
-      backgroundColor: 'var(--surface-color)',
-      borderRadius: '16px',
-      border: '1px solid var(--border-color)',
-      padding: '30px 24px',
-      boxShadow: 'var(--shadow)'
-    }}>
-      <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+    <div className="panel-card">
+      <h2 className="panel-title">
         Danh sách đặt chỗ sắp tới
       </h2>
 
       {loading ? (
-        <p style={{ color: 'var(--secondary-text)' }}>Đang tải danh sách đặt chỗ...</p>
+        <p className="page-desc">Đang tải danh sách đặt chỗ...</p>
       ) : bookings.length === 0 ? (
-        <p style={{ color: 'var(--secondary-text)', fontStyle: 'italic' }}>Bạn chưa có lịch đặt nào.</p>
+        <p className="page-desc" style={{ fontStyle: 'italic' }}>Bạn chưa có lịch đặt nào.</p>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: 'var(--primary-text)' }}>
+        <div className="table-container">
+          <table className="theme-table">
             <thead>
-              <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--secondary-text)', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                <th style={{ padding: '12px 8px' }}>Không gian</th>
-                <th style={{ padding: '12px 8px' }}>Bắt đầu</th>
-                <th style={{ padding: '12px 8px' }}>Kết thúc</th>
-                <th style={{ padding: '12px 8px' }}>Trạng thái</th>
-                <th style={{ padding: '12px 8px', textAlign: 'right' }}>Thao tác</th>
+              <tr className="theme-tr-head">
+                <th className="theme-th">Không gian</th>
+                <th className="theme-th">Bắt đầu</th>
+                <th className="theme-th">Kết thúc</th>
+                <th className="theme-th">Trạng thái</th>
+                <th className="theme-th" style={{ textAlign: 'right' }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
               {bookings.map((b) => (
-                <tr key={b.id} style={{ borderBottom: '1px solid var(--border-color)', fontSize: '0.9rem' }}>
-                  <td style={{ padding: '14px 8px', fontWeight: '600', color: 'var(--primary-text)' }}>
+                <tr key={b.id} className="theme-tr-body">
+                  <td className="theme-td" style={{ fontWeight: '600', color: 'var(--primary-text)' }}>
                     {spaceAssets.find(a => a.id === b.assetId)?.assetName || `Phòng #${b.assetId}`}
                     {b.customerName && (
                       <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--accent-color)', fontWeight: 'normal' }}>
@@ -61,73 +60,121 @@ export const BookingHistoryTable: React.FC<BookingHistoryTableProps> = ({
                       </span>
                     )}
                   </td>
-                  <td style={{ padding: '14px 8px' }}>{new Date(b.startTime).toLocaleString()}</td>
-                  <td style={{ padding: '14px 8px' }}>{new Date(b.endTime).toLocaleString()}</td>
-                  <td style={{ padding: '14px 8px' }}>
-                    <span style={{
-                      padding: '4px 10px',
-                      borderRadius: '20px',
-                      fontSize: '0.75rem',
-                      fontWeight: '600',
-                      backgroundColor: 
-                        b.bookingStatus === 'Confirmed' || b.bookingStatus === 'Checked_In' || b.bookingStatus === 'Checked_Out' ? 'rgba(122, 134, 106, 0.15)' :
-                        b.bookingStatus === 'Cancelled' ? 'rgba(224, 122, 95, 0.15)' : 'rgba(212, 163, 115, 0.15)',
-                      color: 
-                        b.bookingStatus === 'Confirmed' || b.bookingStatus === 'Checked_In' || b.bookingStatus === 'Checked_Out' ? 'var(--nature-accent)' :
-                        b.bookingStatus === 'Cancelled' ? '#e07a5f' : 'var(--accent-color)',
-                    }}>
+                  <td className="theme-td">{new Date(b.startTime).toLocaleString()}</td>
+                  <td className="theme-td">{new Date(b.endTime).toLocaleString()}</td>
+                  <td className="theme-td">
+                    <span className={`badge ${
+                      b.bookingStatus === 'Confirmed' || b.bookingStatus === 'Checked_In' || b.bookingStatus === 'Checked_Out' ? 'badge-completed' :
+                      b.bookingStatus === 'Cancelled' ? 'badge-cancelled' : 'badge-inprogress'
+                    }`}>
                       {b.bookingStatus === 'Confirmed' ? 'Đã xác nhận' :
                        b.bookingStatus === 'Cancelled' ? 'Đã hủy' :
                        b.bookingStatus === 'Awaiting_Payment' ? 'Chờ thanh toán' :
                        b.bookingStatus === 'Checked_In' ? 'Đã Check-in' :
+                       b.bookingStatus === 'Awaiting_Checkout' ? 'Chờ Checkout' :
                        b.bookingStatus === 'Checked_Out' ? 'Đã Checkout' : 'Chờ duyệt'}
                     </span>
                   </td>
-                  <td style={{ padding: '14px 8px', textAlign: 'right' }}>
+                  <td className="theme-td" style={{ textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
                       <button
                         onClick={() => onViewDetails(b.id)}
-                        style={{
-                          backgroundColor: 'transparent',
-                          color: 'var(--accent-color)',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '0.85rem',
-                          fontWeight: 'bold',
-                          textDecoration: 'underline'
-                        }}
+                        className="btn-link-primary"
                       >
                         Chi tiết
                       </button>
                       {b.bookingStatus === 'Awaiting_Payment' && (
                         <button
                           onClick={() => onPayment(b.id)}
+                          className="btn btn-primary"
                           style={{
-                            backgroundColor: 'var(--accent-color)',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '4px',
                             padding: '4px 8px',
-                            cursor: 'pointer',
-                            fontSize: '0.8rem',
-                            fontWeight: 'bold'
+                            borderRadius: '4px',
+                            fontSize: '0.8rem'
                           }}
                         >
                           Thanh toán
                         </button>
                       )}
-                      {b.bookingStatus === 'Checked_In' && user?.role !== 'USER' && (
+                      {b.bookingStatus === 'Confirmed' && (
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          {user?.role === 'USER' ? (
+                            !b.checkInVerificationCode ? (
+                              <button
+                                onClick={() => onRequestCheckin(b.id)}
+                                className="btn btn-primary"
+                                style={{
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  fontSize: '0.8rem'
+                                }}
+                              >
+                                Yêu cầu Check-in
+                              </button>
+                            ) : (
+                              <div style={{
+                                padding: '6px 10px',
+                                backgroundColor: 'rgba(9, 133, 242, 0.1)',
+                                borderRadius: '6px',
+                                border: '1px dashed #0985f2',
+                                color: '#0985f2',
+                                fontWeight: 'bold',
+                                fontSize: '0.85rem'
+                              }}>
+                                Mã Check-in: {b.checkInVerificationCode}
+                              </div>
+                            )
+                          ) : (
+                            b.checkInVerificationCode ? (
+                              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                <input
+                                  type="text"
+                                  placeholder="Mã check-in..."
+                                  value={checkinCodes[b.id] || ''}
+                                  onChange={(e) => setCheckinCodes({ ...checkinCodes, [b.id]: e.target.value })}
+                                  className="form-input"
+                                  style={{
+                                    padding: '4px 8px',
+                                    width: '100px',
+                                    fontSize: '0.8rem'
+                                  }}
+                                />
+                                <button
+                                  onClick={async () => {
+                                    const enteredCode = checkinCodes[b.id] || '';
+                                    if (!enteredCode.trim()) {
+                                      alert('Vui lòng nhập mã check-in.');
+                                      return;
+                                    }
+                                    await onCheckin(b.id, enteredCode);
+                                    setCheckinCodes({ ...checkinCodes, [b.id]: '' });
+                                  }}
+                                  className="btn btn-primary"
+                                  style={{
+                                    padding: '5px 10px',
+                                    borderRadius: '4px',
+                                    fontSize: '0.8rem'
+                                  }}
+                                >
+                                  Xác nhận
+                                </button>
+                              </div>
+                            ) : (
+                              <span style={{ fontSize: '0.8rem', color: 'var(--secondary-text)', fontStyle: 'italic' }}>
+                                Chờ khách nhận mã
+                              </span>
+                            )
+                          )}
+                        </div>
+                      )}
+                      {b.bookingStatus === 'Awaiting_Checkout' && user?.role !== 'USER' && (
                         <button
                           onClick={() => onCheckout(b)}
+                          className="btn btn-primary"
                           style={{
-                            backgroundColor: 'var(--nature-accent)',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '4px',
                             padding: '4px 8px',
-                            cursor: 'pointer',
-                            fontSize: '0.8rem',
-                            fontWeight: 'bold'
+                            borderRadius: '4px',
+                            fontSize: '0.8rem'
                           }}
                         >
                           Checkout
@@ -136,15 +183,7 @@ export const BookingHistoryTable: React.FC<BookingHistoryTableProps> = ({
                       {b.bookingStatus === 'Cancelled' && (
                         <button 
                           onClick={() => onDelete(b.id)}
-                          style={{
-                            backgroundColor: 'transparent',
-                            color: '#e07a5f',
-                            border: 'none',
-                            cursor: 'pointer',
-                            fontSize: '0.85rem',
-                            fontWeight: 'bold',
-                            transition: 'var(--transition)'
-                          }}
+                          className="btn-link-danger"
                         >
                           Xóa
                         </button>

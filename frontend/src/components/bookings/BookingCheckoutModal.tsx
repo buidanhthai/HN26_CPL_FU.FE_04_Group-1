@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Booking } from '../../types/booking.types';
 
 interface BookingCheckoutModalProps {
@@ -8,53 +8,50 @@ interface BookingCheckoutModalProps {
     invoice: any;
   } | null;
   onClose: () => void;
+  onConfirmCheckout: () => Promise<void>;
+  onPayFinal: () => Promise<void>;
   spaceAssets: any[];
 }
 
 export const BookingCheckoutModal: React.FC<BookingCheckoutModalProps> = ({
   details,
   onClose,
+  onConfirmCheckout,
+  onPayFinal,
   spaceAssets
 }) => {
+  const [loading, setLoading] = useState(false);
+
   if (!details) return null;
 
   const { booking, services, invoice } = details;
 
+  const handlePay = async () => {
+    try {
+      setLoading(true);
+      await onPayFinal();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCheckout = async () => {
+    try {
+      setLoading(true);
+      await onConfirmCheckout();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      backdropFilter: 'blur(4px)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000,
-    }}>
-      <div style={{
-        backgroundColor: 'var(--surface-color)',
-        borderRadius: '16px',
-        border: '1px solid var(--border-color)',
-        padding: '24px',
-        width: '500px',
-        maxWidth: '95%',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        color: 'var(--primary-text)',
-      }}>
-        <h3 style={{
-          fontSize: '1.4rem',
-          margin: '0 0 20px 0',
-          fontFamily: 'var(--font-title)',
-          textAlign: 'center',
-          color: 'var(--nature-accent)',
-          borderBottom: '2px solid var(--border-color)',
-          paddingBottom: '10px'
-        }}>
+    <div className="modal-overlay">
+      <div className="modal-content" style={{ width: '500px' }}>
+        <h3 className="modal-title">
           CHI TIẾT HÓA ĐƠN THANH TOÁN
         </h3>
 
@@ -91,7 +88,7 @@ export const BookingCheckoutModal: React.FC<BookingCheckoutModalProps> = ({
         <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '15px' }}>
           <h4 style={{ fontSize: '0.95rem', margin: '0 0 8px 0', fontWeight: 'bold' }}>Dịch vụ phát sinh trong quá trình sử dụng</h4>
           {services.length === 0 ? (
-            <p style={{ fontSize: '0.85rem', color: 'var(--secondary-text)', margin: '0' }}>Không phát sinh dịch vụ.</p>
+            <p className="page-desc" style={{ margin: '0' }}>Không phát sinh dịch vụ.</p>
           ) : (
             services.map((s: any, idx: number) => (
               <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
@@ -118,31 +115,53 @@ export const BookingCheckoutModal: React.FC<BookingCheckoutModalProps> = ({
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>
             <span>Trạng thái hóa đơn:</span>
-            <span style={{
-              fontWeight: 'bold',
-              color: invoice.paymentStatus === 'Paid' ? 'var(--nature-accent)' : '#e07a5f'
-            }}>
+            <span className={`badge ${invoice.paymentStatus === 'Paid' ? 'badge-completed' : 'badge-unassigned'}`}>
               {invoice.paymentStatus === 'Paid' ? 'Đã Thanh Toán Xong' : 'Chưa Thanh Toán'}
             </span>
           </div>
         </div>
 
-        {/* Close Button */}
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
+        {/* Dynamic warning if unpaid */}
+        {invoice.paymentStatus !== 'Paid' && (
+          <div className="badge-unassigned" style={{ display: 'block', padding: '10px 14px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.8rem', fontWeight: '500', textAlign: 'left' }}>
+            ⚠️ Yêu cầu thanh toán hóa đơn cuối trước khi hoàn tất Checkout.
+          </div>
+        )}
+
+        {/* Actions Button Panel */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
           <button
             onClick={onClose}
+            disabled={loading}
+            className="btn btn-secondary"
+            style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '0.9rem' }}
+          >
+            Đóng
+          </button>
+
+          {invoice.paymentStatus !== 'Paid' && (
+            <button
+              onClick={handlePay}
+              disabled={loading}
+              className="btn btn-primary"
+              style={{ padding: '8px 16px', borderRadius: '6px', fontSize: '0.9rem' }}
+            >
+              {loading ? 'Đang xử lý...' : 'Thanh toán (Giả lập)'}
+            </button>
+          )}
+
+          <button
+            onClick={handleCheckout}
+            disabled={loading || invoice.paymentStatus !== 'Paid'}
+            className={`btn ${invoice.paymentStatus === 'Paid' ? 'btn-primary' : 'btn-secondary'}`}
             style={{
-              backgroundColor: 'var(--nature-accent)',
-              color: '#fff',
-              border: 'none',
+              padding: '8px 20px',
               borderRadius: '6px',
-              padding: '8px 24px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
+              cursor: invoice.paymentStatus === 'Paid' ? 'pointer' : 'not-allowed',
               fontSize: '0.9rem'
             }}
           >
-            Đóng & Hoàn tất
+            {loading ? 'Đang xử lý...' : 'Xác nhận Checkout'}
           </button>
         </div>
       </div>

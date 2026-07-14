@@ -41,7 +41,37 @@ export const bookingService = {
     return response.data;
   },
 
+  async requestCheckout(bookingId: number): Promise<any> {
+    const response = await api.put<any>(`/bookings/${bookingId}/request-checkout`);
+    return response.data;
+  },
+
+  async payFinal(bookingId: number): Promise<any> {
+    const response = await api.put<any>(`/bookings/${bookingId}/pay-final`);
+    return response.data;
+  },
+
+  async getCheckoutPreview(bookingId: number): Promise<any> {
+    const response = await api.get<any>(`/bookings/${bookingId}/checkout-preview`);
+    return response.data;
+  },
+
   async deleteBooking(id: number): Promise<void> {
     await api.delete(`/bookings/${id}`);
+  },
+
+  async getActiveBooking(): Promise<any> {
+    const response = await api.get<any>('/bookings/active');
+    return response.data;
+  },
+
+  async getAddOnServices(): Promise<any[]> {
+    const response = await api.get<any[]>('/addon-services');
+    return response.data;
+  },
+
+  async orderAddonService(bookingId: number, serviceId: number, quantity: number): Promise<any> {
+    const response = await api.post<any>(`/bookings/${bookingId}/services`, { serviceId, quantity });
+    return response.data;
   }
 };

@@ -23,11 +23,27 @@ namespace backend.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "STAFF,ADMIN")]
+        [Authorize(Roles = "USER,STAFF,ADMIN")]
         public async Task<IActionResult> AddIncurredService(int bookingId, [FromBody] AddServiceDto dto)
         {
             var booking = await _context.Bookings.FindAsync(bookingId);
             if (booking == null) return NotFound(new { message = "Booking not found." });
+
+            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            int currentUserId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
+
+            if (userRole == "USER")
+            {
+                if (booking.UserId != currentUserId)
+                {
+                    return Forbid();
+                }
+                if (booking.BookingStatus != "Checked_In")
+                {
+                    return BadRequest(new { message = "Bạn chỉ có thể đặt thêm dịch vụ cho phiên booking đang hoạt động (đã check-in)." });
+                }
+            }
 
             var service = await _context.AddOnServices.FindAsync(dto.ServiceId);
             if (service == null) return NotFound(new { message = "Service not found." });
@@ -56,8 +72,6 @@ namespace backend.Controllers
             await _context.SaveChangesAsync();
 
             // Log action to BookingLog
-            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            int currentUserId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
             var staffUser = await _context.Users.FindAsync(currentUserId);
             var log = new BookingLog
             {
@@ -93,7 +107,7 @@ namespace backend.Controllers
                 .Select(b => new 
                 {
                     b.ServiceId,
-                    ServiceName = b.AddOnService.ServiceName,
+                    ServiceName = b.AddOnService != null ? b.AddOnService.ServiceName : "Dịch vụ",
                     b.Quantity,
                     b.SnapshotUnitPrice,
                     b.PaymentStatus

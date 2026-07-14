@@ -82,14 +82,15 @@ export default function FloorSelection() {
 
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Segoe UI, sans-serif', maxWidth: '1300px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
       
       {/* Header điều hướng */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
-        <h2>Sơ Đồ Chọn Phòng Họp Trực Quan</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '15px', marginBottom: '20px' }}>
+        <h1 className="page-title" style={{ margin: 0 }}>Sơ Đồ Chọn Phòng Họp Trực Quan</h1>
         <button 
           onClick={() => navigate('/bookings')}
-          style={{ padding: '10px 15px', backgroundColor: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+          className="btn btn-secondary hover-lift"
+          style={{ padding: '8px 16px', fontSize: '0.85rem' }}
         >
           📜 Xem Lịch Sử Đặt Phòng
         </button>
@@ -101,17 +102,8 @@ export default function FloorSelection() {
           <button
             key={floor}
             onClick={() => setCurrentFloor(floor)}
-            style={{
-              padding: '10px 24px',
-              marginRight: '12px',
-              backgroundColor: currentFloor === floor ? '#0056b3' : '#f8f9fa',
-              color: currentFloor === floor ? '#fff' : '#333',
-              border: '1px solid #ddd',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              transition: 'all 0.2s'
-            }}
+            className={`btn ${currentFloor === floor ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ marginRight: '12px', padding: '8px 20px', borderRadius: '8px' }}
           >
             {floor}
           </button>
@@ -119,12 +111,12 @@ export default function FloorSelection() {
       </div>
 
       {loading ? (
-        <p>Đang đồng bộ dữ liệu sơ đồ...</p>
+        <p className="page-desc">Đang đồng bộ dữ liệu sơ đồ...</p>
       ) : (
-        <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
           
           {/* CỘT TRÁI: Hiển thị ảnh tòa nhà và xử lý vùng hitbox tương tác */}
-          <div style={{ position: 'relative', width: '70%', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: '600px', border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden', boxShadow: 'var(--shadow)' }}>
             
             {/* Ảnh phối cảnh tổng thể được gọi từ mục assets của bạn */}
             <img 
@@ -133,7 +125,6 @@ export default function FloorSelection() {
               style={{ width: '100%', display: 'block', height: 'auto' }} 
             />
 
-            {/* Vòng lặp vẽ các phòng thuộc Lầu đang chọn dựa trên ID */}
             {/* Vòng lặp vẽ các phòng thuộc Lầu đang chọn dựa trên ID */}
             {rooms.map((room) => {
               const layout = ROOM_LAYOUTS[room.Id];
@@ -160,22 +151,20 @@ export default function FloorSelection() {
                     
                     // NẾU ĐANG HOVER HOẶC ĐÃ CLICK CHỌN THÌ MỚI HIỆN MÀU VÀ VIỀN
                     // BAN ĐẦU SẼ HOÀN TOÀN TRONG SUỐT (ẨN ĐI)
-                    backgroundColor: isCurrentSelected ? 'rgba(0, 86, 179, 0.35)' : 'transparent',
-                    border: isCurrentSelected ? '2px solid #0056b3' : '2px dashed transparent'
+                    backgroundColor: isCurrentSelected ? 'rgba(212, 163, 115, 0.35)' : 'transparent',
+                    border: isCurrentSelected ? '2px solid var(--accent-color)' : '2px dashed transparent'
                   }}
                   // BẮT SỰ KIỆN DI CHUỘT ĐỂ HIỆN HITBOX VÀ POPUP THÔNG TIN
                   onMouseEnter={(e) => {
                     setHoveredRoom(room);
-                    // Khi dí chuột vào thì đổi màu nền và hiện viền xanh lá của phòng đó lên
                     if (!isCurrentSelected) {
-                      e.currentTarget.style.backgroundColor = 'rgba(40, 167, 69, 0.2)';
-                      e.currentTarget.style.borderColor = '#28a745';
+                      e.currentTarget.style.backgroundColor = 'rgba(122, 134, 106, 0.2)';
+                      e.currentTarget.style.borderColor = 'var(--nature-accent)';
                     }
                   }}
                   onMouseMove={(e) => setMousePos({ x: e.clientX, y: e.clientY })}
                   onMouseLeave={(e) => {
                     setHoveredRoom(null);
-                    // Khi rời chuột ra thì ẩn màu nền và viền đi (trả về trong suốt)
                     if (!isCurrentSelected) {
                       e.currentTarget.style.backgroundColor = 'transparent';
                       e.currentTarget.style.borderColor = 'transparent';
@@ -204,36 +193,26 @@ export default function FloorSelection() {
           </div>
 
           {/* CỘT PHẢI: Panel chi tiết thông tin phòng khi click */}
-          <div style={{ width: '30%', padding: '20px', border: '1px solid #eee', borderRadius: '8px', backgroundColor: '#fafafa' }}>
-            <h3 style={{ marginTop: 0, borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>Chi Tiết Phòng Đang Chọn</h3>
+          <div className="panel-card" style={{ width: '320px', padding: '24px' }}>
+            <h3 className="panel-title" style={{ marginTop: 0, borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>Chi Tiết Phòng Đang Chọn</h3>
             {selectedRoom ? (
               <div>
-                <p><strong>Tên phòng:</strong> {selectedRoom.AssetName}</p>
-                <p><strong>Vị trí:</strong> {selectedRoom.LocationName}</p>
-                <p><strong>Sức chứa:</strong> {selectedRoom.Capacity} người</p>
-                <p><strong>Kích thước:</strong> {selectedRoom.Dimensions} ({selectedRoom.AreaM2} m²)</p>
-                <p><strong>Giá thuê:</strong> <span style={{ color: '#d9534f', fontWeight: 'bold' }}>{selectedRoom.BasePrice.toLocaleString()} đ/h</span></p>
+                <p style={{ marginBottom: '8px' }}><strong>Tên phòng:</strong> {selectedRoom.AssetName}</p>
+                <p style={{ marginBottom: '8px' }}><strong>Vị trí:</strong> {selectedRoom.LocationName}</p>
+                <p style={{ marginBottom: '8px' }}><strong>Sức chứa:</strong> {selectedRoom.Capacity} người</p>
+                <p style={{ marginBottom: '8px' }}><strong>Kích thước:</strong> {selectedRoom.Dimensions} ({selectedRoom.AreaM2} m²)</p>
+                <p style={{ marginBottom: '8px' }}><strong>Giá thuê:</strong> <span style={{ color: '#e07a5f', fontWeight: 'bold' }}>{selectedRoom.BasePrice.toLocaleString()} đ/h</span></p>
                 
                 <button
                   onClick={() => alert(`Đã tạo đơn đăng ký thành công cho phòng: ${selectedRoom.AssetName}`)}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    backgroundColor: '#28a745',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '5px',
-                    fontWeight: 'bold',
-                    fontSize: '15px',
-                    cursor: 'pointer',
-                    marginTop: '15px'
-                  }}
+                  className="btn btn-primary"
+                  style={{ width: '100%', marginTop: '15px', padding: '12px' }}
                 >
                   Xác Nhận Đặt Phòng
                 </button>
               </div>
             ) : (
-              <p style={{ color: '#777', fontStyle: 'italic' }}>Rê chuột vào sơ đồ tòa nhà để xem nhanh thông tin phòng, bấm click chuột để chọn phòng cần đăng ký.</p>
+              <p className="page-desc" style={{ fontStyle: 'italic', margin: 0 }}>Rê chuột vào sơ đồ tòa nhà để xem nhanh thông tin phòng, bấm click chuột để chọn phòng cần đăng ký.</p>
             )}
           </div>
 

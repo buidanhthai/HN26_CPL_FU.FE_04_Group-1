@@ -75,30 +75,24 @@ const Tasks: React.FC = () => {
 
   return (
     <div>
-      <h1 style={{ fontSize: '2rem', margin: '0 0 8px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+      <h1 className="page-title">
         Điều phối Hậu cần & Nhiệm vụ
       </h1>
-      <p style={{ color: 'var(--secondary-text)', margin: '0 0 30px 0', fontSize: '0.95rem' }}>
+      <p className="page-desc">
         Quản lý và thực thi các công việc chuẩn bị cho phòng họp / chỗ ngồi.
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '30px', alignItems: 'start' }}>
+      <div className="layout-grid-sidebar">
         {/* Tasks List */}
-        <div style={{
-          backgroundColor: 'var(--surface-color)',
-          borderRadius: '16px',
-          border: '1px solid var(--border-color)',
-          padding: '30px 24px',
-          boxShadow: 'var(--shadow)'
-        }}>
-          <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+        <div className="panel-card">
+          <h2 className="panel-title">
             Task Pool (Hàng đợi tự nhận việc)
           </h2>
 
           {loading ? (
-            <p style={{ color: 'var(--secondary-text)' }}>Đang tải danh sách công việc...</p>
+            <p className="page-desc">Đang tải danh sách công việc...</p>
           ) : tasks.length === 0 ? (
-            <p style={{ color: 'var(--secondary-text)' }}>Chưa có công việc nào.</p>
+            <p className="page-desc">Chưa có công việc nào.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               {tasks.map((t) => (
@@ -130,13 +124,10 @@ const Tasks: React.FC = () => {
                       }}>
                         {t.taskCategory}
                       </span>
-                      <span style={{
-                        fontSize: '0.8rem',
-                        fontWeight: '600',
-                        color: 
-                          t.taskStatus === 'Unassigned' ? '#e07a5f' :
-                          t.taskStatus === 'In_Progress' ? 'var(--accent-color)' : 'var(--nature-accent)'
-                      }}>
+                      <span className={`badge ${
+                        t.taskStatus === 'Unassigned' ? 'badge-unassigned' :
+                        t.taskStatus === 'In_Progress' ? 'badge-inprogress' : 'badge-completed'
+                      }`}>
                         {t.taskStatus}
                       </span>
                     </div>
@@ -157,15 +148,11 @@ const Tasks: React.FC = () => {
                     {t.taskStatus === 'Unassigned' && user?.role === 'STAFF' && (
                       <button 
                         onClick={() => handleUpdateStatus(t, 'In_Progress')}
+                        className="btn btn-primary"
                         style={{
-                          backgroundColor: 'var(--accent-color)',
-                          color: '#fff',
-                          border: 'none',
                           padding: '6px 12px',
                           borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontSize: '0.8rem',
-                          fontWeight: 'bold'
+                          fontSize: '0.8rem'
                         }}
                       >
                         Nhận việc
@@ -174,15 +161,11 @@ const Tasks: React.FC = () => {
                     {t.taskStatus === 'In_Progress' && user?.role === 'STAFF' && (
                       <button 
                         onClick={() => handleUpdateStatus(t, 'Completed')}
+                        className="btn btn-secondary"
                         style={{
-                          backgroundColor: 'var(--nature-accent)',
-                          color: '#fff',
-                          border: 'none',
                           padding: '6px 12px',
                           borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontSize: '0.8rem',
-                          fontWeight: 'bold'
+                          fontSize: '0.8rem'
                         }}
                       >
                         Hoàn thành
@@ -191,14 +174,7 @@ const Tasks: React.FC = () => {
                     {(user?.role === 'ADMIN' || user?.role === 'STAFF') && (
                       <button 
                         onClick={() => handleDelete(t.id)}
-                        style={{
-                          backgroundColor: 'transparent',
-                          color: '#e07a5f',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '0.8rem',
-                          fontWeight: 'bold'
-                        }}
+                        className="btn-link-danger"
                       >
                         Xóa
                       </button>
@@ -211,14 +187,8 @@ const Tasks: React.FC = () => {
         </div>
 
         {/* Create Task Form */}
-        <div style={{
-          backgroundColor: 'var(--surface-color)',
-          borderRadius: '16px',
-          border: '1px solid var(--border-color)',
-          padding: '30px 24px',
-          boxShadow: 'var(--shadow)'
-        }}>
-          <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+        <div className="panel-card">
+          <h2 className="panel-title">
             Tạo Task thủ công
           </h2>
 
@@ -226,15 +196,14 @@ const Tasks: React.FC = () => {
             <div style={{ color: '#e07a5f', fontSize: '0.85rem', marginBottom: '15px', fontWeight: '500' }}>{error}</div>
           )}
 
-          <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <form onSubmit={handleCreate} className="form-container">
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Phân loại nhiệm vụ</label>
+            <div className="form-group">
+              <label className="form-label">Phân loại nhiệm vụ</label>
               <select 
                 value={taskCategory} 
                 onChange={(e) => setTaskCategory(e.target.value)}
-                className="input-field"
-                style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                className="form-select"
               >
                 <option value="FRONT DESK">FRONT DESK (Lễ tân)</option>
                 <option value="TECHNICAL">TECHNICAL (Kỹ thuật)</option>
@@ -243,37 +212,33 @@ const Tasks: React.FC = () => {
               </select>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Mô tả chi tiết</label>
+            <div className="form-group">
+              <label className="form-label">Mô tả chi tiết</label>
               <textarea 
                 value={taskDescription}
                 onChange={(e) => setTaskDescription(e.target.value)}
                 placeholder="Ví dụ: Chuẩn bị trà, set up máy chiếu..."
-                className="input-field"
-                style={{
-                  resize: 'vertical',
-                  minHeight: '80px'
-                }}
+                className="form-textarea"
               />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Mã Booking ID</label>
+              <div className="form-group">
+                <label className="form-label">Mã Booking ID</label>
                 <input 
                   type="number"
                   value={bookingId}
                   onChange={(e) => setBookingId(Number(e.target.value))}
-                  className="input-field"
+                  className="form-input"
                 />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Số NV cần thiết</label>
+              <div className="form-group">
+                <label className="form-label">Số NV cần thiết</label>
                 <input 
                   type="number"
                   value={requiredStaffCount}
                   onChange={(e) => setRequiredStaffCount(Number(e.target.value))}
-                  className="input-field"
+                  className="form-input"
                 />
               </div>
             </div>
