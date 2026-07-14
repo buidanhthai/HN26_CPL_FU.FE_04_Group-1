@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import theBuildingImg from '../assets/thebuilding.png';
 
 // 1. Định nghĩa kiểu dữ liệu phòng nhận từ API MySQL
 interface MeetingRoom {
@@ -127,7 +128,7 @@ export default function FloorSelection() {
             
             {/* Ảnh phối cảnh tổng thể được gọi từ mục assets của bạn */}
             <img 
-              src="/src/assets/thebuilding.png" 
+              src={theBuildingImg} 
               alt="Mặt bằng Alpha Tower" 
               style={{ width: '100%', display: 'block', height: 'auto' }} 
             />

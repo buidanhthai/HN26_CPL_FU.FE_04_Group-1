@@ -4,6 +4,7 @@ import { bookingService } from '../services/bookingService';
 import api from '../services/api';
 import type { Booking, CreateBookingRequest } from '../types/booking.types';
 import Button from '../components/Button';
+import theBuildingImg from '../assets/thebuilding.png';
 
 const ROOM_LAYOUTS: Record<number, { top: string; left: string; width: string; height: string }> = {
   1: { top: '65%', left: '26%', width: '22%', height: '24%' }, 
@@ -989,7 +990,7 @@ const Bookings: React.FC = () => {
               {/* Left Column: Interactive Map */}
               <div style={{ position: 'relative', border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden' }}>
                 <img 
-                  src="/src/assets/thebuilding.png" 
+                  src={theBuildingImg} 
                   alt="Sơ đồ Cozy Space" 
                   style={{ width: '100%', display: 'block', height: 'auto' }} 
                 />
