@@ -23,40 +23,9 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const { booking, user, services, logs, invoices } = details;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      backdropFilter: 'blur(4px)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000,
-    }}>
-      <div style={{
-        backgroundColor: 'var(--surface-color)',
-        borderRadius: '16px',
-        border: '1px solid var(--border-color)',
-        padding: '24px',
-        width: '650px',
-        maxWidth: '95%',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        color: 'var(--primary-text)',
-      }}>
-        <h3 style={{
-          fontSize: '1.4rem',
-          margin: '0 0 20px 0',
-          fontFamily: 'var(--font-title)',
-          textAlign: 'center',
-          color: 'var(--nature-accent)',
-          borderBottom: '2px solid var(--border-color)',
-          paddingBottom: '10px'
-        }}>
+    <div className="modal-overlay">
+      <div className="modal-content" style={{ width: '650px' }}>
+        <h3 className="modal-title">
           CHI TIẾT ĐƠN ĐẶT PHÒNG #{booking.id}
         </h3>
 
@@ -78,6 +47,17 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                booking.bookingStatus === 'Cancelled' ? 'Đã hủy do chưa thanh toán đặt trước' : booking.bookingStatus}
             </p>
           </div>
+          {booking.checkInVerificationCode && (
+            <div style={{ gridColumn: 'span 2', backgroundColor: 'rgba(212, 163, 115, 0.12)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--accent-color)', marginBottom: '8px' }}>
+              <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Mã xác nhận Check-in:</span>
+              <p style={{ margin: '4px 0 0 0', fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--primary-text)', letterSpacing: '2px', fontFamily: 'monospace' }}>
+                {booking.checkInVerificationCode}
+              </p>
+              <span style={{ fontSize: '0.75rem', color: 'var(--secondary-text)', fontStyle: 'italic' }}>
+                * Xuất trình mã này cho nhân viên lễ tân khi bạn đến Cozy Space để nhận phòng.
+              </span>
+            </div>
+          )}
           <div>
             <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Thời gian bắt đầu:</span>
             <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem' }}>
@@ -276,16 +256,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <button
             onClick={onClose}
-            style={{
-              backgroundColor: 'var(--nature-accent)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '6px',
-              padding: '8px 24px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              fontSize: '0.9rem'
-            }}
+            className="btn btn-primary"
+            style={{ padding: '8px 24px', borderRadius: '6px', fontSize: '0.9rem' }}
           >
             Đóng
           </button>

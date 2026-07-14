@@ -82,61 +82,31 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div>
-      <h2 style={{ 
-        textAlign: 'center', 
-        marginBottom: '8px', 
-        color: 'var(--primary-text)', 
-        fontFamily: 'var(--font-title)',
-        fontSize: '2rem',
-        fontWeight: 'bold'
-      }}>
+    <div className="auth-container">
+      <h2 className="panel-title" style={{ textAlign: 'center', fontSize: '2rem', marginBottom: '8px' }}>
         Đăng ký
       </h2>
-      <p style={{ 
-        textAlign: 'center', 
-        color: 'var(--secondary-text)', 
-        fontSize: '0.9rem', 
-        marginBottom: '30px' 
-      }}>
+      <p className="page-desc" style={{ textAlign: 'center' }}>
         Tạo tài khoản mới để bắt đầu sử dụng hệ thống
       </p>
 
       {/* Thông báo lỗi nếu có */}
       {error && (
-        <div style={{
-          backgroundColor: 'rgba(224, 122, 95, 0.12)',
-          color: '#e07a5f',
-          border: '1px solid rgba(224, 122, 95, 0.4)',
-          borderRadius: '8px',
-          padding: '12px',
-          marginBottom: '20px',
-          fontSize: '0.85rem',
-          textAlign: 'center'
-        }}>
+        <div className="badge-unassigned" style={{ display: 'block', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.85rem', textAlign: 'center' }}>
           {error}
         </div>
       )}
 
       {/* Thông báo thành công nếu có */}
       {success && (
-        <div style={{
-          backgroundColor: 'rgba(122, 134, 106, 0.12)',
-          color: 'var(--nature-accent)',
-          border: '1px solid rgba(122, 134, 106, 0.4)',
-          borderRadius: '8px',
-          padding: '12px',
-          marginBottom: '20px',
-          fontSize: '0.85rem',
-          textAlign: 'center'
-        }}>
+        <div className="badge-completed" style={{ display: 'block', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.85rem', textAlign: 'center' }}>
           {success}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label htmlFor="fullName" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
+      <form onSubmit={handleSubmit} className="form-container">
+        <div className="form-group">
+          <label htmlFor="fullName" className="form-label">
             Họ và tên
           </label>
           <input
@@ -146,13 +116,13 @@ const Register: React.FC = () => {
             placeholder="Nguyễn Văn A"
             value={formData.fullName}
             onChange={handleChange}
-            className="input-field"
+            className="form-input"
             disabled={isLoading}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label htmlFor="email" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
+        <div className="form-group">
+          <label htmlFor="email" className="form-label">
             Địa chỉ Email
           </label>
           <input
@@ -162,13 +132,13 @@ const Register: React.FC = () => {
             placeholder="example@company.com"
             value={formData.email}
             onChange={handleChange}
-            className="input-field"
+            className="form-input"
             disabled={isLoading}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label htmlFor="password" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
+        <div className="form-group">
+          <label htmlFor="password" className="form-label">
             Mật khẩu
           </label>
           <input
@@ -178,13 +148,13 @@ const Register: React.FC = () => {
             placeholder="••••••••"
             value={formData.password}
             onChange={handleChange}
-            className="input-field"
+            className="form-input"
             disabled={isLoading}
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label htmlFor="confirmPassword" style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>
+        <div className="form-group">
+          <label htmlFor="confirmPassword" className="form-label">
             Xác nhận mật khẩu
           </label>
           <input
@@ -194,7 +164,7 @@ const Register: React.FC = () => {
             placeholder="••••••••"
             value={formData.confirmPassword}
             onChange={handleChange}
-            className="input-field"
+            className="form-input"
             disabled={isLoading}
           />
         </div>
@@ -202,20 +172,15 @@ const Register: React.FC = () => {
         <Button
           type="submit"
           disabled={isLoading}
-          style={{ marginTop: '10px', width: '100%' }}
+          style={{ marginTop: '10px' }}
         >
           {isLoading ? 'Đang xử lý...' : 'Đăng ký tài khoản'}
         </Button>
       </form>
 
-      <div style={{
-        textAlign: 'center',
-        marginTop: '24px',
-        fontSize: '0.9rem',
-        color: 'var(--secondary-text)'
-      }}>
+      <div className="auth-footer">
         <span>Bạn đã có tài khoản? </span>
-        <Link to="/login" style={{ color: 'var(--accent-color)', fontWeight: '600', textDecoration: 'none' }}>
+        <Link to="/login" className="btn-link-primary">
           Đăng nhập ngay
         </Link>
       </div>

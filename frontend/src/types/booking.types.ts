@@ -5,7 +5,7 @@ export interface Booking {
   layoutId: number;
   startTime: string;
   endTime: string;
-  bookingStatus: 'Pending' | 'Awaiting_Payment' | 'Confirmed' | 'Checked_In' | 'Checked_Out' | 'Cancelled';
+  bookingStatus: 'Pending' | 'Awaiting_Payment' | 'Confirmed' | 'Checked_In' | 'Awaiting_Checkout' | 'Checked_Out' | 'Cancelled';
   paymentDeadline?: string;
   customSetupNote?: string;
   snapshotBasePrice: number;

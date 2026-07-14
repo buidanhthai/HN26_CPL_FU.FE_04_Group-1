@@ -157,6 +157,57 @@ const Bookings: React.FC = () => {
     }
   };
 
+  const handleRequestCheckin = async (id: number) => {
+    try {
+      await bookingService.requestCheckinCode(id);
+      alert('Yêu cầu mã check-in thành công!');
+      fetchBookings();
+    } catch (e: any) {
+      alert(e.response?.data?.message || 'Lỗi yêu cầu mã check-in');
+    }
+  };
+
+  const handleCheckin = async (id: number, code: string) => {
+    try {
+      await bookingService.checkinBooking(id, code);
+      alert('Check-in thành công!');
+      fetchBookings();
+    } catch (e: any) {
+      alert(e.response?.data?.message || 'Lỗi khi check-in');
+    }
+  };
+
+
+
+  const handlePayFinal = async (id: number) => {
+    try {
+      await bookingService.payFinal(id);
+      alert('Thanh toán hóa đơn cuối thành công!');
+      fetchBookings();
+      if (checkoutDetails && checkoutDetails.booking.id === id) {
+        const resData = await bookingService.getCheckoutPreview(id);
+        setCheckoutDetails({
+          booking: checkoutDetails.booking,
+          services: resData.services,
+          invoice: resData.invoice
+        });
+      }
+    } catch (e: any) {
+      alert(e.response?.data?.message || 'Lỗi thanh toán hóa đơn cuối');
+    }
+  };
+
+  const handleConfirmCheckout = async (id: number) => {
+    try {
+      await bookingService.checkoutBooking(id);
+      alert('Checkout hoàn tất thành công!');
+      setCheckoutDetails(null);
+      fetchBookings();
+    } catch (e: any) {
+      alert(e.response?.data?.message || 'Lỗi khi Checkout');
+    }
+  };
+
   return (
     <div>
       <h1 style={{ fontSize: '2rem', margin: '0 0 8px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
@@ -229,17 +280,18 @@ const Bookings: React.FC = () => {
             }}
             onCheckout={async (b) => {
               try {
-                const services = await bookingService.getIncurredServices(b.id);
-                const resData = await bookingService.checkoutBooking(b.id);
+                const resData = await bookingService.getCheckoutPreview(b.id);
                 setCheckoutDetails({
                   booking: b,
-                  services: services,
+                  services: resData.services,
                   invoice: resData.invoice
                 });
               } catch (e: any) {
-                alert(e.response?.data?.message || 'Lỗi khi checkout');
+                alert(e.response?.data?.message || 'Lỗi khi chuẩn bị checkout');
               }
             }}
+            onRequestCheckin={handleRequestCheckin}
+            onCheckin={handleCheckin}
             onDelete={handleDelete}
             loading={loading}
           />
@@ -299,6 +351,16 @@ const Bookings: React.FC = () => {
         onClose={() => {
           setCheckoutDetails(null);
           fetchBookings();
+        }}
+        onConfirmCheckout={async () => {
+          if (checkoutDetails) {
+            await handleConfirmCheckout(checkoutDetails.booking.id);
+          }
+        }}
+        onPayFinal={async () => {
+          if (checkoutDetails) {
+            await handlePayFinal(checkoutDetails.booking.id);
+          }
         }}
         spaceAssets={spaceAssets}
       />

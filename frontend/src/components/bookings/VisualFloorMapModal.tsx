@@ -36,45 +36,20 @@ export const VisualFloorMapModal: React.FC<VisualFloorMapModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      backdropFilter: 'blur(4px)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000,
-    }}>
-      <div style={{
-        backgroundColor: 'var(--surface-color)',
-        borderRadius: '16px',
-        border: '1px solid var(--border-color)',
-        padding: '24px',
-        width: '1000px',
-        maxWidth: '95%',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        color: 'var(--primary-text)',
-      }}>
+    <div className="modal-overlay">
+      <div className="modal-content" style={{ width: '1000px' }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid var(--border-color)', paddingBottom: '10px' }}>
-          <h3 style={{ fontSize: '1.4rem', margin: 0, color: 'var(--nature-accent)', fontFamily: 'var(--font-title)' }}>
+          <h3 style={{ fontSize: '1.4rem', margin: 0, color: 'var(--nature-accent)', fontFamily: 'var(--font-title)', fontWeight: 'bold' }}>
             🗺️ Chọn không gian qua sơ đồ
           </h3>
           <button 
             type="button" 
             onClick={onClose}
+            className="btn-link-danger"
             style={{
-              background: 'transparent',
-              border: 'none',
               fontSize: '1.5rem',
               color: 'var(--secondary-text)',
-              cursor: 'pointer'
             }}
           >
             &times;
@@ -198,17 +173,8 @@ export const VisualFloorMapModal: React.FC<VisualFloorMapModalProps> = ({
                     onSelectRoom(mapSelectedRoom);
                     onClose();
                   }}
-                  style={{
-                    marginTop: '15px',
-                    padding: '10px',
-                    backgroundColor: 'var(--nature-accent)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    width: '100%'
-                  }}
+                  className="btn btn-primary"
+                  style={{ width: '100%', marginTop: '15px', padding: '10px' }}
                 >
                   Xác nhận chọn phòng
                 </button>

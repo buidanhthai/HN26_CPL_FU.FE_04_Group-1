@@ -65,116 +65,90 @@ const SpaceAssets: React.FC = () => {
 
   return (
     <div>
-      <h1 style={{ fontSize: '2rem', margin: '0 0 8px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+      <h1 className="page-title">
         Quản lý Tài sản & Không gian
       </h1>
-      <p style={{ color: 'var(--secondary-text)', margin: '0 0 30px 0', fontSize: '0.95rem' }}>
+      <p className="page-desc">
         Back-Office: Thêm, sửa, xóa các phòng họp và không gian làm việc.
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '30px', alignItems: 'start' }}>
+      <div className="layout-grid-sidebar">
         {/* Assets List */}
-        <div style={{
-          backgroundColor: 'var(--surface-color)',
-          borderRadius: '16px',
-          border: '1px solid var(--border-color)',
-          padding: '30px 24px',
-          boxShadow: 'var(--shadow)'
-        }}>
-          <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+        <div className="panel-card">
+          <h2 className="panel-title">
             Danh sách Không gian
           </h2>
 
           {loading ? (
-            <p style={{ color: 'var(--secondary-text)' }}>Đang tải dữ liệu...</p>
+            <p className="page-desc">Đang tải dữ liệu...</p>
           ) : assets.length === 0 ? (
-            <p style={{ color: 'var(--secondary-text)' }}>Chưa có tài sản nào.</p>
+            <p className="page-desc">Chưa có tài sản nào.</p>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', color: 'var(--primary-text)' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--secondary-text)', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                  <th style={{ padding: '12px 8px' }}>Tên Không gian</th>
-                  <th style={{ padding: '12px 8px' }}>Loại</th>
-                  <th style={{ padding: '12px 8px' }}>Sức chứa</th>
-                  <th style={{ padding: '12px 8px' }}>Giá/Giờ</th>
-                  <th style={{ padding: '12px 8px' }}>Trạng thái</th>
-                  <th style={{ padding: '12px 8px', textAlign: 'right' }}>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {assets.map((a) => (
-                  <tr key={a.id} style={{ borderBottom: '1px solid var(--border-color)', fontSize: '0.9rem' }}>
-                    <td style={{ padding: '14px 8px', fontWeight: '600' }}>{a.assetName}</td>
-                    <td style={{ padding: '14px 8px' }}>{a.assetType}</td>
-                    <td style={{ padding: '14px 8px' }}>{a.capacity}</td>
-                    <td style={{ padding: '14px 8px' }}>{(a.basePrice ?? 0).toLocaleString()}đ</td>
-                    <td style={{ padding: '14px 8px' }}>
-                      <span style={{
-                        padding: '4px 8px',
-                        borderRadius: '20px',
-                        fontSize: '0.75rem',
-                        fontWeight: 'bold',
-                        backgroundColor: a.isActive ? 'rgba(122, 134, 106, 0.15)' : 'rgba(212, 163, 115, 0.15)',
-                        color: a.isActive ? 'var(--nature-accent)' : 'var(--accent-color)'
-                      }}>
-                        {a.isActive ? 'Hoạt động' : 'Tạm khóa'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '14px 8px', textAlign: 'right' }}>
-                      <button 
-                        onClick={() => handleDelete(a.id)}
-                        style={{
-                          backgroundColor: 'transparent',
-                          color: '#e07a5f',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '0.85rem',
-                          fontWeight: 'bold',
-                          transition: 'var(--transition)'
-                        }}
-                      >
-                        Xóa
-                      </button>
-                    </td>
+            <div className="table-container">
+              <table className="theme-table">
+                <thead>
+                  <tr className="theme-tr-head">
+                    <th className="theme-th">Tên Không gian</th>
+                    <th className="theme-th">Loại</th>
+                    <th className="theme-th">Sức chứa</th>
+                    <th className="theme-th">Giá/Giờ</th>
+                    <th className="theme-th">Trạng thái</th>
+                    <th className="theme-th" style={{ textAlign: 'right' }}>Thao tác</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {assets.map((a) => (
+                    <tr key={a.id} className="theme-tr-body">
+                      <td className="theme-td" style={{ fontWeight: '600' }}>{a.assetName}</td>
+                      <td className="theme-td">{a.assetType}</td>
+                      <td className="theme-td">{a.capacity}</td>
+                      <td className="theme-td">{(a.basePrice ?? 0).toLocaleString()}đ</td>
+                      <td className="theme-td">
+                        <span className={`badge ${a.isActive ? 'badge-completed' : 'badge-unassigned'}`}>
+                          {a.isActive ? 'Hoạt động' : 'Tạm khóa'}
+                        </span>
+                      </td>
+                      <td className="theme-td" style={{ textAlign: 'right' }}>
+                        <button 
+                          onClick={() => handleDelete(a.id)}
+                          className="btn-link-danger"
+                        >
+                          Xóa
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 
         {/* Create Asset Form */}
-        <div style={{
-          backgroundColor: 'var(--surface-color)',
-          borderRadius: '16px',
-          border: '1px solid var(--border-color)',
-          padding: '30px 24px',
-          boxShadow: 'var(--shadow)'
-        }}>
-          <h2 style={{ fontSize: '1.4rem', margin: '0 0 20px 0', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+        <div className="panel-card">
+          <h2 className="panel-title">
             Thêm Không gian mới
           </h2>
           
-          <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Tên Không gian</label>
+          <form onSubmit={handleCreate} className="form-container">
+            <div className="form-group">
+              <label className="form-label">Tên Không gian</label>
               <input 
                 type="text"
                 value={assetName}
                 onChange={(e) => setAssetName(e.target.value)}
                 placeholder="VD: Phòng họp A"
-                className="input-field"
+                className="form-input"
                 required
               />
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Loại</label>
+            <div className="form-group">
+              <label className="form-label">Loại</label>
               <select 
                 value={assetType}
                 onChange={(e) => setAssetType(e.target.value)}
-                className="input-field"
-                style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                className="form-select"
               >
                 <option value="HotDesk">Hot Desk</option>
                 <option value="MeetingRoom">Phòng họp</option>
@@ -182,24 +156,24 @@ const SpaceAssets: React.FC = () => {
               </select>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Sức chứa (Người)</label>
+            <div className="form-group">
+              <label className="form-label">Sức chứa (Người)</label>
               <input 
                 type="number"
                 value={capacity}
                 onChange={(e) => setCapacity(Number(e.target.value))}
-                className="input-field"
+                className="form-input"
                 min="1"
               />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--secondary-text)' }}>Giá cơ bản (VNĐ/Giờ)</label>
+            <div className="form-group">
+              <label className="form-label">Giá cơ bản (VNĐ/Giờ)</label>
               <input 
                 type="number"
                 value={basePrice}
                 onChange={(e) => setBasePrice(Number(e.target.value))}
-                className="input-field"
+                className="form-input"
                 min="0"
               />
             </div>

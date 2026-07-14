@@ -124,3 +124,385 @@ code {
   background: var(--code-bg);
   color: var(--primary-text);
 }
+
+/* --- UNIFIED CSS SYSTEM CLASSES --- */
+
+/* Typography & Titles */
+.page-title {
+  font-size: 2rem;
+  margin: 0 0 8px 0;
+  color: var(--primary-text);
+  font-family: var(--font-title);
+  font-weight: 600;
+}
+
+.page-desc {
+  color: var(--secondary-text);
+  margin: 0 0 30px 0;
+  font-size: 0.95rem;
+}
+
+.panel-title {
+  font-size: 1.4rem;
+  margin: 0 0 20px 0;
+  color: var(--primary-text);
+  font-family: var(--font-title);
+  font-weight: 600;
+}
+
+/* Bố cục (Layout) */
+.layout-grid-sidebar {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 30px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .layout-grid-sidebar {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* Panel / Card Container */
+.panel-card {
+  background-color: var(--surface-color);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  padding: 30px 24px;
+  box-shadow: var(--shadow);
+  box-sizing: border-box;
+}
+
+/* Form Controls */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--secondary-text);
+  font-family: var(--font-ui);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--primary-text);
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  outline: none;
+  transition: var(--transition);
+  box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px var(--accent-bg);
+}
+
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Bảng biểu (Tables) */
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.theme-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  color: var(--primary-text);
+}
+
+.theme-tr-head {
+  border-bottom: 2px solid var(--border-color);
+  color: var(--secondary-text);
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.theme-tr-body {
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.theme-tr-body:hover {
+  background-color: rgba(111, 78, 55, 0.02);
+}
+
+.theme-th {
+  padding: 12px 8px;
+  font-weight: bold;
+}
+
+.theme-td {
+  padding: 14px 8px;
+}
+
+/* Badges trạng thái */
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge-unassigned {
+  background-color: rgba(224, 122, 95, 0.15);
+  color: #e07a5f;
+}
+
+.badge-inprogress {
+  background-color: var(--accent-bg);
+  color: var(--accent-hover);
+}
+
+.badge-completed {
+  background-color: rgba(122, 134, 106, 0.15);
+  color: var(--nature-accent);
+}
+
+.badge-cancelled {
+  background-color: rgba(224, 122, 95, 0.15);
+  color: #e07a5f;
+}
+
+.badge-active {
+  background-color: rgba(122, 134, 106, 0.15);
+  color: var(--nature-accent);
+}
+
+.badge-inactive {
+  background-color: rgba(212, 163, 115, 0.15);
+  color: var(--accent-color);
+}
+
+/* Buttons Unified Classes */
+.btn {
+  padding: 10px 22px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 0.9rem;
+  font-family: var(--font-ui);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  box-sizing: border-box;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background-color: var(--accent-color);
+  color: var(--primary-text);
+  box-shadow: 0 4px 10px rgba(212, 163, 115, 0.2);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(212, 163, 115, 0.35);
+}
+
+.btn-secondary {
+  background-color: var(--surface-color);
+  color: var(--secondary-text);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(111, 78, 55, 0.12);
+}
+
+.btn-danger {
+  background-color: #e07a5f;
+  color: #ffffff;
+}
+
+.btn-danger:hover {
+  background-color: #c65f45;
+}
+
+.btn-link-danger {
+  background-color: transparent;
+  color: #e07a5f;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+  transition: var(--transition);
+  padding: 0;
+}
+
+.btn-link-danger:hover {
+  color: #c65f45;
+  text-decoration: underline;
+}
+
+.btn-link-primary {
+  background-color: transparent;
+  color: var(--accent-color);
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+  transition: var(--transition);
+  padding: 0;
+}
+
+.btn-link-primary:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+/* Hover Lift */
+.hover-lift {
+  transition: var(--transition);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* --- PHASE 2 EXTRA CLASSES --- */
+
+/* Navbar Layout */
+.navbar {
+  height: 70px;
+  background-color: var(--background-color);
+  color: var(--primary-text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8%;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(60, 42, 33, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.nav-brand {
+  font-family: var(--font-title);
+  font-weight: bold;
+  font-size: 1.6rem;
+  color: var(--primary-text);
+  text-decoration: none;
+}
+
+.nav-menu {
+  display: flex;
+  gap: 30px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--secondary-text);
+  border-bottom: 2px solid transparent;
+  padding: 6px 0;
+  transition: var(--transition);
+}
+
+.nav-item:hover {
+  color: var(--accent-color);
+}
+
+.nav-item.active {
+  font-weight: 600;
+  color: var(--primary-text);
+  border-bottom: 2px solid var(--accent-color);
+}
+
+/* Auth Pages (Login & Register) */
+.auth-container {
+  max-width: 450px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 0.9rem;
+  color: var(--secondary-text);
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: var(--surface-color);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  max-width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  color: var(--primary-text);
+  box-sizing: border-box;
+}
+
+.modal-title {
+  font-size: 1.4rem;
+  margin: 0 0 20px 0;
+  font-family: var(--font-title);
+  text-align: center;
+  color: var(--nature-accent);
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 10px;
+  font-weight: bold;
+}
+

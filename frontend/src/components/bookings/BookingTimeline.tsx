@@ -32,17 +32,10 @@ export const BookingTimeline: React.FC<BookingTimelineProps> = ({
   const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
 
   return (
-    <div style={{
-      backgroundColor: 'var(--surface-color)',
-      borderRadius: '16px',
-      border: '1px solid var(--border-color)',
-      padding: '30px 24px',
-      boxShadow: 'var(--shadow)',
-      overflowX: 'auto'
-    }}>
+    <div className="panel-card" style={{ overflowX: 'auto' }}>
       {/* Title & Date Selector */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ fontSize: '1.4rem', margin: 0, color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+        <h2 className="panel-title" style={{ margin: 0 }}>
           📅 Sơ đồ Timeline hoạt động
         </h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -51,12 +44,9 @@ export const BookingTimeline: React.FC<BookingTimelineProps> = ({
             type="date" 
             value={timelineDate} 
             onChange={(e) => setTimelineDate(e.target.value)}
+            className="form-input"
             style={{
               padding: '8px 12px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              backgroundColor: 'var(--surface-color)',
-              color: 'var(--primary-text)',
               fontSize: '0.9rem'
             }}
           />

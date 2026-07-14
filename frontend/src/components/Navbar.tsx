@@ -10,162 +10,42 @@ const Navbar: React.FC = () => {
   const { user, logout } = authContext;
 
   return (
-    <nav style={{
-      height: '70px',
-      backgroundColor: 'var(--background-color)',
-      color: 'var(--primary-text)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '0 8%',
-      borderBottom: '1px solid var(--border-color)',
-      boxShadow: '0 2px 8px rgba(60, 42, 33, 0.04)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 1000,
-      boxSizing: 'border-box'
-    }}>
-      <NavLink to="/" style={{ 
-        fontFamily: 'var(--font-title)', 
-        fontWeight: 'bold', 
-        fontSize: '1.6rem', 
-        color: 'var(--primary-text)',
-        textDecoration: 'none'
-      }}>
+    <nav className="navbar">
+      <NavLink to="/" className="nav-brand">
         CozySpace.
       </NavLink>
 
       {user && (
-        <div style={{ display: 'flex', gap: '30px', listStyle: 'none' }}>
+        <div className="nav-menu">
           <NavLink 
             to="/dashboard" 
             end 
-            style={({ isActive }) => ({
-              textDecoration: 'none',
-              fontWeight: isActive ? '600' : '500',
-              fontSize: '0.95rem',
-              color: isActive ? 'var(--primary-text)' : 'var(--secondary-text)',
-              borderBottom: isActive ? '2px solid var(--accent-color)' : '2px solid transparent',
-              padding: '6px 0',
-              transition: 'var(--transition)'
-            })}
-            onMouseOver={(e) => {
-              if (e.currentTarget.style.color !== 'var(--primary-text)') {
-                e.currentTarget.style.color = 'var(--accent-color)';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (e.currentTarget.style.borderBottomColor === 'transparent') {
-                e.currentTarget.style.color = 'var(--secondary-text)';
-              } else {
-                e.currentTarget.style.color = 'var(--primary-text)';
-              }
-            }}
+            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
           >
             📊 Bảng điều khiển
           </NavLink>
           <NavLink 
             to="/bookings" 
-            style={({ isActive }) => ({
-              textDecoration: 'none',
-              fontWeight: isActive ? '600' : '500',
-              fontSize: '0.95rem',
-              color: isActive ? 'var(--primary-text)' : 'var(--secondary-text)',
-              borderBottom: isActive ? '2px solid var(--accent-color)' : '2px solid transparent',
-              padding: '6px 0',
-              transition: 'var(--transition)'
-            })}
-            onMouseOver={(e) => {
-              if (e.currentTarget.style.color !== 'var(--primary-text)') {
-                e.currentTarget.style.color = 'var(--accent-color)';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (e.currentTarget.style.borderBottomColor === 'transparent') {
-                e.currentTarget.style.color = 'var(--secondary-text)';
-              } else {
-                e.currentTarget.style.color = 'var(--primary-text)';
-              }
-            }}
+            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
           >
             📅 Lịch đặt chỗ
           </NavLink>
           <NavLink 
             to="/tasks" 
-            style={({ isActive }) => ({
-              textDecoration: 'none',
-              fontWeight: isActive ? '600' : '500',
-              fontSize: '0.95rem',
-              color: isActive ? 'var(--primary-text)' : 'var(--secondary-text)',
-              borderBottom: isActive ? '2px solid var(--accent-color)' : '2px solid transparent',
-              padding: '6px 0',
-              transition: 'var(--transition)'
-            })}
-            onMouseOver={(e) => {
-              if (e.currentTarget.style.color !== 'var(--primary-text)') {
-                e.currentTarget.style.color = 'var(--accent-color)';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (e.currentTarget.style.borderBottomColor === 'transparent') {
-                e.currentTarget.style.color = 'var(--secondary-text)';
-              } else {
-                e.currentTarget.style.color = 'var(--primary-text)';
-              }
-            }}
+            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
           >
             📋 Công việc
           </NavLink>
           <NavLink 
             to="/profile" 
-            style={({ isActive }) => ({
-              textDecoration: 'none',
-              fontWeight: isActive ? '600' : '500',
-              fontSize: '0.95rem',
-              color: isActive ? 'var(--primary-text)' : 'var(--secondary-text)',
-              borderBottom: isActive ? '2px solid var(--accent-color)' : '2px solid transparent',
-              padding: '6px 0',
-              transition: 'var(--transition)'
-            })}
-            onMouseOver={(e) => {
-              if (e.currentTarget.style.color !== 'var(--primary-text)') {
-                e.currentTarget.style.color = 'var(--accent-color)';
-              }
-            }}
-            onMouseOut={(e) => {
-              if (e.currentTarget.style.borderBottomColor === 'transparent') {
-                e.currentTarget.style.color = 'var(--secondary-text)';
-              } else {
-                e.currentTarget.style.color = 'var(--primary-text)';
-              }
-            }}
+            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
           >
             👤 Hồ sơ
           </NavLink>
           {(user.role === 'ADMIN' || user.role === 'STAFF') && (
             <NavLink 
               to="/space-assets" 
-              style={({ isActive }) => ({
-                textDecoration: 'none',
-                fontWeight: isActive ? '600' : '500',
-                fontSize: '0.95rem',
-                color: isActive ? 'var(--primary-text)' : 'var(--secondary-text)',
-                borderBottom: isActive ? '2px solid var(--accent-color)' : '2px solid transparent',
-                padding: '6px 0',
-                transition: 'var(--transition)'
-              })}
-              onMouseOver={(e) => {
-                if (e.currentTarget.style.color !== 'var(--primary-text)') {
-                  e.currentTarget.style.color = 'var(--accent-color)';
-                }
-              }}
-              onMouseOut={(e) => {
-                if (e.currentTarget.style.borderBottomColor === 'transparent') {
-                  e.currentTarget.style.color = 'var(--secondary-text)';
-                } else {
-                  e.currentTarget.style.color = 'var(--primary-text)';
-                }
-              }}
+              className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
             >
               🏢 Quản lý Tài sản
             </NavLink>
@@ -180,19 +60,8 @@ const Navbar: React.FC = () => {
           </span>
           <button 
             onClick={logout}
-            style={{
-              backgroundColor: '#e07a5f',
-              color: '#fff',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '20px',
-              cursor: 'pointer',
-              fontWeight: '500',
-              fontSize: '0.85rem',
-              transition: 'all 0.2s ease-in-out'
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#c65f45')}
-            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#e07a5f')}
+            className="btn btn-danger hover-lift"
+            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
           >
             Đăng xuất
           </button>
