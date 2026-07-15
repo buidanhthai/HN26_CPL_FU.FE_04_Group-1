@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Booking } from '../../types/booking.types';
+import type { Booking } from '../../../types/booking.types';
 
 interface BookingDetailModalProps {
   details: {

@@ -1,5 +1,5 @@
 import api from './api';
-import type { Booking, CreateBookingRequest } from '../types/booking.types';
+import type { Booking, CreateBookingRequest, ActiveBookingResponse } from '../types/booking.types';
 
 export const bookingService = {
   async getBookings(): Promise<Booking[]> {
@@ -60,8 +60,8 @@ export const bookingService = {
     await api.delete(`/bookings/${id}`);
   },
 
-  async getActiveBooking(): Promise<any> {
-    const response = await api.get<any>('/bookings/active');
+  async getActiveBooking(): Promise<ActiveBookingResponse> {
+    const response = await api.get<ActiveBookingResponse>('/bookings/active');
     return response.data;
   },
 

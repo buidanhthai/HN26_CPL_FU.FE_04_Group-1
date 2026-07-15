@@ -30,3 +30,34 @@ export interface CreateBookingRequest {
   customerPhone?: string;
   createdByUserId?: number;
 }
+
+export interface ActiveBookingSpaceAsset {
+  assetName: string;
+  locationName: string;
+  dimensions: string;
+  areaM2: number;
+  capacity: number;
+}
+
+export interface ActiveBookingRoomLayout {
+  layoutName: string;
+}
+
+export interface ActiveBookingService {
+  serviceId: number;
+  serviceName: string;
+  quantity: number;
+  snapshotUnitPrice: number;
+  isIncurred: boolean;
+  paymentStatus: 'Paid' | 'Unpaid';
+}
+
+export interface ActiveBookingResponse {
+  booking: Booking;
+  spaceAsset: ActiveBookingSpaceAsset;
+  roomLayout: ActiveBookingRoomLayout;
+  services: ActiveBookingService[];
+  prepaidFee: number;
+  incurredUnpaidTotal: number;
+  totalAmount: number;
+}
