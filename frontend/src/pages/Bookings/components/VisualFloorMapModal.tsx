@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import theBuildingImg from '../../assets/thebuilding.png';
+import theBuildingImg from '../../../assets/thebuilding.png';
 
 const ROOM_LAYOUTS: Record<number, { top: string; left: string; width: string; height: string }> = {
   1: { top: '65%', left: '26%', width: '22%', height: '24%' }, 

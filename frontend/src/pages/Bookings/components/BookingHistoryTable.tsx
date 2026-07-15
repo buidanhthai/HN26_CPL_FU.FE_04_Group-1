@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Booking } from '../../types/booking.types';
+import type { Booking } from '../../../types/booking.types';
 
 interface BookingHistoryTableProps {
   bookings: Booking[];
@@ -66,7 +66,7 @@ export const BookingHistoryTable: React.FC<BookingHistoryTableProps> = ({
                     <span className={`badge ${
                       b.bookingStatus === 'Confirmed' || b.bookingStatus === 'Checked_In' || b.bookingStatus === 'Checked_Out' ? 'badge-completed' :
                       b.bookingStatus === 'Cancelled' ? 'badge-cancelled' : 'badge-inprogress'
-                    }`}>
+                     }`}>
                       {b.bookingStatus === 'Confirmed' ? 'Đã xác nhận' :
                        b.bookingStatus === 'Cancelled' ? 'Đã hủy' :
                        b.bookingStatus === 'Awaiting_Payment' ? 'Chờ thanh toán' :

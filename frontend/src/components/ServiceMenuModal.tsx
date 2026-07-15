@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { bookingService } from '../../services/bookingService';
+import { bookingService } from '../services/bookingService';
 
 interface ServiceMenuModalProps {
   isOpen: boolean;
