@@ -67,22 +67,9 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
           <span
             style={{ fontSize: '0.85rem', color: 'var(--secondary-text)', fontWeight: 'bold' }}
           >
-            Mã booking: #{activeBooking.booking.id}
+            Mã booking: {activeBooking.booking.bookingCode}
           </span>
         </div>
-        {activeBooking.booking.checkInVerificationCode && (
-          <div
-            style={{
-              backgroundColor: 'rgba(212, 163, 115, 0.15)',
-              border: '1px solid var(--accent-color)',
-              padding: '4px 12px',
-              borderRadius: '8px',
-              fontSize: '0.85rem',
-            }}
-          >
-            Mã check-in: <strong>{activeBooking.booking.checkInVerificationCode}</strong>
-          </div>
-        )}
       </div>
 
       {/* Room info */}

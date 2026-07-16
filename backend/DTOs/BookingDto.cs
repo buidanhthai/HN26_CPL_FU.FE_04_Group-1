@@ -16,10 +16,11 @@ namespace backend.DTOs
         public decimal SnapshotBasePrice { get; set; }
         public decimal SnapshotPriceModifier { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string? CheckInVerificationCode { get; set; }
+        public string BookingCode { get; set; } = string.Empty;
         public string? CustomerName { get; set; }
         public string? CustomerPhone { get; set; }
         public int? CreatedByUserId { get; set; }
+        public string? SetupTaskStatus { get; set; }
     }
 
     public class CreateBookingDto

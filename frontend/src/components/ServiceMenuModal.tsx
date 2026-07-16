@@ -91,10 +91,10 @@ export const ServiceMenuModal: React.FC<ServiceMenuModalProps> = ({
       setErrorMsg('');
       setSuccessMsg('');
 
-      // Submit all orders sequentially to be safe
-      for (const item of orderItems) {
-        await bookingService.orderAddonService(bookingId, item.serviceId, item.quantity);
-      }
+      await bookingService.orderAddonServices(
+        bookingId,
+        orderItems.map((item) => ({ serviceId: item.serviceId, quantity: item.quantity }))
+      );
 
       setSuccessMsg('Gọi dịch vụ thành công! Các món đã được thêm vào hóa đơn của bạn.');
       setQuantities({}); // Reset quantities

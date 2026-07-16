@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddHostedService<backend.Services.BookingTimeoutService>();
+builder.Services.AddHostedService<backend.Services.BookingSetupTaskService>();
 
 // Configure EF Core MySQL Database Connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

@@ -91,8 +91,8 @@ export function useBookings() {
       return;
     }
 
-    const startDateTime = new Date(`${startDate}T${startTimeStr}:00Z`);
-    const endDateTime = new Date(`${endDate}T${endTimeStr}:00Z`);
+    const startDateTime = new Date(`${startDate}T${startTimeStr}:00`);
+    const endDateTime = new Date(`${endDate}T${endTimeStr}:00`);
 
     if (startDateTime >= endDateTime) {
       setError('Thời gian kết thúc phải sau thời gian bắt đầu.');
@@ -140,19 +140,9 @@ export function useBookings() {
     }
   };
 
-  const handleRequestCheckin = async (id: number) => {
+  const handleCheckin = async (id: number) => {
     try {
-      await bookingService.requestCheckinCode(id);
-      alert('Yêu cầu mã check-in thành công!');
-      fetchBookings();
-    } catch (e: any) {
-      alert(e.response?.data?.message || 'Lỗi yêu cầu mã check-in');
-    }
-  };
-
-  const handleCheckin = async (id: number, code: string) => {
-    try {
-      await bookingService.checkinBooking(id, code);
+      await bookingService.checkinBooking(id);
       alert('Check-in thành công!');
       fetchBookings();
     } catch (e: any) {
@@ -217,7 +207,6 @@ export function useBookings() {
     fetchBookings,
     handleCreate,
     handleDelete,
-    handleRequestCheckin,
     handleCheckin,
     handlePayFinal,
     handleConfirmCheckout,

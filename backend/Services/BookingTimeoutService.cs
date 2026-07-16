@@ -45,7 +45,7 @@ namespace backend.Services
                 var expiredBookings = await dbContext.Bookings
                     .Where(b => b.BookingStatus == "Awaiting_Payment" 
                                 && b.PaymentDeadline.HasValue 
-                                && b.PaymentDeadline.Value < backend.Helpers.TimeHelper.GetVietnamTime())
+                                && b.PaymentDeadline.Value < DateTime.UtcNow)
                     .ToListAsync();
 
                 if (expiredBookings.Any())

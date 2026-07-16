@@ -14,7 +14,8 @@ namespace backend.Data.Configurations
             builder.Property(e => e.SnapshotBasePrice).HasPrecision(12, 2);
             builder.Property(e => e.SnapshotPriceModifier).HasPrecision(12, 2).HasDefaultValue(0);
             builder.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            builder.Property(e => e.CheckInVerificationCode).HasMaxLength(10);
+            builder.Property(e => e.BookingCode).IsRequired().HasMaxLength(50);
+            builder.HasIndex(e => e.BookingCode).IsUnique();
 
             builder.HasOne(e => e.User)
                   .WithMany(u => u.Bookings)
