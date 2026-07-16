@@ -51,9 +51,9 @@ namespace backend.Data
 
         public static List<Booking> GetBookings() => new List<Booking>
         {
-            new Booking { Id = 1, UserId = 3, AssetId = 1, LayoutId = 1, StartTime = DateTime.UtcNow.AddDays(1), EndTime = DateTime.UtcNow.AddDays(1).AddHours(2), BookingStatus = "Awaiting_Payment", SnapshotBasePrice = 50000m, SnapshotPriceModifier = 0m, PaymentDeadline = DateTime.UtcNow.AddMinutes(10), CreatedAt = DateTime.UtcNow },
-            new Booking { Id = 2, UserId = 4, AssetId = 2, LayoutId = 1, StartTime = DateTime.UtcNow.AddDays(2), EndTime = DateTime.UtcNow.AddDays(2).AddHours(4), BookingStatus = "Confirmed", SnapshotBasePrice = 1200000m, SnapshotPriceModifier = 50000m, CreatedAt = DateTime.UtcNow },
-            new Booking { Id = 3, UserId = 3, AssetId = 2, LayoutId = 2, StartTime = DateTime.UtcNow.AddHours(-1), EndTime = DateTime.UtcNow.AddHours(2), BookingStatus = "Checked_In", SnapshotBasePrice = 900000m, SnapshotPriceModifier = 0m, CreatedAt = DateTime.UtcNow }
+            new Booking { Id = 1, UserId = 3, AssetId = 1, LayoutId = 1, StartTime = DateTime.UtcNow.AddDays(1), EndTime = DateTime.UtcNow.AddDays(1).AddHours(2), BookingStatus = "Awaiting_Payment", BookingCode = "BK-260716-01", SnapshotBasePrice = 50000m, SnapshotPriceModifier = 0m, PaymentDeadline = DateTime.UtcNow.AddMinutes(10), CreatedAt = DateTime.UtcNow },
+            new Booking { Id = 2, UserId = 4, AssetId = 2, LayoutId = 1, StartTime = DateTime.UtcNow.AddDays(2), EndTime = DateTime.UtcNow.AddDays(2).AddHours(4), BookingStatus = "Confirmed", BookingCode = "BK-260716-02", SnapshotBasePrice = 1200000m, SnapshotPriceModifier = 50000m, CreatedAt = DateTime.UtcNow },
+            new Booking { Id = 3, UserId = 3, AssetId = 2, LayoutId = 2, StartTime = DateTime.UtcNow.AddHours(-1), EndTime = DateTime.UtcNow.AddHours(2), BookingStatus = "Checked_In", BookingCode = "BK-260716-03", SnapshotBasePrice = 900000m, SnapshotPriceModifier = 0m, CreatedAt = DateTime.UtcNow }
         };
 
         public static List<InternalTask> GetInternalTasks() => new List<InternalTask>

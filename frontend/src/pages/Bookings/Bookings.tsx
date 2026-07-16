@@ -33,7 +33,6 @@ const Bookings: React.FC = () => {
     fetchBookings,
     handleCreate,
     handleDelete,
-    handleRequestCheckin,
     handleCheckin,
     handlePayFinal,
     handleConfirmCheckout,
@@ -89,7 +88,6 @@ const Bookings: React.FC = () => {
                 alert(e.response?.data?.message || 'Lỗi khi chuẩn bị checkout');
               }
             }}
-            onRequestCheckin={handleRequestCheckin}
             onCheckin={handleCheckin}
             onDelete={handleDelete}
             loading={loading}

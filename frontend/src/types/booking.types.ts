@@ -11,7 +11,8 @@ export interface Booking {
   snapshotBasePrice: number;
   snapshotPriceModifier: number;
   createdAt: string;
-  checkInVerificationCode?: string;
+  bookingCode: string;
+  setupTaskStatus?: string;
   customerName?: string;
   customerPhone?: string;
   createdByUserId?: number;

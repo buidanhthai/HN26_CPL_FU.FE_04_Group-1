@@ -16,13 +16,8 @@ export const bookingService = {
     await api.put(`/bookings/${id}/pay`);
   },
 
-  async requestCheckinCode(id: number): Promise<any> {
-    const response = await api.put(`/bookings/${id}/request-checkin`);
-    return response.data;
-  },
-
-  async checkinBooking(id: number, code: string): Promise<any> {
-    const response = await api.put(`/bookings/${id}/checkin?code=${code}`);
+  async checkinBooking(id: number): Promise<any> {
+    const response = await api.post(`/bookings/${id}/check-in`);
     return response.data;
   },
 
@@ -32,7 +27,7 @@ export const bookingService = {
   },
 
   async checkoutBooking(bookingId: number): Promise<any> {
-    const response = await api.put<any>(`/bookings/${bookingId}/checkout`);
+    const response = await api.post<any>(`/bookings/${bookingId}/confirm-checkout`);
     return response.data;
   },
 
@@ -72,7 +67,14 @@ export const bookingService = {
   },
 
   async orderAddonService(bookingId: number, serviceId: number, quantity: number): Promise<any> {
-    const response = await api.post<any>(`/bookings/${bookingId}/services`, { serviceId, quantity });
+    const response = await api.post<any>(`/bookings/${bookingId}/services`, {
+      services: [{ serviceId, quantity }]
+    });
+    return response.data;
+  },
+
+  async orderAddonServices(bookingId: number, services: { serviceId: number; quantity: number }[]): Promise<any> {
+    const response = await api.post<any>(`/bookings/${bookingId}/services`, { services });
     return response.data;
   },
 

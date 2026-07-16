@@ -46,7 +46,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
     <div className="modal-overlay">
       <div className="modal-content" style={{ width: '650px' }}>
         <h3 className="modal-title">
-          CHI TIẾT ĐƠN ĐẶT PHÒNG #{booking.id}
+          CHI TIẾT ĐƠN ĐẶT PHÒNG: {booking.bookingCode}
         </h3>
 
         {/* Room details */}
@@ -86,14 +86,14 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
             <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: '500' }}>{layoutName}</p>
           </div>
 
-          {booking.checkInVerificationCode && (
+          {booking.bookingCode && (
             <div style={{ gridColumn: 'span 2', backgroundColor: 'rgba(212, 163, 115, 0.12)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--accent-color)', marginBottom: '8px' }}>
-              <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Mã xác nhận Check-in:</span>
+              <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Mã Đơn Đặt Chỗ (Booking Code):</span>
               <p style={{ margin: '4px 0 0 0', fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--primary-text)', letterSpacing: '2px', fontFamily: 'monospace' }}>
-                {booking.checkInVerificationCode}
+                {booking.bookingCode}
               </p>
               <span style={{ fontSize: '0.75rem', color: 'var(--secondary-text)', fontStyle: 'italic' }}>
-                * Xuất trình mã này cho nhân viên lễ tân khi bạn đến Cozy Space để nhận phòng.
+                * Xuất trình mã đặt chỗ này cho lễ tân khi làm thủ tục nhận phòng.
               </span>
             </div>
           )}
