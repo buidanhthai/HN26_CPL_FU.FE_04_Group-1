@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import theBuildingImg from '../assets/thebuilding.png';
+import api from '../services/api';
 
 // 1. Định nghĩa kiểu dữ liệu phòng nhận từ API MySQL
 interface MeetingRoom {
@@ -46,38 +47,37 @@ export default function FloorSelection() {
   const [hoveredRoom, setHoveredRoom] = useState<MeetingRoom | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  // 3. Gọi API Backend lấy danh sách phòng từ MySQL theo Lầu
-    // 3. Sử dụng dữ liệu giả lập (Mock Data) để hiển thị hitbox và test tính năng hover
   useEffect(() => {
     setLoading(true);
     setSelectedRoom(null); // Reset phòng khi chuyển tầng
     setHoveredRoom(null);  // Reset phòng khi chuyển tầng
 
-    // Mảng dữ liệu giả lập giống hệt cấu trúc MySQL để test vị trí
-    const mockDBRooms = [
-      // Lầu 1 (Gồm 3 phòng ứng với ID từ 1 đến 3)
-      { Id: 1, LocationName: 'Lầu 1', AssetName: 'Hội Trường Lớn 101', AssetType: 'Meeting_Room', BasePrice: 300000, Capacity: 15, Dimensions: '6m x 5m', AreaM2: 30, IsActive: 1 },
-      { Id: 2, LocationName: 'Lầu 1', AssetName: 'Họp Chiến Lược 102', AssetType: 'Meeting_Room', BasePrice: 250000, Capacity: 10, Dimensions: '5m x 4m', AreaM2: 20, IsActive: 1 },
-      { Id: 3, LocationName: 'Lầu 1', AssetName: 'Tiếp Khách VIP 103', AssetType: 'Meeting_Room', BasePrice: 200000, Capacity: 6, Dimensions: '4m x 4m', AreaM2: 16, IsActive: 1 },
-      
-      // Lầu 2 (Gồm 4 phòng ứng với ID từ 4 đến 7)
-      { Id: 4, LocationName: 'Lầu 2', AssetName: 'Phòng Dự Án 201', AssetType: 'Meeting_Room', BasePrice: 150000, Capacity: 6, Dimensions: '4m x 3m', AreaM2: 12, IsActive: 1 },
-      { Id: 5, LocationName: 'Lầu 2', AssetName: 'Phòng Dự Án 202', AssetType: 'Meeting_Room', BasePrice: 150000, Capacity: 6, Dimensions: '4m x 3m', AreaM2: 12, IsActive: 1 },
-      { Id: 6, LocationName: 'Lầu 2', AssetName: 'Phòng Phỏng Vấn 203', AssetType: 'Meeting_Room', BasePrice: 100000, Capacity: 4, Dimensions: '3m x 3m', AreaM2: 9, IsActive: 1 },
-      { Id: 7, LocationName: 'Lầu 2', AssetName: 'Phòng Nghiên Cứu 204', AssetType: 'Meeting_Room', BasePrice: 200000, Capacity: 8, Dimensions: '4m x 4m', AreaM2: 16, IsActive: 1 },
-      
-      // Lầu 3 (Gồm 4 phòng ứng với ID từ 8 đến 11)
-      { Id: 8, LocationName: 'Lầu 3', AssetName: 'Họp Nhóm A', AssetType: 'Meeting_Room', BasePrice: 120000, Capacity: 5, Dimensions: '3.5m x 3m', AreaM2: 10.5, IsActive: 1 },
-      { Id: 9, LocationName: 'Lầu 3', AssetName: 'Họp Nhóm B', AssetType: 'Meeting_Room', BasePrice: 120000, Capacity: 5, Dimensions: '3.5m x 3m', AreaM2: 10.5, IsActive: 1 },
-      { Id: 10, LocationName: 'Lầu 3', AssetName: 'Hội Thảo 303', AssetType: 'Meeting_Room', BasePrice: 250000, Capacity: 12, Dimensions: '5m x 5m', AreaM2: 25, IsActive: 1 },
-      { Id: 11, LocationName: 'Lầu 3', AssetName: 'Đào Tạo 304', AssetType: 'Meeting_Room', BasePrice: 400000, Capacity: 20, Dimensions: '8m x 5m', AreaM2: 40, IsActive: 1 }
-    ];
-
-    // Lọc ra các phòng thuộc lầu đang chọn
-    const filtered = mockDBRooms.filter(room => room.LocationName === currentFloor);
-    
-    setRooms(filtered);
-    setLoading(false);
+    api.get<any[]>('/space-assets')
+      .then((res) => {
+        // Lọc các phòng thuộc lầu đang chọn
+        const filtered = res.data.filter(
+          (room) => (room.locationName || room.LocationName) === currentFloor
+        );
+        const mapped = filtered.map((room) => ({
+          Id: room.id || room.Id,
+          LocationName: room.locationName || room.LocationName,
+          AssetName: room.assetName || room.AssetName,
+          AssetType: room.assetType || room.AssetType,
+          BasePrice: room.basePrice || room.BasePrice,
+          Capacity: room.capacity || room.Capacity,
+          Dimensions: room.dimensions || room.Dimensions,
+          AreaM2: room.areaM2 || room.AreaM2,
+          IsActive: room.isActive ?? room.IsActive ? 1 : 0
+        }));
+        setRooms(mapped);
+      })
+      .catch((err) => {
+        console.error('Error fetching floor rooms:', err);
+        setRooms([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [currentFloor]);
 
 
@@ -204,7 +204,9 @@ export default function FloorSelection() {
                 <p style={{ marginBottom: '8px' }}><strong>Giá thuê:</strong> <span style={{ color: '#e07a5f', fontWeight: 'bold' }}>{selectedRoom.BasePrice.toLocaleString()} đ/h</span></p>
                 
                 <button
-                  onClick={() => alert(`Đã tạo đơn đăng ký thành công cho phòng: ${selectedRoom.AssetName}`)}
+                  onClick={() => {
+                    navigate('/bookings', { state: { selectedAssetId: selectedRoom.Id } });
+                  }}
                   className="btn btn-primary"
                   style={{ width: '100%', marginTop: '15px', padding: '12px' }}
                 >

@@ -20,6 +20,7 @@ namespace backend.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAvailableServices()
         {
             var services = await _context.AddOnServices

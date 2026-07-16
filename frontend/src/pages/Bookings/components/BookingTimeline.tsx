@@ -18,8 +18,8 @@ export const BookingTimeline: React.FC<BookingTimelineProps> = ({
 }) => {
 
   const getOverlappingBooking = (assetId: number, hour: number) => {
-    const targetStart = new Date(`${timelineDate}T${String(hour).padStart(2, '0')}:00:00Z`);
-    const targetEnd = new Date(`${timelineDate}T${String(hour + 1).padStart(2, '0')}:00:00Z`);
+    const targetStart = new Date(`${timelineDate}T${String(hour).padStart(2, '0')}:00:00`);
+    const targetEnd = new Date(`${timelineDate}T${String(hour + 1).padStart(2, '0')}:00:00`);
 
     return bookings.find((b) => {
       if (b.assetId !== assetId || b.bookingStatus === 'Cancelled') return false;
@@ -131,7 +131,7 @@ export const BookingTimeline: React.FC<BookingTimelineProps> = ({
                     }}
                     onClick={() => {
                       if (booking) {
-                        onSelectBooking({ booking, services: [], logs: [], invoices: [] });
+                        onSelectBooking(booking);
                       }
                     }}
                   >

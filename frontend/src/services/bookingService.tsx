@@ -60,8 +60,9 @@ export const bookingService = {
     await api.delete(`/bookings/${id}`);
   },
 
-  async getActiveBooking(): Promise<ActiveBookingResponse> {
-    const response = await api.get<ActiveBookingResponse>('/bookings/active');
+  async getActiveBooking(bookingId?: number): Promise<ActiveBookingResponse | null> {
+    const url = bookingId ? `/bookings/active?bookingId=${bookingId}` : '/bookings/active';
+    const response = await api.get<ActiveBookingResponse | null>(url);
     return response.data;
   },
 
@@ -72,6 +73,11 @@ export const bookingService = {
 
   async orderAddonService(bookingId: number, serviceId: number, quantity: number): Promise<any> {
     const response = await api.post<any>(`/bookings/${bookingId}/services`, { serviceId, quantity });
+    return response.data;
+  },
+
+  async calculateEstimate(assetId: number, layoutId: number, duration: number, selectedAddonIds: number[]): Promise<any> {
+    const response = await api.post<any>('/bookings/calculate-estimate', { assetId, layoutId, duration, selectedAddonIds });
     return response.data;
   }
 };

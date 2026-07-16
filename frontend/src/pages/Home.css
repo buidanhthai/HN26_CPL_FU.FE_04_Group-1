@@ -43,6 +43,7 @@
     cursor: pointer;
     background: linear-gradient(90deg, var(--primary-text) 0%, var(--accent-color) 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 

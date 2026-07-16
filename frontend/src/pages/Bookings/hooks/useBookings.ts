@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AuthContext } from '../../../context/AuthContext';
 import { bookingService } from '../../../services/bookingService';
 import api from '../../../services/api';
@@ -7,13 +8,15 @@ import type { Booking, CreateBookingRequest } from '../../../types/booking.types
 export function useBookings() {
   const authContext = useContext(AuthContext);
   const user = authContext?.user;
+  const location = useLocation();
 
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [spaceAssets, setSpaceAssets] = useState<any[]>([]);
 
   // Form state
-  const [assetId, setAssetId] = useState(2);
+  const stateAssetId = (location.state as any)?.selectedAssetId;
+  const [assetId, setAssetId] = useState<number>(stateAssetId ? Number(stateAssetId) : 2);
   const [layoutId, setLayoutId] = useState(1);
   const [startDate, setStartDate] = useState('');
   const [startTimeStr, setStartTimeStr] = useState('09:00');
@@ -60,20 +63,7 @@ export function useBookings() {
       setSpaceAssets(res.data);
     } catch (err) {
       console.error('Error fetching space assets:', err);
-      // Fallback mock assets matching the database seed and FloorSelection layout
-      setSpaceAssets([
-        { id: 1, locationName: 'Lầu 1', assetName: 'Hội Trường Lớn 101', assetType: 'Meeting_Room', basePrice: 300000, capacity: 15, dimensions: '6m x 5m', areaM2: 30, isActive: true },
-        { id: 2, locationName: 'Lầu 1', assetName: 'Họp Chiến Lược 102', assetType: 'Meeting_Room', basePrice: 250000, capacity: 10, dimensions: '5m x 4m', areaM2: 20, isActive: true },
-        { id: 3, locationName: 'Lầu 1', assetName: 'Tiếp Khách VIP 103', assetType: 'Meeting_Room', basePrice: 200000, capacity: 6, dimensions: '4m x 4m', areaM2: 16, isActive: true },
-        { id: 4, locationName: 'Lầu 2', assetName: 'Phòng Dự Án 201', assetType: 'Meeting_Room', basePrice: 150000, capacity: 6, dimensions: '4m x 3m', areaM2: 12, isActive: true },
-        { id: 5, locationName: 'Lầu 2', assetName: 'Phòng Dự Án 202', assetType: 'Meeting_Room', basePrice: 150000, capacity: 6, dimensions: '4m x 3m', areaM2: 12, isActive: true },
-        { id: 6, locationName: 'Lầu 2', assetName: 'Phòng Phỏng Vấn 203', assetType: 'Meeting_Room', basePrice: 100000, capacity: 4, dimensions: '3m x 3m', areaM2: 9, isActive: true },
-        { id: 7, locationName: 'Lầu 2', assetName: 'Phòng Nghiên Cứu 204', assetType: 'Meeting_Room', basePrice: 200000, capacity: 8, dimensions: '4m x 4m', areaM2: 16, isActive: true },
-        { id: 8, locationName: 'Lầu 3', assetName: 'Họp Nhóm A', assetType: 'Meeting_Room', basePrice: 120000, capacity: 5, dimensions: '3.5m x 3m', areaM2: 10.5, isActive: true },
-        { id: 9, locationName: 'Lầu 3', assetName: 'Họp Nhóm B', assetType: 'Meeting_Room', basePrice: 120000, capacity: 5, dimensions: '3.5m x 3m', areaM2: 10.5, isActive: true },
-        { id: 10, locationName: 'Lầu 3', assetName: 'Hội Thảo 303', assetType: 'Meeting_Room', basePrice: 250000, capacity: 12, dimensions: '5m x 5m', areaM2: 25, isActive: true },
-        { id: 11, locationName: 'Lầu 3', assetName: 'Đào Tạo 304', assetType: 'Meeting_Room', basePrice: 400000, capacity: 20, dimensions: '8m x 5m', areaM2: 40, isActive: true },
-      ]);
+      setSpaceAssets([]);
     }
   };
 

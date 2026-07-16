@@ -26,18 +26,39 @@ namespace backend.Controllers
 
         [HttpGet("active")]
         [Authorize(Roles = "USER,STAFF,ADMIN")]
-        public async Task<IActionResult> GetActiveBooking()
+        public async Task<IActionResult> GetActiveBooking([FromQuery] int? bookingId = null)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             int currentUserId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
 
-            // Lấy đơn đặt chỗ đang hoạt động (Checked_In) của user hiện tại
-            var booking = await _context.Bookings
+            var query = _context.Bookings
                 .Include(b => b.SpaceAsset)
                 .Include(b => b.RoomLayout)
                 .Include(b => b.BookingServiceDetails)
                     .ThenInclude(sd => sd.AddOnService)
-                .FirstOrDefaultAsync(b => b.UserId == currentUserId && b.BookingStatus == "Checked_In");
+                .AsQueryable();
+
+            Booking? booking = null;
+
+            if (bookingId.HasValue)
+            {
+                booking = await query.FirstOrDefaultAsync(b => b.Id == bookingId.Value && b.UserId == currentUserId);
+            }
+            else
+            {
+                // Lấy đơn đặt chỗ đang hoạt động (Checked_In) hoặc đơn gần nhất chưa kết thúc
+                booking = await query
+                    .Where(b => b.UserId == currentUserId && b.BookingStatus == "Checked_In")
+                    .FirstOrDefaultAsync();
+
+                if (booking == null)
+                {
+                    booking = await query
+                        .Where(b => b.UserId == currentUserId && b.BookingStatus != "Cancelled" && b.BookingStatus != "Checked_Out")
+                        .OrderBy(b => b.StartTime)
+                        .FirstOrDefaultAsync();
+                }
+            }
 
             if (booking == null)
             {
@@ -641,6 +662,8 @@ namespace backend.Controllers
         {
             var booking = await _context.Bookings
                 .Include(b => b.User)
+                .Include(b => b.SpaceAsset)
+                .Include(b => b.RoomLayout)
                 .Include(b => b.BookingServiceDetails)
                     .ThenInclude(sd => sd.AddOnService)
                 .Include(b => b.BookingLogs)
@@ -679,7 +702,7 @@ namespace backend.Controllers
                 }).ToList();
 
             var invoices = booking.Invoices
-                .Select(i => new
+                .Select(i => (object)new
                 {
                     i.Id,
                     i.TotalAmount,
@@ -689,6 +712,24 @@ namespace backend.Controllers
                     i.PaymentStatus,
                     i.CreatedAt
                 }).ToList();
+
+            if (invoices.Count == 0)
+            {
+                decimal roomCost = booking.SnapshotBasePrice + booking.SnapshotPriceModifier;
+                decimal serviceCost = booking.BookingServiceDetails.Sum(sd => sd.SnapshotUnitPrice * sd.Quantity);
+                decimal totalAmount = roomCost + serviceCost;
+
+                invoices.Add(new
+                {
+                    Id = 0,
+                    TotalAmount = totalAmount,
+                    PaidUpfront = (booking.BookingStatus == "Confirmed" || booking.BookingStatus == "Checked_In" || booking.BookingStatus == "Checked_Out") ? totalAmount : 0m,
+                    FinalDue = (booking.BookingStatus == "Confirmed" || booking.BookingStatus == "Checked_In" || booking.BookingStatus == "Checked_Out") ? 0m : totalAmount,
+                    InvoiceType = "Upfront",
+                    PaymentStatus = (booking.BookingStatus == "Confirmed" || booking.BookingStatus == "Checked_In" || booking.BookingStatus == "Checked_Out") ? "Paid" : "Unpaid",
+                    CreatedAt = booking.CreatedAt
+                });
+            }
 
             object? userInfo = null;
             if (userRole != "USER")
@@ -718,10 +759,76 @@ namespace backend.Controllers
                     CreatedAt = booking.CreatedAt,
                     CheckInVerificationCode = booking.CheckInVerificationCode
                 },
+                spaceAsset = new
+                {
+                    booking.SpaceAsset?.AssetName,
+                    booking.SpaceAsset?.LocationName,
+                    booking.SpaceAsset?.Capacity,
+                    booking.SpaceAsset?.Dimensions,
+                    booking.SpaceAsset?.AreaM2,
+                    booking.SpaceAsset?.AssetType
+                },
+                roomLayout = new
+                {
+                    booking.RoomLayout?.LayoutName,
+                    booking.RoomLayout?.SetupDurationMinutes
+                },
                 user = userInfo,
                 services,
                 logs,
                 invoices
+            });
+        }
+
+        [HttpPost("calculate-estimate")]
+        [AllowAnonymous]
+        public async Task<IActionResult> CalculateEstimate([FromBody] CalculateEstimateDto dto)
+        {
+            var asset = await _context.SpaceAssets.FindAsync(dto.AssetId);
+            if (asset == null) return NotFound(new { message = "Không tìm thấy không gian." });
+
+            decimal basePrice = asset.BasePrice;
+            decimal priceModifier = 0;
+
+            if (dto.LayoutId > 0)
+            {
+                var layout = await _context.RoomLayouts.FindAsync(dto.LayoutId);
+                if (layout != null)
+                {
+                    priceModifier = layout.PriceModifier;
+                }
+            }
+
+            decimal spaceCost = (basePrice + priceModifier) * dto.Duration;
+            decimal addonsCost = 0;
+
+            if (dto.SelectedAddonIds != null && dto.SelectedAddonIds.Any())
+            {
+                var services = await _context.AddOnServices
+                    .Where(s => dto.SelectedAddonIds.Contains(s.Id) && s.IsAvailable)
+                    .ToListAsync();
+
+                foreach (var serviceId in dto.SelectedAddonIds)
+                {
+                    var service = services.FirstOrDefault(s => s.Id == serviceId);
+                    if (service == null) continue;
+
+                    if (service.ChargeMethod == "By_Hour")
+                    {
+                        addonsCost += service.UnitPrice * dto.Duration;
+                    }
+                    else
+                    {
+                        addonsCost += service.UnitPrice;
+                    }
+                }
+            }
+
+            return Ok(new EstimateResultDto
+            {
+                SpaceCost = spaceCost,
+                AddonsCost = addonsCost,
+                TotalAmount = spaceCost + addonsCost
             });
         }
 

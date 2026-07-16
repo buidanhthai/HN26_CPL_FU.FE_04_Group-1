@@ -100,7 +100,14 @@ const Bookings: React.FC = () => {
             spaceAssets={spaceAssets}
             timelineDate={timelineDate}
             setTimelineDate={setTimelineDate}
-            onSelectBooking={setSelectedBookingDetails}
+            onSelectBooking={async (b) => {
+              try {
+                const details = await bookingService.getBookingDetails(b.id);
+                setSelectedBookingDetails(details);
+              } catch {
+                alert('Lỗi khi tải chi tiết đặt chỗ.');
+              }
+            }}
           />
         )}
 

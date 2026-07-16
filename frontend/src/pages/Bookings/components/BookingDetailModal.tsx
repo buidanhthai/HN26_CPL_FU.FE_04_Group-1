@@ -4,6 +4,18 @@ import type { Booking } from '../../../types/booking.types';
 interface BookingDetailModalProps {
   details: {
     booking: Booking;
+    spaceAsset?: {
+      assetName: string;
+      locationName: string;
+      capacity: number;
+      dimensions: string;
+      areaM2: number;
+      assetType: string;
+    };
+    roomLayout?: {
+      layoutName: string;
+      setupDurationMinutes: number;
+    };
     user?: { fullName: string; email: string };
     services: any[];
     logs: any[];
@@ -20,7 +32,15 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 }) => {
   if (!details) return null;
 
-  const { booking, user, services, logs, invoices } = details;
+  const { booking, user, services, logs, invoices, spaceAsset: apiSpaceAsset, roomLayout } = details;
+
+  // Tìm thông tin phòng từ DB qua ID nếu API không trả về
+  const dbSpaceAsset = spaceAssets.find(a => a.id === booking.assetId || a.Id === booking.assetId);
+  const locationName = apiSpaceAsset?.locationName ?? dbSpaceAsset?.locationName ?? dbSpaceAsset?.LocationName ?? 'N/A';
+  const dimensions = apiSpaceAsset?.dimensions ?? dbSpaceAsset?.dimensions ?? dbSpaceAsset?.Dimensions ?? 'N/A';
+  const areaM2 = apiSpaceAsset?.areaM2 ?? dbSpaceAsset?.areaM2 ?? dbSpaceAsset?.AreaM2 ?? 0;
+  const capacity = apiSpaceAsset?.capacity ?? dbSpaceAsset?.capacity ?? dbSpaceAsset?.Capacity ?? 0;
+  const layoutName = roomLayout?.layoutName ?? (booking.layoutId === 1 ? 'Chữ U' : 'Lớp học');
 
   return (
     <div className="modal-overlay">
@@ -34,7 +54,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           <div>
             <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Phòng đặt:</span>
             <p style={{ margin: '4px 0 0 0', fontWeight: '600' }}>
-              {spaceAssets.find(a => a.id === booking.assetId)?.assetName || `Phòng #${booking.assetId}`}
+              {apiSpaceAsset?.assetName ?? dbSpaceAsset?.assetName ?? dbSpaceAsset?.AssetName ?? `Phòng #${booking.assetId}`}
             </p>
           </div>
           <div>
@@ -47,6 +67,25 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                booking.bookingStatus === 'Cancelled' ? 'Đã hủy do chưa thanh toán đặt trước' : booking.bookingStatus}
             </p>
           </div>
+
+          {/* New detailed fields */}
+          <div>
+            <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>📍 Vị trí:</span>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: '500' }}>{locationName}</p>
+          </div>
+          <div>
+            <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>📐 Kích thước:</span>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: '500' }}>{dimensions} ({areaM2} m²)</p>
+          </div>
+          <div>
+            <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>👥 Sức chứa:</span>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: '500' }}>{capacity} người</p>
+          </div>
+          <div>
+            <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>🛋️ Sơ đồ bày trí:</span>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: '500' }}>{layoutName}</p>
+          </div>
+
           {booking.checkInVerificationCode && (
             <div style={{ gridColumn: 'span 2', backgroundColor: 'rgba(212, 163, 115, 0.12)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--accent-color)', marginBottom: '8px' }}>
               <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Mã xác nhận Check-in:</span>

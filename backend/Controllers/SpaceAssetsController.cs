@@ -30,11 +30,15 @@ namespace backend.Controllers
                 .Select(a => new SpaceAssetDto
                 {
                     Id = a.Id,
+                    LocationName = a.LocationName,
                     AssetName = a.AssetName,
                     AssetType = a.AssetType,
                     Capacity = a.Capacity,
+                    Dimensions = a.Dimensions,
+                    AreaM2 = a.AreaM2,
                     BasePrice = a.BasePrice,
-                    IsActive = a.IsActive
+                    IsActive = a.IsActive,
+                    Description = a.Description
                 })
                 .ToListAsync();
 
@@ -47,11 +51,15 @@ namespace backend.Controllers
         {
             var asset = new SpaceAsset
             {
+                LocationName = dto.LocationName,
                 AssetName = dto.AssetName,
                 AssetType = dto.AssetType,
                 Capacity = dto.Capacity,
+                Dimensions = dto.Dimensions,
+                AreaM2 = dto.AreaM2,
                 BasePrice = dto.BasePrice,
-                IsActive = true
+                IsActive = true,
+                Description = dto.Description
             };
 
             _context.SpaceAssets.Add(asset);
@@ -60,11 +68,15 @@ namespace backend.Controllers
             return CreatedAtAction(nameof(GetAll), new { id = asset.Id }, new SpaceAssetDto
             {
                 Id = asset.Id,
+                LocationName = asset.LocationName,
                 AssetName = asset.AssetName,
                 AssetType = asset.AssetType,
                 Capacity = asset.Capacity,
+                Dimensions = asset.Dimensions,
+                AreaM2 = asset.AreaM2,
                 BasePrice = asset.BasePrice,
-                IsActive = asset.IsActive
+                IsActive = asset.IsActive,
+                Description = asset.Description
             });
         }
 
@@ -75,21 +87,29 @@ namespace backend.Controllers
             var asset = await _context.SpaceAssets.FindAsync(id);
             if (asset == null) return NotFound();
 
+            asset.LocationName = dto.LocationName;
             asset.AssetName = dto.AssetName;
             asset.AssetType = dto.AssetType;
             asset.Capacity = dto.Capacity;
+            asset.Dimensions = dto.Dimensions;
+            asset.AreaM2 = dto.AreaM2;
             asset.BasePrice = dto.BasePrice;
+            asset.Description = dto.Description;
 
             await _context.SaveChangesAsync();
 
             return Ok(new SpaceAssetDto
             {
                 Id = asset.Id,
+                LocationName = asset.LocationName,
                 AssetName = asset.AssetName,
                 AssetType = asset.AssetType,
                 Capacity = asset.Capacity,
+                Dimensions = asset.Dimensions,
+                AreaM2 = asset.AreaM2,
                 BasePrice = asset.BasePrice,
-                IsActive = asset.IsActive
+                IsActive = asset.IsActive,
+                Description = asset.Description
             });
         }
 
