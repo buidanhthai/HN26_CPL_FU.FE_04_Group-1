@@ -7,6 +7,26 @@ interface BillDetailsCardProps {
 }
 
 const BillDetailsCard: React.FC<BillDetailsCardProps> = ({ activeBooking, formatCurrency }) => {
+  // Tiền phòng và setup layout
+  const roomCost = activeBooking.booking.snapshotBasePrice + (activeBooking.booking.snapshotPriceModifier || 0);
+
+  // Tổng tiền các dịch vụ đặt trước hoặc đã thanh toán
+  const prepaidServicesTotal = (activeBooking.services || []).reduce((sum, svc) => {
+    const isPrepaidOrPaid = !svc.isIncurred || svc.paymentStatus === 'Paid';
+    return isPrepaidOrPaid ? sum + (svc.snapshotUnitPrice * svc.quantity) : sum;
+  }, 0);
+
+  const totalPrepaid = roomCost + prepaidServicesTotal;
+
+  // Tổng tiền các dịch vụ phát sinh và chưa thanh toán
+  const unpaidIncurredTotal = (activeBooking.services || []).reduce((sum, svc) => {
+    const isUnpaidIncurred = svc.isIncurred && svc.paymentStatus === 'Unpaid';
+    return isUnpaidIncurred ? sum + (svc.snapshotUnitPrice * svc.quantity) : sum;
+  }, 0);
+
+  // Tổng giá trị hóa đơn (Tạm tính)
+  const totalAmount = totalPrepaid + unpaidIncurredTotal;
+
   return (
     <div className="panel-card" style={{ padding: '24px' }}>
       <h3
@@ -200,13 +220,13 @@ const BillDetailsCard: React.FC<BillDetailsCardProps> = ({ activeBooking, format
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span style={{ color: 'var(--secondary-text)' }}>Phí thuê phòng (Đặt trước):</span>
-          <span style={{ fontWeight: '500' }}>{formatCurrency(activeBooking.prepaidFee)}</span>
+          <span style={{ color: 'var(--secondary-text)' }}>Phí dịch vụ đặt trước:</span>
+          <span style={{ fontWeight: '500' }}>{formatCurrency(totalPrepaid)}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span style={{ color: 'var(--secondary-text)' }}>Dịch vụ phát sinh (Chưa trả):</span>
           <span style={{ fontWeight: 'bold', color: '#D9534F' }}>
-            {formatCurrency(activeBooking.incurredUnpaidTotal)}
+            {formatCurrency(unpaidIncurredTotal)}
           </span>
         </div>
         <div
@@ -221,7 +241,7 @@ const BillDetailsCard: React.FC<BillDetailsCardProps> = ({ activeBooking, format
           }}
         >
           <span>Tổng giá trị hóa đơn (Tạm tính):</span>
-          <span>{formatCurrency(activeBooking.totalAmount)}</span>
+          <span>{formatCurrency(totalAmount)}</span>
         </div>
       </div>
     </div>

@@ -15,111 +15,13 @@ namespace backend.Controllers
     [ApiController]
     [Route("api/bookings")]
     [Authorize]
-    public class BookingsController : ControllerBase
+    public partial class BookingsController : ControllerBase
     {
         private readonly AppDbContext _context;
 
         public BookingsController(AppDbContext context)
         {
             _context = context;
-        }
-
-        [HttpGet("active")]
-        [Authorize(Roles = "USER,STAFF,ADMIN")]
-        public async Task<IActionResult> GetActiveBooking([FromQuery] int? bookingId = null)
-        {
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            int currentUserId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
-
-            var query = _context.Bookings
-                .Include(b => b.SpaceAsset)
-                .Include(b => b.RoomLayout)
-                .Include(b => b.InternalTasks)
-                .Include(b => b.BookingServiceDetails)
-                    .ThenInclude(sd => sd.AddOnService)
-                .AsQueryable();
-
-            Booking? booking = null;
-
-            if (bookingId.HasValue)
-            {
-                booking = await query.FirstOrDefaultAsync(b => b.Id == bookingId.Value && b.UserId == currentUserId);
-            }
-            else
-            {
-                booking = await query
-                    .Where(b => b.UserId == currentUserId && b.BookingStatus == "Checked_In")
-                    .FirstOrDefaultAsync();
-
-                if (booking == null)
-                {
-                    booking = await query
-                        .Where(b => b.UserId == currentUserId && b.BookingStatus != "Cancelled" && b.BookingStatus != "Checked_Out")
-                        .OrderBy(b => b.StartTime)
-                        .FirstOrDefaultAsync();
-                }
-            }
-
-            if (booking == null)
-            {
-                return Ok(null);
-            }
-
-            var prepaidFee = booking.SnapshotBasePrice + booking.SnapshotPriceModifier;
-            var services = booking.BookingServiceDetails.Select(sd => new
-            {
-                sd.ServiceId,
-                ServiceName = sd.AddOnService?.ServiceName ?? "Dịch vụ",
-                sd.Quantity,
-                sd.SnapshotUnitPrice,
-                sd.PaymentStatus,
-                sd.IsIncurred
-            }).ToList();
-
-            var incurredUnpaidTotal = booking.BookingServiceDetails
-                .Where(sd => sd.IsIncurred && sd.PaymentStatus == "Unpaid")
-                .Sum(sd => sd.SnapshotUnitPrice * sd.Quantity);
-
-            var totalAmount = prepaidFee + booking.BookingServiceDetails.Sum(sd => sd.SnapshotUnitPrice * sd.Quantity);
-
-            return Ok(new
-            {
-                booking = new BookingDto
-                {
-                    Id = booking.Id,
-                    UserId = booking.UserId,
-                    AssetId = booking.AssetId,
-                    LayoutId = booking.LayoutId,
-                    StartTime = booking.StartTime,
-                    EndTime = booking.EndTime,
-                    BookingStatus = booking.BookingStatus,
-                    PaymentDeadline = booking.PaymentDeadline,
-                    CustomSetupNote = booking.CustomSetupNote,
-                    SnapshotBasePrice = booking.SnapshotBasePrice,
-                    SnapshotPriceModifier = booking.SnapshotPriceModifier,
-                    CreatedAt = booking.CreatedAt,
-                    BookingCode = booking.BookingCode,
-                    SetupTaskStatus = booking.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS")?.TaskStatus
-                },
-                spaceAsset = new
-                {
-                    booking.SpaceAsset?.AssetName,
-                    booking.SpaceAsset?.LocationName,
-                    booking.SpaceAsset?.Capacity,
-                    booking.SpaceAsset?.Dimensions,
-                    booking.SpaceAsset?.AreaM2,
-                    booking.SpaceAsset?.AssetType
-                },
-                roomLayout = new
-                {
-                    booking.RoomLayout?.LayoutName,
-                    booking.RoomLayout?.SetupDurationMinutes
-                },
-                services,
-                prepaidFee,
-                incurredUnpaidTotal,
-                totalAmount
-            });
         }
 
         [HttpGet]
@@ -287,359 +189,6 @@ namespace backend.Controllers
             return Ok(new { message = "Thanh toán giả lập thành công. Trạng thái đã chuyển sang Confirmed." });
         }
 
-        [HttpPost("{id}/check-in")]
-        [Authorize(Roles = "STAFF,ADMIN")]
-        public async Task<IActionResult> CheckinBooking(int id)
-        {
-            var booking = await _context.Bookings.FindAsync(id);
-            if (booking == null) return NotFound();
-
-            if (booking.BookingStatus != "Confirmed")
-            {
-                return BadRequest(new { message = "Chỉ có thể check-in cho đơn đặt chỗ đã được xác nhận (Confirmed)." });
-            }
-
-            var nowUtc = DateTime.UtcNow;
-            if (nowUtc > booking.EndTime)
-            {
-                return BadRequest(new { message = "Không thể check-in vì thời gian đặt chỗ đã kết thúc." });
-            }
-
-            var setupTask = await _context.InternalTasks
-                .FirstOrDefaultAsync(t => t.BookingId == id && t.TaskCategory == "LOGISTICS");
-            
-            if (setupTask == null || setupTask.TaskStatus != "Completed")
-            {
-                return BadRequest(new { message = "Phòng hiện chưa dọn dẹp/bố trí xong. Không thể Check-in." });
-            }
-
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            int currentUserId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
-
-            booking.BookingStatus = "Checked_In";
-            booking.CheckedInAt = nowUtc;
-            
-            await _context.SaveChangesAsync();
-            await LogActionAsync(booking.Id, currentUserId, "Đã hoàn tất xác nhận Check-in.");
-
-            return Ok(new { 
-                message = "Check-in thành công.", 
-                bookingStatus = booking.BookingStatus,
-                checkedInAt = booking.CheckedInAt
-            });
-        }
-
-        [HttpPost("{id}/services")]
-        [Authorize(Roles = "STAFF,ADMIN")]
-        public async Task<IActionResult> AddIncurredServices(int id, [FromBody] AddIncurredServicesDto dto)
-        {
-            var booking = await _context.Bookings
-                .Include(b => b.BookingServiceDetails)
-                .FirstOrDefaultAsync(b => b.Id == id);
-            
-            if (booking == null) return NotFound();
-
-            if (booking.BookingStatus != "Checked_In")
-            {
-                return BadRequest(new { message = "Chỉ có thể thêm dịch vụ phát sinh khi phòng đang được sử dụng (Checked_In)." });
-            }
-
-            foreach (var item in dto.Services)
-            {
-                var service = await _context.AddOnServices.FindAsync(item.ServiceId);
-                if (service == null) continue;
-
-                var existingDetail = booking.BookingServiceDetails
-                    .FirstOrDefault(sd => sd.ServiceId == item.ServiceId && sd.IsIncurred);
-
-                if (existingDetail != null)
-                {
-                    existingDetail.Quantity += item.Quantity;
-                }
-                else
-                {
-                    var newDetail = new BookingServiceDetail
-                    {
-                        BookingId = booking.Id,
-                        ServiceId = item.ServiceId,
-                        Quantity = item.Quantity,
-                        SnapshotUnitPrice = service.UnitPrice,
-                        IsIncurred = true,
-                        PaymentStatus = "Unpaid"
-                    };
-                    _context.BookingServiceDetails.Add(newDetail);
-                }
-            }
-
-            await _context.SaveChangesAsync();
-            return Ok(new { message = "Đã cập nhật dịch vụ phát sinh thành công." });
-        }
-
-        [HttpGet("{id}/checkout-preview")]
-        [Authorize(Roles = "USER,STAFF,ADMIN")]
-        public async Task<IActionResult> GetCheckoutPreview(int id)
-        {
-            var booking = await _context.Bookings
-                .Include(b => b.BookingServiceDetails)
-                    .ThenInclude(sd => sd.AddOnService)
-                .Include(b => b.Invoices)
-                .FirstOrDefaultAsync(b => b.Id == id);
-
-            if (booking == null) return NotFound();
-
-            if (booking.BookingStatus != "Checked_In" && booking.BookingStatus != "Awaiting_Checkout")
-            {
-                return BadRequest(new { message = "Chỉ có thể xem trước checkout cho đơn đang sử dụng hoặc chờ checkout." });
-            }
-
-            var invoice = booking.Invoices.FirstOrDefault(i => i.InvoiceType == "Final");
-            
-            var services = booking.BookingServiceDetails.Select(sd => new
-            {
-                sd.ServiceId,
-                ServiceName = sd.AddOnService?.ServiceName ?? "Dịch vụ",
-                sd.Quantity,
-                sd.SnapshotUnitPrice,
-                sd.PaymentStatus,
-                sd.IsIncurred
-            }).ToList();
-
-            if (invoice == null)
-            {
-                decimal incurredTotal = booking.BookingServiceDetails
-                    .Where(s => s.IsIncurred && s.PaymentStatus == "Unpaid")
-                    .Sum(s => s.SnapshotUnitPrice * s.Quantity);
-
-                invoice = new Invoice
-                {
-                    BookingId = booking.Id,
-                    TotalAmount = booking.SnapshotBasePrice + booking.SnapshotPriceModifier + incurredTotal,
-                    PaidUpfront = booking.SnapshotBasePrice + booking.SnapshotPriceModifier,
-                    FinalDue = incurredTotal,
-                    InvoiceType = "Final",
-                    PaymentStatus = incurredTotal > 0 ? "Unpaid" : "Paid"
-                };
-            }
-
-            return Ok(new
-            {
-                booking = new BookingDto
-                {
-                    Id = booking.Id,
-                    UserId = booking.UserId,
-                    AssetId = booking.AssetId,
-                    LayoutId = booking.LayoutId,
-                    StartTime = booking.StartTime,
-                    EndTime = booking.EndTime,
-                    BookingStatus = booking.BookingStatus,
-                    SnapshotBasePrice = booking.SnapshotBasePrice,
-                    SnapshotPriceModifier = booking.SnapshotPriceModifier
-                },
-                services,
-                invoice = new
-                {
-                    invoice.Id,
-                    invoice.TotalAmount,
-                    invoice.PaidUpfront,
-                    invoice.FinalDue,
-                    invoice.InvoiceType,
-                    invoice.PaymentStatus
-                }
-            });
-        }
-
-        [HttpPut("{id}/request-checkout")]
-        [Authorize(Roles = "USER,STAFF,ADMIN")]
-        public async Task<IActionResult> RequestCheckout(int id)
-        {
-            var booking = await _context.Bookings
-                .Include(b => b.BookingServiceDetails)
-                .Include(b => b.Invoices)
-                .FirstOrDefaultAsync(b => b.Id == id);
-
-            if (booking == null) return NotFound();
-
-            if (booking.BookingStatus != "Checked_In")
-            {
-                return BadRequest(new { message = "Chỉ có thể yêu cầu checkout khi phòng đang được sử dụng (Checked_In)." });
-            }
-
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            int currentUserId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
-
-            if (userRole == "USER" && booking.UserId != currentUserId)
-            {
-                return Forbid();
-            }
-
-            booking.BookingStatus = "Awaiting_Checkout";
-
-            var invoice = booking.Invoices.FirstOrDefault(i => i.InvoiceType == "Final");
-            decimal incurredTotal = booking.BookingServiceDetails
-                .Where(s => s.IsIncurred && s.PaymentStatus == "Unpaid")
-                .Sum(s => s.SnapshotUnitPrice * s.Quantity);
-
-            if (invoice == null)
-            {
-                invoice = new Invoice
-                {
-                    BookingId = booking.Id,
-                    TotalAmount = booking.SnapshotBasePrice + booking.SnapshotPriceModifier + incurredTotal,
-                    PaidUpfront = booking.SnapshotBasePrice + booking.SnapshotPriceModifier,
-                    FinalDue = incurredTotal,
-                    InvoiceType = "Final",
-                    PaymentStatus = incurredTotal > 0 ? "Unpaid" : "Paid"
-                };
-                _context.Invoices.Add(invoice);
-            }
-            else
-            {
-                invoice.TotalAmount = booking.SnapshotBasePrice + booking.SnapshotPriceModifier + incurredTotal;
-                invoice.FinalDue = incurredTotal;
-                invoice.PaymentStatus = incurredTotal > 0 ? "Unpaid" : "Paid";
-            }
-
-            await _context.SaveChangesAsync();
-            await LogActionAsync(booking.Id, currentUserId, "Đã yêu cầu thực hiện Checkout phòng.");
-
-            return Ok(new { message = "Yêu cầu Checkout thành công. Vui lòng thanh toán hóa đơn cuối (nếu có).", bookingStatus = booking.BookingStatus });
-        }
-
-        [HttpPut("{id}/pay-final")]
-        [Authorize(Roles = "USER,STAFF,ADMIN")]
-        public async Task<IActionResult> PayFinal(int id)
-        {
-            var booking = await _context.Bookings
-                .Include(b => b.BookingServiceDetails)
-                .Include(b => b.Invoices)
-                .FirstOrDefaultAsync(b => b.Id == id);
-
-            if (booking == null) return NotFound();
-
-            if (booking.BookingStatus != "Awaiting_Checkout")
-            {
-                return BadRequest(new { message = "Chỉ có thể thanh toán hóa đơn cuối cho đơn đang chờ checkout (Awaiting_Checkout)." });
-            }
-
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            int currentUserId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
-
-            if (userRole == "USER" && booking.UserId != currentUserId)
-            {
-                return Forbid();
-            }
-
-            var invoice = booking.Invoices.FirstOrDefault(i => i.InvoiceType == "Final");
-            if (invoice == null)
-            {
-                return BadRequest(new { message = "Không tìm thấy hóa đơn cuối cho đơn đặt chỗ này." });
-            }
-
-            invoice.PaymentStatus = "Paid";
-
-            foreach (var service in booking.BookingServiceDetails.Where(s => s.IsIncurred))
-            {
-                service.PaymentStatus = "Paid";
-            }
-
-            await _context.SaveChangesAsync();
-            await LogActionAsync(booking.Id, currentUserId, "Đã hoàn thành thanh toán hóa đơn cuối.");
-
-            return Ok(new { message = "Thanh toán hóa đơn cuối thành công.", invoicePaymentStatus = invoice.PaymentStatus });
-        }
-
-        [HttpPost("{id}/confirm-checkout")]
-        [Authorize(Roles = "STAFF,ADMIN")]
-        public async Task<IActionResult> ConfirmCheckout(int id)
-        {
-            var booking = await _context.Bookings
-                .Include(b => b.BookingServiceDetails)
-                .Include(b => b.Invoices)
-                .FirstOrDefaultAsync(b => b.Id == id);
-                
-            if (booking == null) return NotFound();
-
-            if (booking.BookingStatus != "Checked_In" && booking.BookingStatus != "Awaiting_Checkout")
-            {
-                return BadRequest(new { message = "Chỉ có thể Checkout các phòng đang sử dụng hoặc chờ checkout." });
-            }
-
-            var invoice = booking.Invoices.FirstOrDefault(i => i.InvoiceType == "Final");
-            if (invoice == null)
-            {
-                decimal incurredTotal = booking.BookingServiceDetails
-                    .Where(s => s.IsIncurred && s.PaymentStatus == "Unpaid")
-                    .Sum(s => s.SnapshotUnitPrice * s.Quantity);
-
-                invoice = new Invoice
-                {
-                    BookingId = booking.Id,
-                    TotalAmount = booking.SnapshotBasePrice + booking.SnapshotPriceModifier + incurredTotal,
-                    PaidUpfront = booking.SnapshotBasePrice + booking.SnapshotPriceModifier,
-                    FinalDue = incurredTotal,
-                    InvoiceType = "Final",
-                    PaymentStatus = incurredTotal > 0 ? "Unpaid" : "Paid"
-                };
-                _context.Invoices.Add(invoice);
-                await _context.SaveChangesAsync();
-            }
-
-            if (invoice.PaymentStatus != "Paid" || booking.BookingServiceDetails.Any(s => s.IsIncurred && s.PaymentStatus == "Unpaid"))
-            {
-                return BadRequest(new { message = "Chưa thanh toán hoàn thiện hóa đơn cuối. Không thể thực hiện checkout." });
-            }
-
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            int currentUserId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
-
-            booking.BookingStatus = "Checked_Out";
-            
-            // Auto trigger a CleanUpTask
-            var cleanupTask = new InternalTask
-            {
-                BookingId = booking.Id,
-                TaskCategory = "CLEANING",
-                TaskDescription = $"Dọn dẹp phòng sau khi Booking #{booking.BookingCode} (ID: {booking.Id}) Checked Out",
-                RequiredStaffCount = 1,
-                TaskStatus = "Unassigned",
-                CreatedAt = DateTime.UtcNow
-            };
-            _context.InternalTasks.Add(cleanupTask);
-
-            await _context.SaveChangesAsync();
-            await LogActionAsync(booking.Id, currentUserId, "Đã hoàn tất Checkout phòng và kích hoạt Task dọn dẹp.");
-
-            invoice.Booking = null;
-
-            return Ok(new { message = "Checkout thành công. Đã tạo nhiệm vụ dọn dẹp.", invoice });
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBooking(int id)
-        {
-            var booking = await _context.Bookings.FindAsync(id);
-            if (booking == null) return NotFound();
-
-            if (booking.BookingStatus != "Cancelled")
-            {
-                return BadRequest(new { message = "Chỉ được phép xóa các đơn đặt chỗ đã bị hủy do chưa thanh toán đặt trước." });
-            }
-
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            int userId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
-
-            if (userRole == "USER" && booking.UserId != userId)
-            {
-                return Forbid();
-            }
-
-            _context.Bookings.Remove(booking);
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
 
         [HttpGet("{id}/details")]
         [Authorize(Roles = "USER,STAFF,ADMIN")]
@@ -687,33 +236,110 @@ namespace backend.Controllers
                     l.Timestamp
                 }).ToList();
 
-            var invoices = booking.Invoices
-                .Select(i => (object)new
-                {
-                    i.Id,
-                    i.TotalAmount,
-                    i.PaidUpfront,
-                    i.FinalDue,
-                    i.InvoiceType,
-                    i.PaymentStatus,
-                    i.CreatedAt
-                }).ToList();
-
-            if (invoices.Count == 0)
+            // 1. KIỂM TRA HÓA ĐƠN UPFRONT (TRẢ TRƯỚC) TRONG DATABASE
+            var invoices = new List<object>();
+            var dbUpfrontInvoice = booking.Invoices.FirstOrDefault(i => i.InvoiceType == "Upfront");
+            if (dbUpfrontInvoice != null)
             {
+                // Sử dụng hóa đơn thật trong DB để bảo toàn ID và lịch sử đối soát giao dịch
+                invoices.Add(new
+                {
+                    Id = dbUpfrontInvoice.Id,
+                    TotalAmount = dbUpfrontInvoice.TotalAmount,
+                    PaidUpfront = dbUpfrontInvoice.PaidUpfront,
+                    FinalDue = dbUpfrontInvoice.FinalDue,
+                    InvoiceType = dbUpfrontInvoice.InvoiceType,
+                    PaymentStatus = dbUpfrontInvoice.PaymentStatus,
+                    CreatedAt = dbUpfrontInvoice.CreatedAt
+                });
+            }
+            else
+            {
+                // Nếu chưa có hóa đơn thật (đơn mới tạo chưa thanh toán), tự sinh hóa đơn Upfront nháp
                 decimal roomCost = booking.SnapshotBasePrice + booking.SnapshotPriceModifier;
-                decimal serviceCost = booking.BookingServiceDetails.Sum(sd => sd.SnapshotUnitPrice * sd.Quantity);
-                decimal totalAmount = roomCost + serviceCost;
+                decimal upfrontServiceCost = booking.BookingServiceDetails
+                    .Where(sd => !sd.IsIncurred)
+                    .Sum(sd => sd.SnapshotUnitPrice * sd.Quantity);
+                decimal upfrontTotal = roomCost + upfrontServiceCost;
+
+                bool isPaidStatus = (booking.BookingStatus == "Confirmed" || 
+                                     booking.BookingStatus == "Checked_In" || 
+                                     booking.BookingStatus == "Awaiting_Checkout" || 
+                                     booking.BookingStatus == "Checked_Out");
 
                 invoices.Add(new
                 {
                     Id = 0,
-                    TotalAmount = totalAmount,
-                    PaidUpfront = (booking.BookingStatus == "Confirmed" || booking.BookingStatus == "Checked_In" || booking.BookingStatus == "Checked_Out") ? totalAmount : 0m,
-                    FinalDue = (booking.BookingStatus == "Confirmed" || booking.BookingStatus == "Checked_In" || booking.BookingStatus == "Checked_Out") ? 0m : totalAmount,
+                    TotalAmount = upfrontTotal,
+                    PaidUpfront = isPaidStatus ? upfrontTotal : 0m,
+                    FinalDue = isPaidStatus ? 0m : upfrontTotal,
                     InvoiceType = "Upfront",
-                    PaymentStatus = (booking.BookingStatus == "Confirmed" || booking.BookingStatus == "Checked_In" || booking.BookingStatus == "Checked_Out") ? "Paid" : "Unpaid",
+                    PaymentStatus = isPaidStatus ? "Paid" : "Unpaid",
                     CreatedAt = booking.CreatedAt
+                });
+            }
+
+            // 2. XỬ LÝ HÓA ĐƠN FINAL (QUYẾT TOÁN)
+            var dbFinalInvoice = booking.Invoices.FirstOrDefault(i => i.InvoiceType == "Final");
+            if (dbFinalInvoice != null)
+            {
+                // Đơn đã hoàn tất checkout, trả về hóa đơn quyết toán thật từ DB
+                invoices.Add(new
+                {
+                    Id = dbFinalInvoice.Id,
+                    TotalAmount = dbFinalInvoice.TotalAmount,
+                    PaidUpfront = dbFinalInvoice.PaidUpfront,
+                    FinalDue = dbFinalInvoice.FinalDue,
+                    InvoiceType = dbFinalInvoice.InvoiceType,
+                    PaymentStatus = dbFinalInvoice.PaymentStatus,
+                    CreatedAt = dbFinalInvoice.CreatedAt
+                });
+            }
+            else if (booking.BookingStatus == "Checked_In" || booking.BookingStatus == "Awaiting_Checkout")
+            {
+                // Khách đang dùng hoặc đang đợi checkout: Tự sinh "Final Invoice nháp" để Lễ tân xem trước tại quầy
+                decimal roomCost = booking.SnapshotBasePrice + booking.SnapshotPriceModifier;
+                decimal upfrontServiceCost = booking.BookingServiceDetails
+                    .Where(sd => !sd.IsIncurred)
+                    .Sum(sd => sd.SnapshotUnitPrice * sd.Quantity);
+                decimal upfrontTotal = roomCost + upfrontServiceCost;
+
+                // Tính toán phí quá giờ (Overtime Fee) - Công thức Nhân trước Chia sau chống sai lệch
+                decimal overtimeFee = 0m;
+                var actualCheckoutTime = DateTime.UtcNow;
+                if (actualCheckoutTime > booking.EndTime)
+                {
+                    var overtimeDuration = actualCheckoutTime - booking.EndTime;
+                    double overtimeMinutes = overtimeDuration.TotalMinutes;
+
+                    if (overtimeMinutes > 15.0) // 15 phút đệm dỡ tải
+                    {
+                        decimal baseHourlyRate = booking.SpaceAsset?.BasePrice ?? 0m;
+                        decimal penaltyMultiplier = 1.5m;
+                        decimal calculatedMinutes = (decimal)Math.Ceiling(overtimeMinutes);
+
+                        decimal totalOvertimeAmount = (baseHourlyRate * calculatedMinutes * penaltyMultiplier) / 60.0m;
+                        overtimeFee = Math.Round(totalOvertimeAmount, 0); // Làm tròn chẵn block VNĐ
+                    }
+                }
+
+                // Tính tổng dịch vụ phát sinh chưa trả
+                decimal incurredTotal = booking.BookingServiceDetails
+                    .Where(s => s.IsIncurred && s.PaymentStatus == "Unpaid")
+                    .Sum(s => s.SnapshotUnitPrice * s.Quantity);
+
+                decimal finalTotalAmount = upfrontTotal + overtimeFee + incurredTotal;
+                decimal finalDue = overtimeFee + incurredTotal;
+
+                invoices.Add(new
+                {
+                    Id = 0, // Ký hiệu hóa đơn nháp hiển thị xem trước
+                    TotalAmount = finalTotalAmount,
+                    PaidUpfront = upfrontTotal,
+                    FinalDue = finalDue,
+                    InvoiceType = "Final",
+                    PaymentStatus = finalDue > 0 ? "Unpaid" : "Paid",
+                    CreatedAt = DateTime.UtcNow
                 });
             }
 

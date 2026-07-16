@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Booking } from '../../../types/booking.types';
+import { bookingService } from '../../../services/bookingService';
 
 interface BookingDetailModalProps {
   details: {
@@ -23,16 +24,25 @@ interface BookingDetailModalProps {
   } | null;
   onClose: () => void;
   spaceAssets: any[];
+  onRefresh?: () => void;
 }
 
 export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   details,
   onClose,
-  spaceAssets
+  spaceAssets,
+  onRefresh
 }) => {
-  if (!details) return null;
+  const [localDetails, setLocalDetails] = React.useState<any>(details);
+  const [isProcessing, setIsProcessing] = React.useState(false);
 
-  const { booking, user, services, logs, invoices, spaceAsset: apiSpaceAsset, roomLayout } = details;
+  React.useEffect(() => {
+    setLocalDetails(details);
+  }, [details]);
+
+  if (!localDetails) return null;
+
+  const { booking, user, services, logs, invoices, spaceAsset: apiSpaceAsset, roomLayout } = localDetails;
 
   // Tìm thông tin phòng từ DB qua ID nếu API không trả về
   const dbSpaceAsset = spaceAssets.find(a => a.id === booking.assetId || a.Id === booking.assetId);
@@ -41,6 +51,51 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const areaM2 = apiSpaceAsset?.areaM2 ?? dbSpaceAsset?.areaM2 ?? dbSpaceAsset?.AreaM2 ?? 0;
   const capacity = apiSpaceAsset?.capacity ?? dbSpaceAsset?.capacity ?? dbSpaceAsset?.Capacity ?? 0;
   const layoutName = roomLayout?.layoutName ?? (booking.layoutId === 1 ? 'Chữ U' : 'Lớp học');
+
+  // Tính toán số tiền thực tế
+  const isRoomPaid = booking.bookingStatus !== 'Awaiting_Payment' && booking.bookingStatus !== 'Cancelled';
+  const roomCost = booking.snapshotBasePrice + (booking.snapshotPriceModifier || 0);
+  const roomPaidAmount = isRoomPaid ? roomCost : 0;
+  const roomUnpaidAmount = isRoomPaid ? 0 : roomCost;
+
+  // Đã trả trước: roomPaidAmount + dịch vụ đã thanh toán (paymentStatus === 'Paid') hoặc dịch vụ đặt trước đã thanh toán (khi phòng đã trả)
+  const prepaidServicesTotal = (services || []).reduce((sum: number, s: any) => {
+    const isPaid = s.paymentStatus === 'Paid' || (!s.isIncurred && isRoomPaid);
+    return isPaid ? sum + (s.snapshotUnitPrice * s.quantity) : sum;
+  }, 0);
+
+  const totalPrepaid = roomPaidAmount + prepaidServicesTotal;
+
+  // Phải thu thêm: roomUnpaidAmount + tất cả các dịch vụ chưa thanh toán
+  const unpaidServicesTotal = roomUnpaidAmount + (services || []).reduce((sum: number, s: any) => {
+    const isPaid = s.paymentStatus === 'Paid' || (!s.isIncurred && isRoomPaid);
+    return !isPaid ? sum + (s.snapshotUnitPrice * s.quantity) : sum;
+  }, 0);
+
+  const totalAmountCalculated = totalPrepaid + unpaidServicesTotal;
+
+  const handleConfirmPayment = async () => {
+    const confirmMsg = `Bạn có chắc chắn muốn xác nhận đã thu thêm ${unpaidServicesTotal.toLocaleString()}đ từ khách hàng cho các dịch vụ phát sinh?`;
+    if (window.confirm(confirmMsg)) {
+      try {
+        setIsProcessing(true);
+        await bookingService.payFinal(booking.id);
+        alert('Xác nhận thanh toán dịch vụ phát sinh thành công!');
+        
+        // Reload details
+        const updatedDetails = await bookingService.getBookingDetails(booking.id);
+        setLocalDetails(updatedDetails);
+
+        if (onRefresh) {
+          onRefresh();
+        }
+      } catch (e: any) {
+        alert(e.response?.data?.message || 'Có lỗi xảy ra khi xác nhận thanh toán.');
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+  };
 
   return (
     <div className="modal-overlay">
@@ -218,45 +273,52 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           {invoices.length === 0 ? (
             <p style={{ fontSize: '0.85rem', color: 'var(--secondary-text)', margin: '0', fontStyle: 'italic' }}>Chưa xuất hóa đơn nào.</p>
           ) : (
-            invoices.map((inv: any, idx: number) => (
-              <div key={idx} style={{
-                backgroundColor: 'rgba(122, 134, 106, 0.04)',
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-color)',
-                fontSize: '0.85rem',
-                marginBottom: '10px'
-              }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '8px' }}>
-                  <div>
-                    <span style={{ fontWeight: '600' }}>Loại hóa đơn:</span> {inv.invoiceType === 'Upfront' ? 'Trả trước' : 'Hóa đơn cuối'}
+            invoices.map((inv: any, idx: number) => {
+              const displayTotal = totalAmountCalculated;
+              const displayPrepaid = totalPrepaid;
+              const displayFinalDue = unpaidServicesTotal;
+              const displayStatus = unpaidServicesTotal > 0 ? 'Unpaid' : 'Paid';
+
+              return (
+                <div key={idx} style={{
+                  backgroundColor: 'rgba(122, 134, 106, 0.04)',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)',
+                  fontSize: '0.85rem',
+                  marginBottom: '10px'
+                }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '8px' }}>
+                    <div>
+                      <span style={{ fontWeight: '600' }}>Loại hóa đơn:</span> {inv.invoiceType === 'Upfront' ? 'Trả trước' : 'Hóa đơn cuối'}
+                    </div>
+                    <div>
+                      <span style={{ fontWeight: '600' }}>Ngày xuất:</span> {new Date(inv.createdAt).toLocaleString()}
+                    </div>
                   </div>
-                  <div>
-                    <span style={{ fontWeight: '600' }}>Ngày xuất:</span> {new Date(inv.createdAt).toLocaleString()}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', borderTop: '1px dashed var(--border-color)', paddingTop: '8px' }}>
+                    <div>
+                      Tổng tiền: <strong>{displayTotal.toLocaleString()}đ</strong>
+                    </div>
+                    <div>
+                      Đã trả trước: <span style={{ color: 'var(--nature-accent)' }}>{displayPrepaid.toLocaleString()}đ</span>
+                    </div>
+                    <div>
+                      Phải thu thêm: <span style={{ color: '#e07a5f', fontWeight: 'bold' }}>{displayFinalDue.toLocaleString()}đ</span>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '8px', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>Trạng thái thanh toán:</span>
+                    <span style={{
+                      fontWeight: 'bold',
+                      color: displayStatus === 'Paid' ? 'var(--nature-accent)' : '#e07a5f'
+                    }}>
+                      {displayStatus === 'Paid' ? 'ĐÃ THANH TOÁN' : 'CHƯA THANH TOÁN'}
+                    </span>
                   </div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', borderTop: '1px dashed var(--border-color)', paddingTop: '8px' }}>
-                  <div>
-                    Tổng tiền: <strong>{inv.totalAmount.toLocaleString()}đ</strong>
-                  </div>
-                  <div>
-                    Đã trả trước: <span style={{ color: 'var(--nature-accent)' }}>{inv.paidUpfront.toLocaleString()}đ</span>
-                  </div>
-                  <div>
-                    Phải thu thêm: <span style={{ color: '#e07a5f', fontWeight: 'bold' }}>{inv.finalDue.toLocaleString()}đ</span>
-                  </div>
-                </div>
-                <div style={{ marginTop: '8px', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>Trạng thái thanh toán:</span>
-                  <span style={{
-                    fontWeight: 'bold',
-                    color: inv.paymentStatus === 'Paid' ? 'var(--nature-accent)' : '#e07a5f'
-                  }}>
-                    {inv.paymentStatus === 'Paid' ? 'ĐÃ THANH TOÁN' : 'CHƯA THANH TOÁN'}
-                  </span>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -292,9 +354,29 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
         </div>
 
         {/* Close Button */}
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '15px' }}>
+          {unpaidServicesTotal > 0 && (
+            <button
+              onClick={handleConfirmPayment}
+              disabled={isProcessing}
+              className="btn btn-success"
+              style={{
+                padding: '8px 24px',
+                borderRadius: '6px',
+                fontSize: '0.9rem',
+                backgroundColor: 'var(--nature-accent)',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                opacity: isProcessing ? 0.7 : 1
+              }}
+            >
+              {isProcessing ? 'Đang xử lý...' : 'Xác nhận thanh toán'}
+            </button>
+          )}
           <button
             onClick={onClose}
+            disabled={isProcessing}
             className="btn btn-primary"
             style={{ padding: '8px 24px', borderRadius: '6px', fontSize: '0.9rem' }}
           >

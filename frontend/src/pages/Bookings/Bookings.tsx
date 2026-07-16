@@ -148,6 +148,7 @@ const Bookings: React.FC = () => {
         details={selectedBookingDetails}
         onClose={() => setSelectedBookingDetails(null)}
         spaceAssets={spaceAssets}
+        onRefresh={fetchBookings}
       />
 
       <BookingCheckoutModal
