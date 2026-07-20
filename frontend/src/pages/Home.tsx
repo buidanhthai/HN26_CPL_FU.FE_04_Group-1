@@ -12,6 +12,7 @@ interface AddonItem {
   unit: string;
   desc: string;
   category: 'coffee' | 'tea' | 'utilities' | 'devices';
+  imageUrl: string;
 }
 
 const enrichAddon = (service: any): AddonItem => {
@@ -23,24 +24,44 @@ const enrichAddon = (service: any): AddonItem => {
   let category: 'coffee' | 'tea' | 'utilities' | 'devices' = 'coffee';
   let desc = 'Thức uống thơm ngon phục vụ tại quầy.';
   let unit = 'phần';
+  let imageUrl = '/images/services/coffee.jpg';
 
   const lowerName = name.toLowerCase();
   if (lowerName.includes('cà phê') || lowerName.includes('cafe') || lowerName.includes('bạc xỉu')) {
     category = 'coffee';
     desc = 'Cà phê được pha chế thơm ngon, đậm đà chuẩn vị.';
     unit = 'ly';
-  } else if (lowerName.includes('trà')) {
+    imageUrl = '/images/services/coffee.jpg';
+  } else if (lowerName.includes('trà') || lowerName.includes('sinh tố')) {
     category = 'tea';
     desc = 'Trà thanh mát, giải nhiệt cho ngày dài làm việc.';
     unit = 'ly';
-  } else if (lowerName.includes('bánh') || lowerName.includes('in ấn') || lowerName.includes('sao chụp') || lowerName.includes('croissant')) {
+    imageUrl = '/images/services/juice.jpg';
+  } else if (lowerName.includes('bánh') || lowerName.includes('croissant')) {
     category = 'utilities';
-    desc = lowerName.includes('bánh') || lowerName.includes('croissant') ? 'Bánh ngọt tiếp năng lượng.' : 'Hỗ trợ in ấn tài liệu tốc độ cao.';
-    unit = lowerName.includes('bánh') || lowerName.includes('croissant') ? 'phần' : 'trang';
+    desc = 'Bánh ngọt tiếp năng lượng cho buổi làm việc sôi nổi.';
+    unit = 'phần';
+    imageUrl = '/images/services/croissant.jpg';
+  } else if (lowerName.includes('in ấn') || lowerName.includes('sao chụp')) {
+    category = 'utilities';
+    desc = 'Hỗ trợ in ấn tài liệu tốc độ cao, chất lượng sắc nét.';
+    unit = 'trang';
+    imageUrl = '/images/services/printer.jpg';
+  } else if (lowerName.includes('projector') || lowerName.includes('máy chiếu')) {
+    category = 'devices';
+    desc = 'Máy chiếu chuyên nghiệp cho cuộc họp và trình bày.';
+    unit = method === 'By_Hour' ? 'giờ' : 'ngày';
+    imageUrl = '/images/services/projector.jpg';
+  } else if (lowerName.includes('bảng') || lowerName.includes('bút')) {
+    category = 'devices';
+    desc = 'Bảng di động và bút viết để chia sẻ ý tưởng tự do.';
+    unit = 'bộ';
+    imageUrl = '/images/services/whiteboard.jpg';
   } else {
     category = 'devices';
     desc = `Thiết bị phục vụ công việc và hội thảo chuyên nghiệp.`;
     unit = method === 'By_Hour' ? 'giờ' : 'ngày';
+    imageUrl = '/images/services/projector.jpg';
   }
 
   return {
@@ -49,8 +70,30 @@ const enrichAddon = (service: any): AddonItem => {
     price,
     unit,
     desc,
-    category
+    category,
+    imageUrl
   };
+};
+
+// Assign differentiated images based on category index (e.g., coffee1, coffee2, coffee3)
+const enrichAddonsWithDifferentiatedImages = (services: any[]): AddonItem[] => {
+  const enriched = services.map(enrichAddon);
+  const categoryCount: Record<string, number> = {};
+
+  return enriched.map((item) => {
+    if (!categoryCount[item.category]) {
+      categoryCount[item.category] = 1;
+    } else {
+      categoryCount[item.category]++;
+    }
+
+    const index = categoryCount[item.category];
+    const baseUrl = item.imageUrl.replace(/\.\w+$/, ''); // Remove file extension
+    const filename = baseUrl.split('/').pop() || 'coffee'; // Get last part of path
+    item.imageUrl = `/images/services/${filename}${index}.jpg`;
+
+    return item;
+  });
 };
 
 const Home: React.FC = () => {
@@ -67,6 +110,16 @@ const Home: React.FC = () => {
   // States fetched from API
   const [addonServices, setAddonServices] = useState<AddonItem[]>([]);
   const [spaceAssets, setSpaceAssets] = useState<any[]>([]);
+  const [isLoadingAssets, setIsLoadingAssets] = useState(true);
+  const [isLoadingMenu, setIsLoadingMenu] = useState(true);
+
+  // Search and filter state
+  const [searchFilters, setSearchFilters] = useState({
+    spaceType: 'all',
+    date: new Date().toISOString().split('T')[0],
+    timeSlot: 'all-day',
+    capacity: 'all'
+  });
 
   // Active tab state for cafe menu
   const [activeMenuTab, setActiveMenuTab] = useState<'coffee' | 'tea' | 'utilities' | 'devices'>('coffee');
@@ -83,25 +136,35 @@ const Home: React.FC = () => {
 
   // Fetch addon services and space assets on load
   useEffect(() => {
+    setIsLoadingMenu(true);
+    setIsLoadingAssets(true);
+
     bookingService.getAddOnServices()
       .then((data) => {
-        const enriched = data.map(enrichAddon);
+        const enriched = enrichAddonsWithDifferentiatedImages(data || []);
         setAddonServices(enriched);
       })
       .catch((err) => {
         console.error('Error fetching addon services:', err);
+      })
+      .finally(() => {
+        setIsLoadingMenu(false);
       });
 
     api.get<any[]>('/space-assets')
       .then((res) => {
-        setSpaceAssets(res.data);
-        if (res.data.length > 0) {
-          const defaultRoom = res.data.find((a: any) => a.id === 2) || res.data[0];
+        const assets = res.data || [];
+        setSpaceAssets(assets);
+        if (assets.length > 0) {
+          const defaultRoom = assets.find((a: any) => a.id === 2) || assets[0];
           setCalcSelectedRoomId(defaultRoom.id || defaultRoom.Id);
         }
       })
       .catch((err) => {
         console.error('Error fetching space assets:', err);
+      })
+      .finally(() => {
+        setIsLoadingAssets(false);
       });
   }, []);
 
@@ -133,6 +196,19 @@ const Home: React.FC = () => {
     }
   };
 
+  const handleBookingCTA = () => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    } else {
+      navigate('/register');
+    }
+  };
+
+  const handleSelectSpace = (assetId: number) => {
+    setCalcSelectedRoomId(assetId);
+    scrollToSection(calcRef);
+  };
+
   const handleAddonToggle = (id: number) => {
     if (calcSelectedAddons.includes(id)) {
       setCalcSelectedAddons(calcSelectedAddons.filter(item => item !== id));
@@ -140,6 +216,23 @@ const Home: React.FC = () => {
       setCalcSelectedAddons([...calcSelectedAddons, id]);
     }
   };
+
+  const filteredSpaces = spaceAssets.filter((asset: any) => {
+    const assetType = (asset.assetType || asset.AssetType || '').toString();
+    const capacity = Number(asset.capacity ?? asset.Capacity ?? 0);
+
+    const typeMatch = searchFilters.spaceType === 'all'
+      || (searchFilters.spaceType === 'meeting' && assetType === 'Meeting_Room')
+      || (searchFilters.spaceType === 'desk' && assetType === 'Hot_Desk')
+      || (searchFilters.spaceType === 'office' && assetType === 'Workshop_Space');
+
+    const capacityMatch = searchFilters.capacity === 'all'
+      || (searchFilters.capacity === '1' && capacity <= 1)
+      || (searchFilters.capacity === 'small' && capacity >= 2 && capacity <= 5)
+      || (searchFilters.capacity === 'medium' && capacity >= 6);
+
+    return typeMatch && capacityMatch;
+  });
 
   return (
     <div className="landing-page">
@@ -206,7 +299,11 @@ const Home: React.FC = () => {
         <div className="search-container" ref={searchRef}>
           <div className="search-group">
             <label>Loại không gian</label>
-            <select defaultValue="desk">
+            <select
+              value={searchFilters.spaceType}
+              onChange={(e) => setSearchFilters({ ...searchFilters, spaceType: e.target.value })}
+            >
+              <option value="all">Tất cả</option>
               <option value="desk">Chỗ ngồi cá nhân</option>
               <option value="meeting">Phòng họp riêng</option>
               <option value="office">Văn phòng cố định</option>
@@ -214,11 +311,18 @@ const Home: React.FC = () => {
           </div>
           <div className="search-group">
             <label>Ngày đặt</label>
-            <input type="date" defaultValue={new Date().toISOString().split('T')[0]} />
+            <input
+              type="date"
+              value={searchFilters.date}
+              onChange={(e) => setSearchFilters({ ...searchFilters, date: e.target.value })}
+            />
           </div>
           <div className="search-group">
             <label>Khung giờ</label>
-            <select defaultValue="all-day">
+            <select
+              value={searchFilters.timeSlot}
+              onChange={(e) => setSearchFilters({ ...searchFilters, timeSlot: e.target.value })}
+            >
               <option value="morning">08:00 - 12:00</option>
               <option value="afternoon">13:00 - 17:00</option>
               <option value="all-day">Cả ngày</option>
@@ -226,13 +330,17 @@ const Home: React.FC = () => {
           </div>
           <div className="search-group">
             <label>Sức chứa</label>
-            <select defaultValue="1">
+            <select
+              value={searchFilters.capacity}
+              onChange={(e) => setSearchFilters({ ...searchFilters, capacity: e.target.value })}
+            >
+              <option value="all">Tất cả</option>
               <option value="1">1 người</option>
               <option value="small">2 - 5 người</option>
-              <option value="medium">6 - 15 người</option>
+              <option value="medium">6+ người</option>
             </select>
           </div>
-          <button className="btn-primary" onClick={handleActionClick}>
+          <button className="btn-primary" onClick={() => scrollToSection(spacesRef)}>
             Kiểm tra phòng trống
           </button>
         </div>
@@ -245,34 +353,51 @@ const Home: React.FC = () => {
           <p>Khám phá các lựa chọn chỗ ngồi và phòng họp đối xứng hoàn hảo với nhu cầu của bạn.</p>
         </div>
 
-        <div className="spaces-grid">
-          {spaceAssets.slice(0, 3).map((asset) => {
-            const isMeeting = asset.assetType === 'Meeting_Room';
-            const icon = isMeeting ? '🤝' : '💻';
-            return (
-              <div className="space-card" key={asset.id}>
-                <div className="space-img-mock">
-                  {icon}
-                  <span className="space-tag">Sức chứa: {asset.capacity} người</span>
-                </div>
-                <div className="space-content">
-                  <h3>{asset.assetName}</h3>
-                  <p className="space-desc">
-                    {asset.description || `Không gian làm việc ${asset.assetType === 'Hot_Desk' ? 'cá nhân' : 'phòng họp'} tại ${asset.locationName}, thiết kế hiện đại, đầy đủ thiết bị và nước uống.`}
-                  </p>
-                  <div className="space-meta">
-                    <div className="space-price">
-                      {asset.basePrice.toLocaleString('vi-VN')}đ <span>/ giờ</span>
+        <div className="search-status">
+          {isLoadingAssets ? 'Đang tải danh sách không gian...' : filteredSpaces.length > 0 ? `Hiển thị ${filteredSpaces.length} phòng phù hợp với lựa chọn hiện tại.` : 'Không có phòng phù hợp, hãy thử đổi bộ lọc để xem thêm lựa chọn khác.'}
+        </div>
+
+        {isLoadingAssets ? (
+          <div className="empty-state">Đang tải dữ liệu từ hệ thống...</div>
+        ) : filteredSpaces.length === 0 ? (
+          <div className="empty-state">
+            <h3>Chưa có phòng phù hợp</h3>
+            <p>Hãy đổi loại không gian hoặc sức chứa để xem thêm các lựa chọn khác.</p>
+          </div>
+        ) : (
+          <div className="spaces-grid">
+            {filteredSpaces.slice(0, 50).map((asset: any) => {
+              const isMeeting = (asset.assetType || asset.AssetType || '').toString() === 'Meeting_Room';
+              const icon = isMeeting ? '🤝' : '💻';
+              const roomName = asset.assetName || asset.AssetName || 'Phòng làm việc';
+              const locationName = asset.locationName || asset.LocationName || 'Không rõ vị trí';
+              const price = Number(asset.basePrice ?? asset.BasePrice ?? 0);
+              const capacity = Number(asset.capacity ?? asset.Capacity ?? 0);
+              return (
+                <div className="space-card" key={asset.id || asset.Id}>
+                  <div className="space-img-mock">
+                    {icon}
+                    <span className="space-tag">Sức chứa: {capacity} người</span>
+                  </div>
+                  <div className="space-content">
+                    <h3>{roomName}</h3>
+                    <p className="space-desc">
+                      {asset.description || asset.Description || `Không gian làm việc ${isMeeting ? 'phòng họp' : 'cá nhân'} tại ${locationName}, thiết kế hiện đại, đầy đủ thiết bị và nước uống.`}
+                    </p>
+                    <div className="space-meta">
+                      <div className="space-price">
+                        {price.toLocaleString('vi-VN')}đ <span>/ giờ</span>
+                      </div>
+                      <button className="btn-card" onClick={() => handleSelectSpace(asset.id || asset.Id)}>
+                        Chọn vị trí
+                      </button>
                     </div>
-                    <button className="btn-card" onClick={handleActionClick}>
-                      Chọn vị trí
-                    </button>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* CAFE & ADD-ON SERVICES MENU */}
@@ -311,20 +436,32 @@ const Home: React.FC = () => {
         </div>
 
         {/* Menu Items Grid */}
-        <div className="menu-grid">
-          {addonServices.filter(item => item.category === activeMenuTab).map(item => (
-            <div className="menu-item" key={item.id}>
-              <div className="menu-item-info">
-                <h4>{item.name}</h4>
-                <p>{item.desc}</p>
+        {isLoadingMenu ? (
+          <div className="empty-state">Đang đồng bộ bảng giá dịch vụ...</div>
+        ) : addonServices.filter(item => item.category === activeMenuTab).length === 0 ? (
+          <div className="empty-state">
+            <h3>Danh mục này hiện chưa có dịch vụ</h3>
+            <p>Hãy quay lại sau để xem thêm lựa chọn mới.</p>
+          </div>
+        ) : (
+          <div className="menu-grid">
+            {addonServices.filter(item => item.category === activeMenuTab).map(item => (
+              <div className="menu-item" key={item.id}>
+                <div className="menu-item-image">
+                  <img src={item.imageUrl} alt={item.name} loading="lazy" />
+                </div>
+                <div className="menu-item-info">
+                  <h4>{item.name}</h4>
+                  <p>{item.desc}</p>
+                </div>
+                <div className="menu-item-price">
+                  {item.price.toLocaleString('vi-VN')}đ
+                  <span>/ {item.unit}</span>
+                </div>
               </div>
-              <div className="menu-item-price">
-                {item.price.toLocaleString('vi-VN')}đ
-                <span>/ {item.unit}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* WORKFLOW STEPS (POST-PAID EXPLANATION) */}
@@ -469,7 +606,7 @@ const Home: React.FC = () => {
               </ul>
             </div>
 
-            <button className="calc-btn-book" onClick={handleActionClick}>
+            <button className="calc-btn-book" onClick={handleBookingCTA}>
               Đăng ký đặt chỗ ngay
             </button>
           </div>
