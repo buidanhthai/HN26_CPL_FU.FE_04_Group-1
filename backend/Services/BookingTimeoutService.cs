@@ -27,7 +27,15 @@ namespace backend.Services
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                await CancelExpiredBookings();
+                try
+                {
+                    await CancelExpiredBookings();
+                    await CheckOverdueBookings();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error occurred in BookingTimeoutService loop.");
+                }
                 
                 // Run every 1 minute
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
@@ -59,6 +67,28 @@ namespace backend.Services
 
                     await dbContext.SaveChangesAsync();
                     _logger.LogInformation("Expired bookings have been cancelled successfully.");
+                }
+            }
+        }
+
+        private async Task CheckOverdueBookings()
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                var overdueBookings = await dbContext.Bookings
+                    .Where(b => b.BookingStatus == "Checked_In" 
+                                && b.EndTime < DateTime.UtcNow)
+                    .ToListAsync();
+
+                if (overdueBookings.Any())
+                {
+                    foreach (var booking in overdueBookings)
+                    {
+                        var overdueMinutes = (int)(DateTime.UtcNow - booking.EndTime).TotalMinutes;
+                        _logger.LogInformation($"Booking #{booking.BookingCode} (ID: {booking.Id}) is OVERDUE by {overdueMinutes} minutes. User ID: {booking.UserId}. EndTime was: {booking.EndTime}.");
+                    }
                 }
             }
         }

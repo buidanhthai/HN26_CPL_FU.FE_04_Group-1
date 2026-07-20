@@ -114,7 +114,7 @@ namespace backend.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddDays(7), // Token có hạn trong 7 ngày
+                expires: DateTime.UtcNow.AddDays(7), // Token có hạn trong 7 ngày (UTC)
                 signingCredentials: credentials);
 
             return new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(token);

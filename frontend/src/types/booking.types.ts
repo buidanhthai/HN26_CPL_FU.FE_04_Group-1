@@ -61,4 +61,6 @@ export interface ActiveBookingResponse {
   prepaidFee: number;
   incurredUnpaidTotal: number;
   totalAmount: number;
+  isOverdue?: boolean;
+  overdueMinutes?: number;
 }

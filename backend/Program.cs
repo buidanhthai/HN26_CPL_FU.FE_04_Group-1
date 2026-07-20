@@ -86,57 +86,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Đảm bảo dữ liệu demo luôn có hiệu lực cho việc demo dashboard
-using (var scope = app.Services.CreateScope())
+// Khởi tạo/Cập nhật dữ liệu mẫu thời gian thực cho toàn hệ thống
+if (app.Environment.IsDevelopment())
 {
-    var context = scope.ServiceProvider.GetRequiredService<backend.Data.AppDbContext>();
-    try
-    {
-        context.Database.Migrate();
-
-        var activeBooking = context.Bookings.FirstOrDefault(b => b.Id == 3);
-        if (activeBooking != null)
-        {
-            var now = backend.Helpers.TimeHelper.GetVietnamTime();
-            activeBooking.StartTime = now.AddHours(-1);
-            activeBooking.EndTime = now.AddHours(2);
-            activeBooking.BookingStatus = "Checked_In";
-
-            var detail1 = context.BookingServiceDetails.FirstOrDefault(d => d.BookingId == 3 && d.ServiceId == 1);
-            if (detail1 == null)
-            {
-                context.BookingServiceDetails.Add(new backend.Entities.BookingServiceDetail
-                {
-                    BookingId = 3,
-                    ServiceId = 1,
-                    Quantity = 2,
-                    SnapshotUnitPrice = 20000m,
-                    IsIncurred = false,
-                    PaymentStatus = "Paid"
-                });
-            }
-
-            var detail2 = context.BookingServiceDetails.FirstOrDefault(d => d.BookingId == 3 && d.ServiceId == 2);
-            if (detail2 == null)
-            {
-                context.BookingServiceDetails.Add(new backend.Entities.BookingServiceDetail
-                {
-                    BookingId = 3,
-                    ServiceId = 2,
-                    Quantity = 1,
-                    SnapshotUnitPrice = 50000m,
-                    IsIncurred = true,
-                    PaymentStatus = "Unpaid"
-                });
-            }
-
-            context.SaveChanges();
-        }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error running dynamic seeding: {ex.Message}");
-    }
+    await backend.Data.DataSeeder.SeedLiveDemoDataAsync(app.Services);
 }
 
 app.Run();
