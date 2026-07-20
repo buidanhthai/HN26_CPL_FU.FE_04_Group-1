@@ -79,6 +79,9 @@ namespace backend.Controllers
 
             var totalAmount = prepaidFee + incurredUnpaidTotal + incurredPaidTotal;
 
+            bool isOverdue = booking.BookingStatus == "Checked_In" && DateTime.UtcNow > booking.EndTime;
+            int overdueMinutes = isOverdue ? (int)(DateTime.UtcNow - booking.EndTime).TotalMinutes : 0;
+
             return Ok(new
             {
                 booking = new BookingDto
@@ -115,7 +118,9 @@ namespace backend.Controllers
                 services,
                 prepaidFee,
                 incurredUnpaidTotal,
-                totalAmount
+                totalAmount,
+                isOverdue,
+                overdueMinutes
             });
         }
 

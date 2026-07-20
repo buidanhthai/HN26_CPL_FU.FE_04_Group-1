@@ -13,16 +13,46 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
   formatCurrency,
   onRefresh,
 }) => {
+  const [isOverdue, setIsOverdue] = React.useState<boolean>(activeBooking.isOverdue || false);
+  const [overdueMinutes, setOverdueMinutes] = React.useState<number>(activeBooking.overdueMinutes || 0);
+
+  React.useEffect(() => {
+    const checkOverdueStatus = () => {
+      if (activeBooking.booking.bookingStatus === 'Checked_In') {
+        const endTime = new Date(activeBooking.booking.endTime);
+        const now = new Date();
+        if (now > endTime) {
+          const diffMs = now.getTime() - endTime.getTime();
+          const diffMins = Math.floor(diffMs / 60000);
+          setIsOverdue(true);
+          setOverdueMinutes(diffMins);
+        } else {
+          setIsOverdue(false);
+          setOverdueMinutes(0);
+        }
+      } else {
+        setIsOverdue(false);
+        setOverdueMinutes(0);
+      }
+    };
+
+    checkOverdueStatus();
+    // Check every 10 seconds for real-time updates
+    const intervalId = setInterval(checkOverdueStatus, 10000);
+    return () => clearInterval(intervalId);
+  }, [activeBooking.booking.endTime, activeBooking.booking.bookingStatus]);
+
   return (
     <div
       style={{
-        backgroundColor: 'var(--surface-color)',
+        backgroundColor: isOverdue ? 'rgba(224, 122, 95, 0.08)' : 'var(--surface-color)',
         padding: '24px',
         borderRadius: '16px',
-        border: '1px solid var(--border-color)',
+        border: isOverdue ? '1.5px solid #e07a5f' : '1px solid var(--border-color)',
         boxShadow: 'var(--shadow)',
         position: 'relative',
         overflow: 'hidden',
+        transition: 'all 0.3s ease',
       }}
     >
       {/* Left accent bar */}
@@ -33,7 +63,8 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
           left: 0,
           width: '6px',
           height: '100%',
-          backgroundColor: 'var(--nature-accent)',
+          backgroundColor: isOverdue ? '#e07a5f' : 'var(--nature-accent)',
+          transition: 'background-color 0.3s ease',
         }}
       />
 
@@ -49,21 +80,39 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span
-            style={{
-              backgroundColor: 'var(--nature-accent)',
-              color: '#fff',
-              fontSize: '0.75rem',
-              fontWeight: 'bold',
-              padding: '4px 10px',
-              borderRadius: '12px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              animation: 'pulse 2s infinite',
-            }}
-          >
-            Đang hoạt động
-          </span>
+          {isOverdue ? (
+            <span
+              style={{
+                backgroundColor: '#e07a5f',
+                color: '#fff',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                padding: '4px 10px',
+                borderRadius: '12px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                animation: 'pulse-danger 2s infinite',
+              }}
+            >
+              ⚠️ Quá hạn {overdueMinutes} phút
+            </span>
+          ) : (
+            <span
+              style={{
+                backgroundColor: 'var(--nature-accent)',
+                color: '#fff',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                padding: '4px 10px',
+                borderRadius: '12px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                animation: 'pulse 2s infinite',
+              }}
+            >
+              Đang hoạt động
+            </span>
+          )}
           <span
             style={{ fontSize: '0.85rem', color: 'var(--secondary-text)', fontWeight: 'bold' }}
           >
@@ -121,7 +170,7 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
           })}{' '}
           ({new Date(activeBooking.booking.startTime).toLocaleDateString()})
         </div>
-        <div>
+        <div style={{ color: isOverdue ? '#e07a5f' : 'inherit', fontWeight: isOverdue ? 'bold' : 'normal' }}>
           🕒 <strong>Kết thúc:</strong>{' '}
           {new Date(activeBooking.booking.endTime).toLocaleTimeString([], {
             hour: '2-digit',
@@ -145,7 +194,9 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
         {activeBooking.booking.bookingStatus === 'Checked_In' && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.85rem', color: 'var(--secondary-text)' }}>
-              Bạn có thể gửi yêu cầu checkout khi kết thúc buổi làm việc.
+              {isOverdue 
+                ? 'Đã vượt quá thời gian sử dụng phòng. Vui lòng thực hiện checkout.'
+                : 'Bạn có thể gửi yêu cầu checkout khi kết thúc buổi làm việc.'}
             </span>
             <button
               onClick={async () => {
@@ -162,7 +213,7 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
               className="btn btn-danger hover-lift"
               style={{ padding: '8px 16px', borderRadius: '8px', fontSize: '0.9rem' }}
             >
-              🔔 Yêu cầu Checkout
+              {isOverdue ? '🔔 Xác nhận trả phòng (Quá hạn)' : '🔔 Yêu cầu Checkout'}
             </button>
           </div>
         )}
@@ -221,6 +272,11 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
           0% { box-shadow: 0 0 0 0 rgba(122, 134, 106, 0.4); }
           70% { box-shadow: 0 0 0 8px rgba(122, 134, 106, 0); }
           100% { box-shadow: 0 0 0 0 rgba(122, 134, 106, 0); }
+        }
+        @keyframes pulse-danger {
+          0% { box-shadow: 0 0 0 0 rgba(224, 122, 95, 0.4); }
+          70% { box-shadow: 0 0 0 8px rgba(224, 122, 95, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(224, 122, 95, 0); }
         }
       `}</style>
     </div>

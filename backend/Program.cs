@@ -97,9 +97,9 @@ using (var scope = app.Services.CreateScope())
         var activeBooking = context.Bookings.FirstOrDefault(b => b.Id == 3);
         if (activeBooking != null)
         {
-            var now = backend.Helpers.TimeHelper.GetVietnamTime();
+            var now = DateTime.UtcNow;
             activeBooking.StartTime = now.AddHours(-1);
-            activeBooking.EndTime = now.AddHours(2);
+            activeBooking.EndTime = now.AddMinutes(-5);
             activeBooking.BookingStatus = "Checked_In";
 
             var detail1 = context.BookingServiceDetails.FirstOrDefault(d => d.BookingId == 3 && d.ServiceId == 1);
