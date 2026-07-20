@@ -12,6 +12,10 @@ namespace backend.DTOs
         public decimal BasePrice { get; set; }
         public bool IsActive { get; set; } = true;
         public string? Description { get; set; }
+        public string? MapTop { get; set; }
+        public string? MapLeft { get; set; }
+        public string? MapWidth { get; set; }
+        public string? MapHeight { get; set; }
     }
 
     public class CreateSpaceAssetDto
@@ -24,5 +28,9 @@ namespace backend.DTOs
         public decimal AreaM2 { get; set; }
         public decimal BasePrice { get; set; }
         public string? Description { get; set; }
+        public string? MapTop { get; set; }
+        public string? MapLeft { get; set; }
+        public string? MapWidth { get; set; }
+        public string? MapHeight { get; set; }
     }
 }

@@ -1,43 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
-// 1. Định nghĩa kiểu dữ liệu phòng nhận từ API MySQL
+// 1. Định nghĩa kiểu dữ liệu phòng nhận từ API
 interface MeetingRoom {
-  Id: number;
-  LocationName: string;
-  AssetName: string;
-  AssetType: string;
-  BasePrice: number;
-  Capacity: number;
-  Dimensions: string;
-  AreaM2: number;
-  IsActive: number;
+  id: number;
+  locationName: string;
+  assetName: string;
+  assetType: string;
+  basePrice: number;
+  capacity: number;
+  dimensions: string;
+  areaM2: number;
+  isActive: boolean;
+  description?: string;
+  mapTop?: string;
+  mapLeft?: string;
+  mapWidth?: string;
+  mapHeight?: string;
 }
-
-// 2. Ma trận tọa độ (%) khớp chuẩn theo vị trí các phòng trên ảnh
-const ROOM_LAYOUTS: Record<number, { top: string; left: string; width: string; height: string }> = {
-  // LẦU 1
-  1: { top: '65%', left: '26%', width: '22%', height: '24%' }, 
-  2: { top: '75%', left: '54%', width: '16%', height: '17%' }, 
-  3: { top: '75%', left: '71%', width: '21%', height: '17%' }, 
-
-  // LẦU 2
-  4: { top: '40%', left: '23%', width: '12%', height: '14%' }, 
-  5: { top: '44%', left: '36%', width: '12%', height: '12%' }, 
-  6: { top: '44%', left: '67%', width: '11%', height: '13%' }, 
-  7: { top: '44%', left: '79%', width: '12%', height: '13%' }, 
-
-  // LẦU 3
-  8: { top: '12%', left: '23%', width: '13%', height: '15%' }, 
-  9: { top: '16%', left: '38%', width: '10%', height: '12%' }, 
-  10: { top: '17%', left: '60%', width: '14%', height: '15%' }, 
-  11: { top: '19%', left: '77%', width: '14%', height: '14%' }
-};
 
 export default function FloorSelection() {
   const navigate = useNavigate();
   
-  // SỬA ĐỔI: Khởi tạo state là 'Tổng quan' để lúc mới vào hiện ảnh tòa nhà ban đầu
+  // Khởi tạo state là 'Tổng quan' để lúc mới vào hiện ảnh tòa nhà ban đầu
   const [currentFloor, setCurrentFloor] = useState<string>('Tổng quan');
   const [rooms, setRooms] = useState<MeetingRoom[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<MeetingRoom | null>(null);
@@ -48,39 +34,30 @@ export default function FloorSelection() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    setLoading(true);
-    setSelectedRoom(null); // Reset phòng khi chuyển tầng
-    setHoveredRoom(null);  // Reset phòng khi chuyển tầng
+    const fetchRooms = async () => {
+      setLoading(true);
+      setSelectedRoom(null); // Reset phòng khi chuyển tầng
+      setHoveredRoom(null);  // Reset phòng khi chuyển tầng
+      try {
+        const response = await api.get<MeetingRoom[]>('/space-assets');
+        // Lọc ra các phòng thuộc lầu đang chọn, đang hoạt động và có tọa độ
+        // Nếu là 'Tổng quan' thì mảng rỗng để không vẽ hitbox đè lên ảnh tổng
+        const filtered = currentFloor === 'Tổng quan' 
+          ? [] 
+          : response.data.filter(
+              room => room.locationName === currentFloor && room.isActive && room.mapTop
+            );
+        
+        setRooms(filtered);
+      } catch (error) {
+        console.error('Error loading room data from backend:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const mockDBRooms = [
-      // Lầu 1
-      { Id: 1, LocationName: 'Lầu 1', AssetName: 'Hội Trường Lớn 101', AssetType: 'Meeting_Room', BasePrice: 300000, Capacity: 15, Dimensions: '6m x 5m', AreaM2: 30, IsActive: 1 },
-      { Id: 2, LocationName: 'Lầu 1', AssetName: 'Họp Chiến Lược 102', AssetType: 'Meeting_Room', BasePrice: 250000, Capacity: 10, Dimensions: '5m x 4m', AreaM2: 20, IsActive: 1 },
-      { Id: 3, LocationName: 'Lầu 1', AssetName: 'Tiếp Khách VIP 103', AssetType: 'Meeting_Room', BasePrice: 200000, Capacity: 6, Dimensions: '4m x 4m', AreaM2: 16, IsActive: 1 },
-      
-      // Lầu 2
-      { Id: 4, LocationName: 'Lầu 2', AssetName: 'Phòng Dự Án 201', AssetType: 'Meeting_Room', BasePrice: 150000, Capacity: 6, Dimensions: '4m x 3m', AreaM2: 12, IsActive: 1 },
-      { Id: 5, LocationName: 'Lầu 2', AssetName: 'Phòng Dự Án 202', AssetType: 'Meeting_Room', BasePrice: 150000, Capacity: 6, Dimensions: '4m x 3m', AreaM2: 12, IsActive: 1 },
-      { Id: 6, LocationName: 'Lầu 2', AssetName: 'Phòng Phỏng Vấn 203', AssetType: 'Meeting_Room', BasePrice: 100000, Capacity: 4, Dimensions: '3m x 3m', AreaM2: 9, IsActive: 1 },
-      { Id: 7, LocationName: 'Lầu 2', AssetName: 'Phòng Nghiên Cứu 204', AssetType: 'Meeting_Room', BasePrice: 200000, Capacity: 8, Dimensions: '4m x 4m', AreaM2: 16, IsActive: 1 },
-      
-      // Lầu 3
-      { Id: 8, LocationName: 'Lầu 3', AssetName: 'Họp Nhóm A', AssetType: 'Meeting_Room', BasePrice: 120000, Capacity: 5, Dimensions: '3.5m x 3m', AreaM2: 10.5, IsActive: 1 },
-      { Id: 9, LocationName: 'Lầu 3', AssetName: 'Họp Nhóm B', AssetType: 'Meeting_Room', BasePrice: 120000, Capacity: 5, Dimensions: '3.5m x 3m', AreaM2: 10.5, IsActive: 1 },
-      { Id: 10, LocationName: 'Lầu 3', AssetName: 'Hội Thảo 303', AssetType: 'Meeting_Room', BasePrice: 250000, Capacity: 12, Dimensions: '5m x 5m', AreaM2: 25, IsActive: 1 },
-      { Id: 11, LocationName: 'Lầu 3', AssetName: 'Đào Tạo 304', AssetType: 'Meeting_Room', BasePrice: 400000, Capacity: 20, Dimensions: '8m x 5m', AreaM2: 40, IsActive: 1 }
-    ];
-
-    // Lọc ra các phòng thuộc lầu đang chọn. 
-    // Nếu là 'Tổng quan' thì mảng rỗng để không vẽ hitbox đè lên ảnh tổng
-    const filtered = currentFloor === 'Tổng quan' 
-      ? [] 
-      : mockDBRooms.filter(room => room.LocationName === currentFloor);
-    
-    setRooms(filtered);
-    setLoading(false);
+    fetchRooms();
   }, [currentFloor]);
-
 
   // Hàm xác định ảnh hiển thị dựa trên tầng đang chọn
   const getFloorImage = () => {
@@ -106,7 +83,7 @@ export default function FloorSelection() {
         </button>
       </div>
 
-      {/* Bộ nút chuyển đổi tầng - Bổ sung thêm nút Tổng quan */}
+      {/* Bộ nút chuyển đổi tầng - Bổ dung thêm nút Tổng quan */}
       <div style={{ margin: '20px 0' }}>
         {['Tổng quan', 'Lầu 1', 'Lầu 2', 'Lầu 3'].map((floor) => (
           <button
@@ -137,7 +114,7 @@ export default function FloorSelection() {
           {/* CỘT TRÁI */}
           <div style={{ position: 'relative', width: '70%', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
             
-            {/* SỬA ĐỔI: Ảnh thay đổi tự động dựa vào hàm getFloorImage */}
+            {/* Ảnh thay đổi tự động dựa vào hàm getFloorImage */}
             <img 
               src={getFloorImage()} 
               alt={`Mặt bằng ${currentFloor}`} 
@@ -146,21 +123,18 @@ export default function FloorSelection() {
 
             {/* Render Hitbox các phòng */}
             {rooms.map((room) => {
-              const layout = ROOM_LAYOUTS[room.Id];
-              if (!layout) return null; 
-
-              const isCurrentSelected = selectedRoom?.Id === room.Id;
+              const isCurrentSelected = selectedRoom?.id === room.id;
 
               return (
                 <div
-                  key={room.Id}
+                  key={room.id}
                   onClick={() => setSelectedRoom(room)}
                   style={{
                     position: 'absolute',
-                    top: layout.top,
-                    left: layout.left,
-                    width: layout.width,
-                    height: layout.height,
+                    top: room.mapTop,
+                    left: room.mapLeft,
+                    width: room.mapWidth,
+                    height: room.mapHeight,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -186,7 +160,7 @@ export default function FloorSelection() {
                     }
                   }}
                 >
-                  {(hoveredRoom?.Id === room.Id || isCurrentSelected) && (
+                  {(hoveredRoom?.id === room.id || isCurrentSelected) && (
                     <span style={{
                       backgroundColor: 'rgba(255,255,255,0.9)',
                       padding: '2px 6px',
@@ -197,7 +171,7 @@ export default function FloorSelection() {
                       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                       animation: 'fadeIn 0.2s ease-in-out'
                     }}>
-                      {room.AssetName}
+                      {room.assetName}
                     </span>
                   )}
                 </div>
@@ -211,14 +185,14 @@ export default function FloorSelection() {
             <h3 style={{ marginTop: 0, borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>Chi Tiết Phòng Đang Chọn</h3>
             {selectedRoom ? (
               <div>
-                <p><strong>Tên phòng:</strong> {selectedRoom.AssetName}</p>
-                <p><strong>Vị trí:</strong> {selectedRoom.LocationName}</p>
-                <p><strong>Sức chứa:</strong> {selectedRoom.Capacity} người</p>
-                <p><strong>Kích thước:</strong> {selectedRoom.Dimensions} ({selectedRoom.AreaM2} m²)</p>
-                <p><strong>Giá thuê:</strong> <span style={{ color: '#d9534f', fontWeight: 'bold' }}>{selectedRoom.BasePrice.toLocaleString()} đ/h</span></p>
+                <p><strong>Tên phòng:</strong> {selectedRoom.assetName}</p>
+                <p><strong>Vị trí:</strong> {selectedRoom.locationName}</p>
+                <p><strong>Sức chứa:</strong> {selectedRoom.capacity} người</p>
+                <p><strong>Kích thước:</strong> {selectedRoom.dimensions} ({selectedRoom.areaM2} m²)</p>
+                <p><strong>Giá thuê:</strong> <span style={{ color: '#d9534f', fontWeight: 'bold' }}>{selectedRoom.basePrice.toLocaleString()} đ/h</span></p>
                 
                 <button
-                  onClick={() => alert(`Đã tạo đơn đăng ký thành công cho phòng: ${selectedRoom.AssetName}`)}
+                  onClick={() => alert(`Đã tạo đơn đăng ký thành công cho phòng: ${selectedRoom.assetName}`)}
                   style={{
                     width: '100%',
                     padding: '12px',
@@ -261,14 +235,14 @@ export default function FloorSelection() {
           minWidth: '220px'
         }}>
           <b style={{ color: '#4ba35b', fontSize: '14px', display: 'block', marginBottom: '4px' }}>
-            🏢 {hoveredRoom.AssetName}
+            🏢 {hoveredRoom.assetName}
           </b>
           <div style={{ borderBottom: '1px solid #444', marginBottom: '8px' }}></div>
-          <p style={{ margin: '2px 0' }}>📍 <strong>Vị trí:</strong> {hoveredRoom.LocationName}</p>
-          <p style={{ margin: '2px 0' }}>👥 <strong>Sức chứa:</strong> {hoveredRoom.Capacity} người</p>
-          <p style={{ margin: '2px 0' }}>📐 <strong>Diện tích:</strong> {hoveredRoom.AreaM2} m² ({hoveredRoom.Dimensions})</p>
+          <p style={{ margin: '2px 0' }}>📍 <strong>Vị trí:</strong> {hoveredRoom.locationName}</p>
+          <p style={{ margin: '2px 0' }}>👥 <strong>Sức chứa:</strong> {hoveredRoom.capacity} người</p>
+          <p style={{ margin: '2px 0' }}>📐 <strong>Diện tích:</strong> {hoveredRoom.areaM2} m² ({hoveredRoom.dimensions})</p>
           <p style={{ margin: '4px 0 0 0', fontSize: '13px' }}>
-            💰 <strong>Giá thuê:</strong> <span style={{ color: '#ffdd57', fontWeight: 'bold' }}>{hoveredRoom.BasePrice.toLocaleString()} đ/h</span>
+            💰 <strong>Giá thuê:</strong> <span style={{ color: '#ffdd57', fontWeight: 'bold' }}>{hoveredRoom.basePrice.toLocaleString()} đ/h</span>
           </p>
         </div>
       )}

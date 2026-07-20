@@ -33,7 +33,11 @@ namespace backend.Application.SpaceAssets.Queries.GetSpaceAssets
                     AreaM2 = a.AreaM2,
                     BasePrice = a.BasePrice,
                     IsActive = a.IsActive,
-                    Description = a.Description
+                    Description = a.Description,
+                    MapTop = a.MapTop,
+                    MapLeft = a.MapLeft,
+                    MapWidth = a.MapWidth,
+                    MapHeight = a.MapHeight
                 })
                 .ToListAsync(cancellationToken);
         }

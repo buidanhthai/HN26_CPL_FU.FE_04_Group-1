@@ -17,6 +17,10 @@ namespace backend.Data.Configurations
             builder.Property(e => e.Dimensions).IsRequired().HasMaxLength(50);
             builder.Property(e => e.AreaM2).HasPrecision(6, 2);
             builder.Property(e => e.IsActive).HasDefaultValue(true);
+            builder.Property(e => e.MapTop).HasMaxLength(20);
+            builder.Property(e => e.MapLeft).HasMaxLength(20);
+            builder.Property(e => e.MapWidth).HasMaxLength(20);
+            builder.Property(e => e.MapHeight).HasMaxLength(20);
 
             builder.HasData(SeedData.GetSpaceAssets());
         }

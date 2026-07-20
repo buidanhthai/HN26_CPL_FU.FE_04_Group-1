@@ -48,7 +48,11 @@ namespace backend.Controllers
                 AreaM2 = dto.AreaM2,
                 BasePrice = dto.BasePrice,
                 IsActive = true,
-                Description = dto.Description
+                Description = dto.Description,
+                MapTop = dto.MapTop,
+                MapLeft = dto.MapLeft,
+                MapWidth = dto.MapWidth,
+                MapHeight = dto.MapHeight
             };
 
             _context.SpaceAssets.Add(asset);
@@ -65,7 +69,11 @@ namespace backend.Controllers
                 AreaM2 = asset.AreaM2,
                 BasePrice = asset.BasePrice,
                 IsActive = asset.IsActive,
-                Description = asset.Description
+                Description = asset.Description,
+                MapTop = asset.MapTop,
+                MapLeft = asset.MapLeft,
+                MapWidth = asset.MapWidth,
+                MapHeight = asset.MapHeight
             });
         }
 
@@ -84,6 +92,10 @@ namespace backend.Controllers
             asset.AreaM2 = dto.AreaM2;
             asset.BasePrice = dto.BasePrice;
             asset.Description = dto.Description;
+            asset.MapTop = dto.MapTop;
+            asset.MapLeft = dto.MapLeft;
+            asset.MapWidth = dto.MapWidth;
+            asset.MapHeight = dto.MapHeight;
 
             await _context.SaveChangesAsync();
 
@@ -98,7 +110,11 @@ namespace backend.Controllers
                 AreaM2 = asset.AreaM2,
                 BasePrice = asset.BasePrice,
                 IsActive = asset.IsActive,
-                Description = asset.Description
+                Description = asset.Description,
+                MapTop = asset.MapTop,
+                MapLeft = asset.MapLeft,
+                MapWidth = asset.MapWidth,
+                MapHeight = asset.MapHeight
             });
         }
 
