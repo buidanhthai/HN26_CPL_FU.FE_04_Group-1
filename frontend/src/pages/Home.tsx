@@ -12,6 +12,7 @@ interface AddonItem {
   unit: string;
   desc: string;
   category: 'coffee' | 'tea' | 'utilities' | 'devices';
+  imageUrl: string;
 }
 
 const enrichAddon = (service: any): AddonItem => {
@@ -23,24 +24,44 @@ const enrichAddon = (service: any): AddonItem => {
   let category: 'coffee' | 'tea' | 'utilities' | 'devices' = 'coffee';
   let desc = 'Thức uống thơm ngon phục vụ tại quầy.';
   let unit = 'phần';
+  let imageUrl = '/images/services/coffee.jpg';
 
   const lowerName = name.toLowerCase();
   if (lowerName.includes('cà phê') || lowerName.includes('cafe') || lowerName.includes('bạc xỉu')) {
     category = 'coffee';
     desc = 'Cà phê được pha chế thơm ngon, đậm đà chuẩn vị.';
     unit = 'ly';
-  } else if (lowerName.includes('trà')) {
+    imageUrl = '/images/services/coffee.jpg';
+  } else if (lowerName.includes('trà') || lowerName.includes('sinh tố')) {
     category = 'tea';
     desc = 'Trà thanh mát, giải nhiệt cho ngày dài làm việc.';
     unit = 'ly';
-  } else if (lowerName.includes('bánh') || lowerName.includes('in ấn') || lowerName.includes('sao chụp') || lowerName.includes('croissant')) {
+    imageUrl = '/images/services/juice.jpg';
+  } else if (lowerName.includes('bánh') || lowerName.includes('croissant')) {
     category = 'utilities';
-    desc = lowerName.includes('bánh') || lowerName.includes('croissant') ? 'Bánh ngọt tiếp năng lượng.' : 'Hỗ trợ in ấn tài liệu tốc độ cao.';
-    unit = lowerName.includes('bánh') || lowerName.includes('croissant') ? 'phần' : 'trang';
+    desc = 'Bánh ngọt tiếp năng lượng cho buổi làm việc sôi nổi.';
+    unit = 'phần';
+    imageUrl = '/images/services/croissant.jpg';
+  } else if (lowerName.includes('in ấn') || lowerName.includes('sao chụp')) {
+    category = 'utilities';
+    desc = 'Hỗ trợ in ấn tài liệu tốc độ cao, chất lượng sắc nét.';
+    unit = 'trang';
+    imageUrl = '/images/services/printer.jpg';
+  } else if (lowerName.includes('projector') || lowerName.includes('máy chiếu')) {
+    category = 'devices';
+    desc = 'Máy chiếu chuyên nghiệp cho cuộc họp và trình bày.';
+    unit = method === 'By_Hour' ? 'giờ' : 'ngày';
+    imageUrl = '/images/services/projector.jpg';
+  } else if (lowerName.includes('bảng') || lowerName.includes('bút')) {
+    category = 'devices';
+    desc = 'Bảng di động và bút viết để chia sẻ ý tưởng tự do.';
+    unit = 'bộ';
+    imageUrl = '/images/services/whiteboard.jpg';
   } else {
     category = 'devices';
     desc = `Thiết bị phục vụ công việc và hội thảo chuyên nghiệp.`;
     unit = method === 'By_Hour' ? 'giờ' : 'ngày';
+    imageUrl = '/images/services/projector.jpg';
   }
 
   return {
@@ -49,8 +70,30 @@ const enrichAddon = (service: any): AddonItem => {
     price,
     unit,
     desc,
-    category
+    category,
+    imageUrl
   };
+};
+
+// Assign differentiated images based on category index (e.g., coffee1, coffee2, coffee3)
+const enrichAddonsWithDifferentiatedImages = (services: any[]): AddonItem[] => {
+  const enriched = services.map(enrichAddon);
+  const categoryCount: Record<string, number> = {};
+
+  return enriched.map((item) => {
+    if (!categoryCount[item.category]) {
+      categoryCount[item.category] = 1;
+    } else {
+      categoryCount[item.category]++;
+    }
+
+    const index = categoryCount[item.category];
+    const baseUrl = item.imageUrl.replace(/\.\w+$/, ''); // Remove file extension
+    const filename = baseUrl.split('/').pop() || 'coffee'; // Get last part of path
+    item.imageUrl = `/images/services/${filename}${index}.jpg`;
+
+    return item;
+  });
 };
 
 const Home: React.FC = () => {
@@ -98,7 +141,7 @@ const Home: React.FC = () => {
 
     bookingService.getAddOnServices()
       .then((data) => {
-        const enriched = (data || []).map(enrichAddon);
+        const enriched = enrichAddonsWithDifferentiatedImages(data || []);
         setAddonServices(enriched);
       })
       .catch((err) => {
@@ -323,7 +366,7 @@ const Home: React.FC = () => {
           </div>
         ) : (
           <div className="spaces-grid">
-            {filteredSpaces.slice(0, 3).map((asset: any) => {
+            {filteredSpaces.slice(0, 50).map((asset: any) => {
               const isMeeting = (asset.assetType || asset.AssetType || '').toString() === 'Meeting_Room';
               const icon = isMeeting ? '🤝' : '💻';
               const roomName = asset.assetName || asset.AssetName || 'Phòng làm việc';
@@ -404,6 +447,9 @@ const Home: React.FC = () => {
           <div className="menu-grid">
             {addonServices.filter(item => item.category === activeMenuTab).map(item => (
               <div className="menu-item" key={item.id}>
+                <div className="menu-item-image">
+                  <img src={item.imageUrl} alt={item.name} loading="lazy" />
+                </div>
                 <div className="menu-item-info">
                   <h4>{item.name}</h4>
                   <p>{item.desc}</p>

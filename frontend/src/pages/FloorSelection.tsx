@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // 1. Định nghĩa kiểu dữ liệu phòng nhận từ API MySQL
