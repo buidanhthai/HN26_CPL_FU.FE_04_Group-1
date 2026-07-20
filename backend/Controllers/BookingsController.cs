@@ -27,13 +27,13 @@ namespace backend.Controllers
         [HttpGet]
         public async Task<IActionResult> GetBookings()
         {
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
             int userId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
 
             var query = _context.Bookings.AsQueryable();
 
-            if (userRole == "USER")
+            if (string.Equals(userRole, "USER", StringComparison.OrdinalIgnoreCase))
             {
                 query = query.Where(b => b.UserId == userId);
             }
@@ -207,11 +207,14 @@ namespace backend.Controllers
 
             if (booking == null) return NotFound();
 
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
             int currentUserId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
 
-            if (userRole == "USER" && booking.UserId != currentUserId)
+            bool isStaffOrAdmin = string.Equals(userRole, "STAFF", StringComparison.OrdinalIgnoreCase) || 
+                                  string.Equals(userRole, "ADMIN", StringComparison.OrdinalIgnoreCase);
+
+            if (!isStaffOrAdmin && booking.UserId != currentUserId)
             {
                 return Forbid();
             }
@@ -389,7 +392,12 @@ namespace backend.Controllers
                 user = userInfo,
                 services,
                 logs,
-                invoices
+                invoices,
+                isOverdue = booking.BookingStatus == "Checked_In" && DateTime.UtcNow > booking.EndTime,
+                overdueMinutes = (booking.BookingStatus == "Checked_In" && DateTime.UtcNow > booking.EndTime) ? (int)(DateTime.UtcNow - booking.EndTime).TotalMinutes : 0,
+                overtimeFee = (booking.BookingStatus == "Checked_In" && DateTime.UtcNow > booking.EndTime && (DateTime.UtcNow - booking.EndTime).TotalMinutes > 15.0) 
+                    ? Math.Round(((booking.SpaceAsset?.BasePrice ?? 0m) * (decimal)Math.Ceiling((DateTime.UtcNow - booking.EndTime).TotalMinutes) * 1.5m) / 60.0m, 0)
+                    : 0m
             });
         }
 

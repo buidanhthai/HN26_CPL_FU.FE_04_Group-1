@@ -506,3 +506,20 @@ code {
   font-weight: bold;
 }
 
+/* Custom Helper Classes for Staff/Admin Dashboard Dark Theme */
+.bg-card {
+  background-color: #2b201c !important;
+  border: 1px solid #3d2e29 !important;
+}
+.badge-overdue {
+  background-color: #4a1919 !important;
+  color: #ff8080 !important;
+  border: 1px solid #7a2828 !important;
+}
+.badge-active {
+  background-color: #1c3b2b !important;
+  color: #6ee7b7 !important;
+  border: 1px solid #28573f !important;
+}
+
+

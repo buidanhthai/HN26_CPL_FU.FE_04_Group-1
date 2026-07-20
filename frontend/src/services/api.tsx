@@ -1,5 +1,4 @@
 import axios from 'axios';
-import type { User } from '../types/user.types';
 
 const API_BASE_URL = 'http://localhost:5201/api';
 
@@ -15,17 +14,34 @@ api.interceptors.request.use(
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
-        const user: User = JSON.parse(storedUser);
-        if (user.token && config.headers) {
-          config.headers.Authorization = `Bearer ${user.token}`;
+        const userObj: any = JSON.parse(storedUser);
+        const token = userObj?.token || userObj?.Token || userObj?.accessToken;
+        if (token && config.headers) {
+          config.headers.Authorization = `Bearer ${token}`;
+          console.log('[API Interceptor] Attached Authorization token to request:', config.url);
+        } else {
+          console.warn('[API Interceptor Warning] Token missing in localStorage user object:', userObj);
         }
       } catch (error) {
-        console.error('Error reading auth token', error);
+        console.error('[API Interceptor Error] Failed to parse stored user:', error);
       }
+    } else {
+      console.warn('[API Interceptor Warning] No user found in localStorage for request:', config.url);
     }
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      console.warn('[API Interceptor 401] Token rejected or expired. Clearing invalid session from localStorage.');
+      localStorage.removeItem('user');
+    }
     return Promise.reject(error);
   }
 );

@@ -301,11 +301,14 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Chỉ có thể yêu cầu checkout khi phòng đang được sử dụng (Checked_In)." });
             }
 
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
             int currentUserId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
 
-            if (userRole == "USER" && booking.UserId != currentUserId)
+            bool isStaffOrAdmin = string.Equals(userRole, "STAFF", StringComparison.OrdinalIgnoreCase) || 
+                                  string.Equals(userRole, "ADMIN", StringComparison.OrdinalIgnoreCase);
+
+            if (!isStaffOrAdmin && booking.UserId != currentUserId)
             {
                 return Forbid();
             }
@@ -359,11 +362,14 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Chỉ có thể thanh toán hóa đơn cuối cho đơn đang chờ checkout (Awaiting_Checkout)." });
             }
 
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
             int currentUserId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
 
-            if (userRole == "USER" && booking.UserId != currentUserId)
+            bool isStaffOrAdmin = string.Equals(userRole, "STAFF", StringComparison.OrdinalIgnoreCase) || 
+                                  string.Equals(userRole, "ADMIN", StringComparison.OrdinalIgnoreCase);
+
+            if (!isStaffOrAdmin && booking.UserId != currentUserId)
             {
                 return Forbid();
             }
@@ -464,11 +470,14 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Chỉ được phép xóa các đơn đặt chỗ đã bị hủy do chưa thanh toán đặt trước." });
             }
 
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
             int userId = string.IsNullOrEmpty(userIdStr) ? 0 : int.Parse(userIdStr);
 
-            if (userRole == "USER" && booking.UserId != userId)
+            bool isStaffOrAdmin = string.Equals(userRole, "STAFF", StringComparison.OrdinalIgnoreCase) || 
+                                  string.Equals(userRole, "ADMIN", StringComparison.OrdinalIgnoreCase);
+
+            if (!isStaffOrAdmin && booking.UserId != userId)
             {
                 return Forbid();
             }

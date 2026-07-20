@@ -87,7 +87,7 @@ namespace backend.Services
                     foreach (var booking in overdueBookings)
                     {
                         var overdueMinutes = (int)(DateTime.UtcNow - booking.EndTime).TotalMinutes;
-                        _logger.LogWarning($"Booking #{booking.BookingCode} (ID: {booking.Id}) is OVERDUE by {overdueMinutes} minutes! User ID: {booking.UserId}. EndTime was: {booking.EndTime}.");
+                        _logger.LogInformation($"Booking #{booking.BookingCode} (ID: {booking.Id}) is OVERDUE by {overdueMinutes} minutes. User ID: {booking.UserId}. EndTime was: {booking.EndTime}.");
                     }
                 }
             }
