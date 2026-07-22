@@ -94,6 +94,13 @@ export function useBookings() {
     const startDateTime = new Date(`${startDate}T${startTimeStr}:00`);
     const endDateTime = new Date(`${endDate}T${endTimeStr}:00`);
 
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - 1);
+    if (startDateTime < now) {
+      setError('Thời gian đặt phòng không được nằm trong quá khứ.');
+      return;
+    }
+
     if (startDateTime >= endDateTime) {
       setError('Thời gian kết thúc phải sau thời gian bắt đầu.');
       return;
@@ -107,8 +114,8 @@ export function useBookings() {
       userId: user?.id || 0,
       assetId,
       layoutId,
-      startTime: startDateTime.toISOString(),
-      endTime: endDateTime.toISOString(),
+      startTime: `${startDate}T${startTimeStr}:00`,
+      endTime: `${endDate}T${endTimeStr}:00`,
       snapshotBasePrice: basePrice,
       snapshotPriceModifier: layoutId === 1 ? 50000 : 0,
       customerName: isStaffOrAdmin ? customerName : undefined,

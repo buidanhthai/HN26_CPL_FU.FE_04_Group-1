@@ -4,6 +4,12 @@ import { taskService } from '../../../services/taskService';
 import api from '../../../services/api';
 import type { Booking } from '../../../types/booking.types';
 import type { Task } from '../../../types/task.types';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export interface ActiveSessionDetailed extends Booking {
   services?: Array<{
@@ -88,7 +94,7 @@ export function useStaffDashboardData() {
               ...b,
               services: details.services || [],
               customerFullName: details.user?.fullName || b.customerName || `Khách hàng #${b.userId}`,
-              isOverdue: details.isOverdue ?? (b.bookingStatus === 'Checked_In' && new Date() > new Date(b.endTime)),
+              isOverdue: details.isOverdue ?? (b.bookingStatus === 'Checked_In' && dayjs().tz('Asia/Ho_Chi_Minh').isAfter(dayjs(b.endTime).tz('Asia/Ho_Chi_Minh'))),
               overdueMinutes: details.overdueMinutes ?? 0,
               overtimeFee: details.overtimeFee ?? 0
             };
@@ -113,14 +119,14 @@ export function useStaffDashboardData() {
     return () => clearInterval(interval);
   }, [fetchData]);
 
-  const now = new Date();
+  const nowTz = dayjs().tz('Asia/Ho_Chi_Minh');
 
   const overdueSessions = activeSessionsDetailed.filter((b) => b.isOverdue);
 
   const upcoming2h = bookings.filter((b) => {
     if (b.bookingStatus !== 'Confirmed') return false;
-    const startTime = new Date(b.startTime);
-    const diffHours = (startTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+    const startTimeTz = dayjs(b.startTime).tz('Asia/Ho_Chi_Minh');
+    const diffHours = startTimeTz.diff(nowTz, 'hour', true);
     return diffHours >= 0 && diffHours <= 2;
   });
 

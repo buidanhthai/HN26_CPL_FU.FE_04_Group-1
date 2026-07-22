@@ -50,15 +50,15 @@ namespace backend.Services
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                var nowUtc = DateTime.UtcNow;
-                var targetTimeUtc = nowUtc.AddHours(2);
+                var nowLocal = backend.Helpers.TimeHelper.GetVietnamTime();
+                var targetTimeLocal = nowLocal.AddHours(2);
 
                 // Get bookings: Confirmed, starting within the next 2 hours, and not started yet.
                 var bookingsNeedSetup = await dbContext.Bookings
                     .Include(b => b.RoomLayout)
                     .Where(b => b.BookingStatus == "Confirmed" 
-                                && b.StartTime <= targetTimeUtc 
-                                && b.StartTime > nowUtc)
+                                && b.StartTime <= targetTimeLocal 
+                                && b.StartTime > nowLocal)
                     .ToListAsync();
 
                 bool changed = false;
@@ -77,7 +77,7 @@ namespace backend.Services
                             TaskDescription = $"Chuẩn bị phòng theo sơ đồ {layoutName} cho Booking #{booking.BookingCode}",
                             RequiredStaffCount = 1,
                             TaskStatus = "Unassigned",
-                            CreatedAt = DateTime.UtcNow
+                            CreatedAt = backend.Helpers.TimeHelper.GetVietnamTime()
                         };
 
                         dbContext.InternalTasks.Add(task);

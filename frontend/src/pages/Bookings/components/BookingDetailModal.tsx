@@ -1,6 +1,11 @@
 import React from 'react';
 import type { Booking } from '../../../types/booking.types';
 import { bookingService } from '../../../services/bookingService';
+import { formatToVNTime } from '../../../utils/dateFormatter';
+import { BookingRoomInfo } from './BookingRoomInfo';
+import { BookingCustomerInfo } from './BookingCustomerInfo';
+import { BookingServicesTable } from './BookingServicesTable';
+import { ItemizedInvoiceTable } from './ItemizedInvoiceTable';
 
 interface BookingDetailModalProps {
   details: {
@@ -42,9 +47,8 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
   if (!localDetails) return null;
 
-  const { booking, user, services, logs, invoices, spaceAsset: apiSpaceAsset, roomLayout } = localDetails;
+  const { booking, user, services, logs, spaceAsset: apiSpaceAsset, roomLayout, invoiceDetail } = localDetails;
 
-  // Tìm thông tin phòng từ DB qua ID nếu API không trả về
   const dbSpaceAsset = spaceAssets.find(a => a.id === booking.assetId || a.Id === booking.assetId);
   const locationName = apiSpaceAsset?.locationName ?? dbSpaceAsset?.locationName ?? dbSpaceAsset?.LocationName ?? 'N/A';
   const dimensions = apiSpaceAsset?.dimensions ?? dbSpaceAsset?.dimensions ?? dbSpaceAsset?.Dimensions ?? 'N/A';
@@ -52,40 +56,24 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
   const capacity = apiSpaceAsset?.capacity ?? dbSpaceAsset?.capacity ?? dbSpaceAsset?.Capacity ?? 0;
   const layoutName = roomLayout?.layoutName ?? (booking.layoutId === 1 ? 'Chữ U' : 'Lớp học');
 
-  // Tính toán số tiền thực tế
   const isRoomPaid = booking.bookingStatus !== 'Awaiting_Payment' && booking.bookingStatus !== 'Cancelled';
-  const roomCost = booking.snapshotBasePrice + (booking.snapshotPriceModifier || 0);
-  const roomPaidAmount = isRoomPaid ? roomCost : 0;
-  const roomUnpaidAmount = isRoomPaid ? 0 : roomCost;
 
-  // Đã trả trước: roomPaidAmount + dịch vụ đã thanh toán (paymentStatus === 'Paid') hoặc dịch vụ đặt trước đã thanh toán (khi phòng đã trả)
-  const prepaidServicesTotal = (services || []).reduce((sum: number, s: any) => {
-    const isPaid = s.paymentStatus === 'Paid' || (!s.isIncurred && isRoomPaid);
-    return isPaid ? sum + (s.snapshotUnitPrice * s.quantity) : sum;
-  }, 0);
-
-  const totalPrepaid = roomPaidAmount + prepaidServicesTotal;
-
-  // Phải thu thêm: roomUnpaidAmount + tất cả các dịch vụ chưa thanh toán
-  const unpaidServicesTotal = roomUnpaidAmount + (services || []).reduce((sum: number, s: any) => {
-    const isPaid = s.paymentStatus === 'Paid' || (!s.isIncurred && isRoomPaid);
-    return !isPaid ? sum + (s.snapshotUnitPrice * s.quantity) : sum;
-  }, 0);
-
-  const totalAmountCalculated = totalPrepaid + unpaidServicesTotal;
+  const start = new Date(booking.startTime);
+  const end = new Date(booking.endTime);
+  let fallbackHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+  fallbackHours = Math.round(fallbackHours * 2) / 2;
+  if (fallbackHours <= 0) fallbackHours = 0.5;
 
   const handleConfirmPayment = async () => {
-    const confirmMsg = `Bạn có chắc chắn muốn xác nhận đã thu thêm ${unpaidServicesTotal.toLocaleString()}đ từ khách hàng cho các dịch vụ phát sinh?`;
+    const finalDueAmount = invoiceDetail ? invoiceDetail.finalDue : 0;
+    const confirmMsg = `Bạn có chắc chắn muốn xác nhận đã thu thêm ${finalDueAmount.toLocaleString()}đ từ khách hàng cho các dịch vụ phát sinh?`;
     if (window.confirm(confirmMsg)) {
       try {
         setIsProcessing(true);
         await bookingService.payFinal(booking.id);
         alert('Xác nhận thanh toán dịch vụ phát sinh thành công!');
-        
-        // Reload details
         const updatedDetails = await bookingService.getBookingDetails(booking.id);
         setLocalDetails(updatedDetails);
-
         if (onRefresh) {
           onRefresh();
         }
@@ -104,223 +92,33 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           CHI TIẾT ĐƠN ĐẶT PHÒNG: {booking.bookingCode}
         </h3>
 
-        {/* Room details */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
-          <div>
-            <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Phòng đặt:</span>
-            <p style={{ margin: '4px 0 0 0', fontWeight: '600' }}>
-              {apiSpaceAsset?.assetName ?? dbSpaceAsset?.assetName ?? dbSpaceAsset?.AssetName ?? `Phòng #${booking.assetId}`}
-            </p>
-          </div>
-          <div>
-            <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Trạng thái:</span>
-            <p style={{ margin: '4px 0 0 0', fontWeight: '600', color: 'var(--nature-accent)' }}>
-              {booking.bookingStatus === 'Awaiting_Payment' ? 'Chờ thanh toán' :
-               booking.bookingStatus === 'Confirmed' ? 'Đã xác nhận' :
-               booking.bookingStatus === 'Checked_In' ? 'Đã Check-in' :
-               booking.bookingStatus === 'Checked_Out' ? 'Đã Checkout' :
-               booking.bookingStatus === 'Cancelled' ? 'Đã hủy do chưa thanh toán đặt trước' : booking.bookingStatus}
-            </p>
-          </div>
+        <BookingRoomInfo
+          booking={booking}
+          apiSpaceAsset={apiSpaceAsset}
+          dbSpaceAsset={dbSpaceAsset}
+          locationName={locationName}
+          dimensions={dimensions}
+          areaM2={areaM2}
+          capacity={capacity}
+          layoutName={layoutName}
+          formatToVNTime={formatToVNTime}
+        />
 
-          {/* New detailed fields */}
-          <div>
-            <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>📍 Vị trí:</span>
-            <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: '500' }}>{locationName}</p>
-          </div>
-          <div>
-            <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>📐 Kích thước:</span>
-            <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: '500' }}>{dimensions} ({areaM2} m²)</p>
-          </div>
-          <div>
-            <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>👥 Sức chứa:</span>
-            <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: '500' }}>{capacity} người</p>
-          </div>
-          <div>
-            <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>🛋️ Sơ đồ bày trí:</span>
-            <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', fontWeight: '500' }}>{layoutName}</p>
-          </div>
+        <BookingCustomerInfo booking={booking} user={user} />
+        
+        <BookingServicesTable services={services} />
 
-          {booking.bookingCode && (
-            <div style={{ gridColumn: 'span 2', backgroundColor: 'rgba(212, 163, 115, 0.12)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--accent-color)', marginBottom: '8px' }}>
-              <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Mã Đơn Đặt Chỗ (Booking Code):</span>
-              <p style={{ margin: '4px 0 0 0', fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--primary-text)', letterSpacing: '2px', fontFamily: 'monospace' }}>
-                {booking.bookingCode}
-              </p>
-              <span style={{ fontSize: '0.75rem', color: 'var(--secondary-text)', fontStyle: 'italic' }}>
-                * Xuất trình mã đặt chỗ này cho lễ tân khi làm thủ tục nhận phòng.
-              </span>
-            </div>
-          )}
-          <div>
-            <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Thời gian bắt đầu:</span>
-            <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem' }}>
-              {new Date(booking.startTime).toLocaleString()}
-            </p>
-          </div>
-          <div>
-            <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Thời gian kết thúc:</span>
-            <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem' }}>
-              {new Date(booking.endTime).toLocaleString()}
-            </p>
-          </div>
-          {booking.customerName && (
-            <div>
-              <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Tên khách (Đại diện):</span>
-              <p style={{ margin: '4px 0 0 0', fontWeight: '600' }}>
-                {booking.customerName}
-              </p>
-            </div>
-          )}
-          {booking.customerPhone && (
-            <div>
-              <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>SĐT khách:</span>
-              <p style={{ margin: '4px 0 0 0', fontWeight: '600' }}>
-                {booking.customerPhone}
-              </p>
-            </div>
-          )}
-          {booking.createdByUserId && (
-            <div style={{ gridColumn: 'span 2' }}>
-              <span style={{ fontWeight: 'bold', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>Nhân viên tạo yêu cầu:</span>
-              <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: 'var(--accent-color)', fontWeight: 'bold' }}>
-                Staff ID #{booking.createdByUserId}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Customer information (non-USER only) */}
-        {user && (
-          <div style={{
-            backgroundColor: 'rgba(212, 163, 115, 0.08)',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            border: '1px solid var(--border-color)',
-            marginBottom: '20px'
-          }}>
-            <h4 style={{ margin: '0 0 8px 0', fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--accent-color)' }}>
-              Thông tin khách hàng đặt
-            </h4>
-            <div style={{ display: 'flex', gap: '20px', fontSize: '0.85rem' }}>
-              <div>
-                <span style={{ fontWeight: '600' }}>Họ tên:</span> {user.fullName}
-              </div>
-              <div>
-                <span style={{ fontWeight: '600' }}>Email:</span> {user.email}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Services booked state */}
-        <div style={{ marginBottom: '20px' }}>
-          <h4 style={{ margin: '0 0 8px 0', fontSize: '0.95rem', fontWeight: 'bold', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
-            Trạng thái dịch vụ đang hoặc đã được đặt
-          </h4>
-          {services.length === 0 ? (
-            <p style={{ fontSize: '0.85rem', color: 'var(--secondary-text)', margin: '0' }}>Không sử dụng dịch vụ.</p>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--secondary-text)', textAlign: 'left' }}>
-                    <th style={{ padding: '6px 4px' }}>Tên dịch vụ</th>
-                    <th style={{ padding: '6px 4px' }}>Số lượng</th>
-                    <th style={{ padding: '6px 4px' }}>Đơn giá</th>
-                    <th style={{ padding: '6px 4px' }}>Loại</th>
-                    <th style={{ padding: '6px 4px' }}>Thanh toán</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {services.map((s: any, idx: number) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                      <td style={{ padding: '8px 4px', fontWeight: '600' }}>{s.serviceName}</td>
-                      <td style={{ padding: '8px 4px' }}>{s.quantity}</td>
-                      <td style={{ padding: '8px 4px' }}>{s.snapshotUnitPrice.toLocaleString()}đ</td>
-                      <td style={{ padding: '8px 4px' }}>
-                        <span style={{
-                          padding: '2px 6px',
-                          borderRadius: '4px',
-                          fontSize: '0.7rem',
-                          backgroundColor: s.isIncurred ? 'rgba(224, 122, 95, 0.1)' : 'rgba(122, 134, 106, 0.1)',
-                          color: s.isIncurred ? '#e07a5f' : 'var(--nature-accent)'
-                        }}>
-                          {s.isIncurred ? 'Phát sinh' : 'Đặt trước'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '8px 4px' }}>
-                        <span style={{
-                          fontWeight: '600',
-                          color: s.paymentStatus === 'Paid' ? 'var(--nature-accent)' : '#e07a5f'
-                        }}>
-                          {s.paymentStatus === 'Paid' ? 'Đã trả' : 'Chưa trả'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {/* Invoices List */}
-        <div style={{ marginBottom: '20px' }}>
-          <h4 style={{ margin: '0 0 8px 0', fontSize: '0.95rem', fontWeight: 'bold', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
-            Hóa đơn thanh toán
-          </h4>
-          {invoices.length === 0 ? (
-            <p style={{ fontSize: '0.85rem', color: 'var(--secondary-text)', margin: '0', fontStyle: 'italic' }}>Chưa xuất hóa đơn nào.</p>
-          ) : (
-            invoices.map((inv: any, idx: number) => {
-              const displayTotal = totalAmountCalculated;
-              const displayPrepaid = totalPrepaid;
-              const displayFinalDue = unpaidServicesTotal;
-              const displayStatus = unpaidServicesTotal > 0 ? 'Unpaid' : 'Paid';
-
-              return (
-                <div key={idx} style={{
-                  backgroundColor: 'rgba(122, 134, 106, 0.04)',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border-color)',
-                  fontSize: '0.85rem',
-                  marginBottom: '10px'
-                }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '8px' }}>
-                    <div>
-                      <span style={{ fontWeight: '600' }}>Loại hóa đơn:</span> {inv.invoiceType === 'Upfront' ? 'Trả trước' : 'Hóa đơn cuối'}
-                    </div>
-                    <div>
-                      <span style={{ fontWeight: '600' }}>Ngày xuất:</span> {new Date(inv.createdAt).toLocaleString()}
-                    </div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', borderTop: '1px dashed var(--border-color)', paddingTop: '8px' }}>
-                    <div>
-                      Tổng tiền: <strong>{displayTotal.toLocaleString()}đ</strong>
-                    </div>
-                    <div>
-                      Đã trả trước: <span style={{ color: 'var(--nature-accent)' }}>{displayPrepaid.toLocaleString()}đ</span>
-                    </div>
-                    <div>
-                      Phải thu thêm: <span style={{ color: '#e07a5f', fontWeight: 'bold' }}>{displayFinalDue.toLocaleString()}đ</span>
-                    </div>
-                  </div>
-                  <div style={{ marginTop: '8px', fontSize: '0.8rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>Trạng thái thanh toán:</span>
-                    <span style={{
-                      fontWeight: 'bold',
-                      color: displayStatus === 'Paid' ? 'var(--nature-accent)' : '#e07a5f'
-                    }}>
-                      {displayStatus === 'Paid' ? 'ĐÃ THANH TOÁN' : 'CHƯA THANH TOÁN'}
-                    </span>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+        <ItemizedInvoiceTable
+          invoiceDetail={invoiceDetail}
+          booking={booking}
+          apiSpaceAsset={apiSpaceAsset}
+          dbSpaceAsset={dbSpaceAsset}
+          isRoomPaid={isRoomPaid}
+          layoutName={layoutName}
+          fallbackHours={fallbackHours}
+          services={services}
+          formatToVNTime={formatToVNTime}
+        />
 
         {/* Audit Logs */}
         <div style={{ marginBottom: '25px' }}>
@@ -345,7 +143,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
                     <span style={{ fontWeight: 'bold', color: 'var(--accent-color)' }}>{log.userFullName}</span>: {log.actionDescription}
                   </div>
                   <div style={{ color: 'var(--secondary-text)', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
-                    {new Date(log.timestamp).toLocaleString()}
+                    {formatToVNTime(log.timestamp)}
                   </div>
                 </div>
               ))}
@@ -353,9 +151,9 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
           )}
         </div>
 
-        {/* Close Button */}
+        {/* Close/Action Buttons */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '15px' }}>
-          {unpaidServicesTotal > 0 && (
+          {(invoiceDetail ? invoiceDetail.finalDue > 0 : false) && (
             <button
               onClick={handleConfirmPayment}
               disabled={isProcessing}

@@ -55,7 +55,7 @@ namespace backend.Controllers
                         TaskDescription = "Setup U-shape layout for Meeting Room A", 
                         RequiredStaffCount = 1, 
                         TaskStatus = "Unassigned", 
-                        CreatedAt = DateTime.UtcNow 
+                        CreatedAt = backend.Helpers.TimeHelper.GetVietnamTime()
                     }
                 });
             }
@@ -109,7 +109,7 @@ namespace backend.Controllers
                     TaskDescription = dto.TaskDescription ?? "Mock task details",
                     RequiredStaffCount = dto.RequiredStaffCount ?? 1,
                     TaskStatus = dto.TaskStatus ?? "Unassigned",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = backend.Helpers.TimeHelper.GetVietnamTime()
                 });
             }
 

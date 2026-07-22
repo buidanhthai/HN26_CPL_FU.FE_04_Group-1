@@ -53,7 +53,7 @@ namespace backend.Services
                 var expiredBookings = await dbContext.Bookings
                     .Where(b => b.BookingStatus == "Awaiting_Payment" 
                                 && b.PaymentDeadline.HasValue 
-                                && b.PaymentDeadline.Value < DateTime.UtcNow)
+                                && b.PaymentDeadline.Value < backend.Helpers.TimeHelper.GetVietnamTime())
                     .ToListAsync();
 
                 if (expiredBookings.Any())
@@ -79,14 +79,14 @@ namespace backend.Services
 
                 var overdueBookings = await dbContext.Bookings
                     .Where(b => b.BookingStatus == "Checked_In" 
-                                && b.EndTime < DateTime.UtcNow)
+                                && b.EndTime < backend.Helpers.TimeHelper.GetVietnamTime())
                     .ToListAsync();
 
                 if (overdueBookings.Any())
                 {
                     foreach (var booking in overdueBookings)
                     {
-                        var overdueMinutes = (int)(DateTime.UtcNow - booking.EndTime).TotalMinutes;
+                        var overdueMinutes = (int)(backend.Helpers.TimeHelper.GetVietnamTime() - booking.EndTime).TotalMinutes;
                         _logger.LogInformation($"Booking #{booking.BookingCode} (ID: {booking.Id}) is OVERDUE by {overdueMinutes} minutes. User ID: {booking.UserId}. EndTime was: {booking.EndTime}.");
                     }
                 }

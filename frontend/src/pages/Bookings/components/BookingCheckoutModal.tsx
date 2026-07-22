@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import type { Booking } from '../../../types/booking.types';
+import { RoomPriceDetail } from './RoomPriceDetail';
+import { IncurredServicesTable } from './IncurredServicesTable';
+import { CheckoutPaymentSummary } from './CheckoutPaymentSummary';
 
 interface BookingCheckoutModalProps {
   details: {
@@ -69,57 +72,10 @@ export const BookingCheckoutModal: React.FC<BookingCheckoutModalProps> = ({
           </div>
         </div>
 
-        {/* Room Price Detail */}
-        <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '15px' }}>
-          <h4 style={{ fontSize: '0.95rem', margin: '0 0 8px 0', fontWeight: 'bold' }}>Chi phí phòng thuê</h4>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
-            <span>Giá cơ bản:</span>
-            <span>{booking.snapshotBasePrice.toLocaleString()}đ</span>
-          </div>
-          {booking.snapshotPriceModifier > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
-              <span>Phí phụ trội sơ đồ bàn ghế:</span>
-              <span>{booking.snapshotPriceModifier.toLocaleString()}đ</span>
-            </div>
-          )}
-        </div>
-
-        {/* Services Detail */}
-        <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '15px' }}>
-          <h4 style={{ fontSize: '0.95rem', margin: '0 0 8px 0', fontWeight: 'bold' }}>Dịch vụ phát sinh trong quá trình sử dụng</h4>
-          {services.length === 0 ? (
-            <p className="page-desc" style={{ margin: '0' }}>Không phát sinh dịch vụ.</p>
-          ) : (
-            services.map((s: any, idx: number) => (
-              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '4px' }}>
-                <span>{s.serviceName} (SL: {s.quantity})</span>
-                <span>{(s.snapshotUnitPrice * s.quantity).toLocaleString()}đ</span>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Payment Summary */}
-        <div style={{ backgroundColor: 'rgba(122, 134, 106, 0.08)', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '6px' }}>
-            <span>Tổng chi phí:</span>
-            <span style={{ fontWeight: '600' }}>{invoice.totalAmount.toLocaleString()}đ</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginBottom: '6px' }}>
-            <span>Đã cọc/trả trước:</span>
-            <span>-{invoice.paidUpfront.toLocaleString()}đ</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', fontWeight: 'bold', borderTop: '1px solid var(--border-color)', paddingTop: '6px', marginBottom: '8px' }}>
-            <span>Phải thu thêm:</span>
-            <span style={{ color: '#e07a5f' }}>{invoice.finalDue.toLocaleString()}đ</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--secondary-text)' }}>
-            <span>Trạng thái hóa đơn:</span>
-            <span className={`badge ${invoice.paymentStatus === 'Paid' ? 'badge-completed' : 'badge-unassigned'}`}>
-              {invoice.paymentStatus === 'Paid' ? 'Đã Thanh Toán Xong' : 'Chưa Thanh Toán'}
-            </span>
-          </div>
-        </div>
+        {/* Sub-components for details */}
+        <RoomPriceDetail booking={booking} invoice={invoice} />
+        <IncurredServicesTable services={services} />
+        <CheckoutPaymentSummary invoice={invoice} />
 
         {/* Dynamic warning if unpaid */}
         {invoice.paymentStatus !== 'Paid' && (
