@@ -41,7 +41,7 @@ const Navbar: React.FC = () => {
             </NavLink>
           )}
 
-          {/* STAFF / ADMIN → trang điều phối nội bộ */}
+          {/* STAFF / ADMIN → trang điều phối nội bộ & giải quyết khiếu nại/yêu cầu */}
           {(user.role === 'STAFF' || user.role === 'ADMIN') && (
             <>
               <NavLink
@@ -49,6 +49,12 @@ const Navbar: React.FC = () => {
                 className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
               >
                 📋 Công việc
+              </NavLink>
+              <NavLink
+                to="/user-requests"
+                className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+              >
+                🎧 Yêu cầu khách hàng
               </NavLink>
               <NavLink
                 to="/space-assets"

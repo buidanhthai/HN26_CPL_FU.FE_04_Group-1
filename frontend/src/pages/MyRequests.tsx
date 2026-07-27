@@ -10,6 +10,7 @@ interface ServiceRequest {
   roomName: string;
   status: 'Pending' | 'In_Progress' | 'Resolved';
   createdAt: string;
+  resolvedNote?: string;
 }
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
@@ -25,7 +26,6 @@ const TYPE_LABEL: Record<string, { label: string; emoji: string }> = {
 
 const MyRequests: React.FC = () => {
   const auth = useContext(AuthContext);
-  const user = auth?.user;
 
   // ─── State ────────────────────────────────────────────────────────────────
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
@@ -44,39 +44,10 @@ const MyRequests: React.FC = () => {
     const fetchRequests = async () => {
       setLoading(true);
       try {
-        const res = await api.get<ServiceRequest[]>('/my-requests');
+        const res = await api.get<ServiceRequest[]>('/user-requests/my');
         setRequests(res.data || []);
-      } catch {
-        // API chưa có → dùng mock để demo UI
-        setRequests([
-          {
-            id: 1,
-            type: 'SERVICE',
-            title: 'Gọi thêm cà phê sữa đá x2',
-            detail: 'Phòng cần thêm 2 ly cà phê sữa đá, không đường.',
-            roomName: 'Họp Chiến Lược 102',
-            status: 'Resolved',
-            createdAt: new Date(Date.now() - 3600000).toISOString(),
-          },
-          {
-            id: 2,
-            type: 'INCIDENT',
-            title: 'Điều hòa không lạnh',
-            detail: 'Nhiệt độ phòng vẫn cao dù đã bật điều hòa 30 phút.',
-            roomName: 'Tiếp Khách VIP 103',
-            status: 'In_Progress',
-            createdAt: new Date(Date.now() - 900000).toISOString(),
-          },
-          {
-            id: 3,
-            type: 'SERVICE',
-            title: 'Mượn bảng di động',
-            detail: 'Cần 1 bảng di động + 2 bút cho buổi brainstorm.',
-            roomName: 'Phòng Dự Án 201',
-            status: 'Pending',
-            createdAt: new Date(Date.now() - 300000).toISOString(),
-          },
-        ]);
+      } catch (err) {
+        console.error('Error fetching my requests:', err);
       } finally {
         setLoading(false);
       }
@@ -94,25 +65,23 @@ const MyRequests: React.FC = () => {
     setErrorMsg('');
     setSubmitting(true);
     try {
-      await api.post('/my-requests', { type: reqType, title, detail, roomName });
-    } catch {
-      // API chưa có → optimistic UI
+      const res = await api.post<ServiceRequest>('/user-requests', {
+        type: reqType,
+        title: title.trim(),
+        detail: detail.trim(),
+        roomName: roomName.trim(),
+      });
+      setRequests((prev) => [res.data, ...prev]);
+      setTitle('');
+      setDetail('');
+      setSuccessMsg('✅ Yêu cầu đã được gửi! Nhân viên sẽ phản hồi trong vài phút.');
+      setTimeout(() => setSuccessMsg(''), 4000);
+    } catch (err: any) {
+      console.error('Error creating request:', err);
+      setErrorMsg('Không thể gửi yêu cầu. Vui lòng thử lại.');
+    } finally {
+      setSubmitting(false);
     }
-    const newReq: ServiceRequest = {
-      id: Date.now(),
-      type: reqType,
-      title: title.trim(),
-      detail: detail.trim(),
-      roomName: roomName.trim(),
-      status: 'Pending',
-      createdAt: new Date().toISOString(),
-    };
-    setRequests((prev) => [newReq, ...prev]);
-    setTitle('');
-    setDetail('');
-    setSuccessMsg('✅ Yêu cầu đã được gửi! Nhân viên sẽ phản hồi trong vài phút.');
-    setTimeout(() => setSuccessMsg(''), 4000);
-    setSubmitting(false);
   };
 
   const formatTime = (iso: string) =>
@@ -141,7 +110,7 @@ const MyRequests: React.FC = () => {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {requests.map((r) => {
-                const typeInfo = TYPE_LABEL[r.type];
+                const typeInfo = TYPE_LABEL[r.type] || { label: r.type, emoji: '📌' };
                 const statusInfo = STATUS_LABEL[r.status] || { label: r.status, color: '#aaa' };
                 return (
                   <div
@@ -191,6 +160,20 @@ const MyRequests: React.FC = () => {
                         <div style={{ fontSize: '0.78rem', color: 'var(--secondary-text)' }}>
                           🏠 {r.roomName} &nbsp;·&nbsp; 🕐 {formatTime(r.createdAt)}
                         </div>
+
+                        {r.resolvedNote && (
+                          <div style={{
+                            marginTop: '8px',
+                            padding: '8px 12px',
+                            borderRadius: '6px',
+                            backgroundColor: 'rgba(107,191,126,0.08)',
+                            border: '1px solid rgba(107,191,126,0.3)',
+                            fontSize: '0.8rem',
+                            color: '#6bbf7e',
+                          }}>
+                            ✍️ Phản hồi từ Staff: {r.resolvedNote}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

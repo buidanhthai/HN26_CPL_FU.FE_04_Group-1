@@ -13,6 +13,7 @@ import Dashboard from '../pages/Dashboard';
 import Bookings from '../pages/Bookings';
 import Tasks from '../pages/Tasks';
 import MyRequests from '../pages/MyRequests';
+import UserRequestsManagement from '../pages/UserRequestsManagement';
 import Profile from '../pages/Profile';
 import SpaceAssets from '../pages/SpaceAssets';
 
@@ -39,9 +40,10 @@ const AppRoutes: React.FC = () => {
           <Route path="/bookings" element={<Bookings />} />
           <Route path="/profile" element={<Profile />} />
 
-          {/* STAFF & ADMIN: Trang điều phối công việc nội bộ */}
+          {/* STAFF & ADMIN: Trang điều phối công việc & giải quyết yêu cầu khách */}
           <Route element={<RoleProtectedRoute allowedRoles={['STAFF', 'ADMIN']} redirectTo="/my-requests" />}>
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/user-requests" element={<UserRequestsManagement />} />
             <Route path="/space-assets" element={<SpaceAssets />} />
           </Route>
 
