@@ -16,41 +16,57 @@ const Navbar: React.FC = () => {
       </NavLink>
 
       {user && (
-        <div className="nav-menu">
-          <NavLink 
-            to="/dashboard" 
-            end 
+      <div className="nav-menu">
+          <NavLink
+            to="/dashboard"
+            end
             className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
           >
             📊 Bảng điều khiển
           </NavLink>
-          <NavLink 
-            to="/bookings" 
+          <NavLink
+            to="/bookings"
             className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
           >
             📅 Lịch đặt chỗ
           </NavLink>
-          <NavLink 
-            to="/tasks" 
-            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-          >
-            📋 Công việc
-          </NavLink>
-          <NavLink 
-            to="/profile" 
+
+          {/* USER → trang gửi yêu cầu dịch vụ */}
+          {user.role === 'USER' && (
+            <NavLink
+              to="/my-requests"
+              className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+            >
+              📩 Yêu cầu của tôi
+            </NavLink>
+          )}
+
+          {/* STAFF / ADMIN → trang điều phối nội bộ */}
+          {(user.role === 'STAFF' || user.role === 'ADMIN') && (
+            <>
+              <NavLink
+                to="/tasks"
+                className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+              >
+                📋 Công việc
+              </NavLink>
+              <NavLink
+                to="/space-assets"
+                className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+              >
+                🏢 Quản lý Tài sản
+              </NavLink>
+            </>
+          )}
+
+          <NavLink
+            to="/profile"
             className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
           >
             👤 Hồ sơ
           </NavLink>
-          {(user.role === 'ADMIN' || user.role === 'STAFF') && (
-            <NavLink 
-              to="/space-assets" 
-              className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-            >
-              🏢 Quản lý Tài sản
-            </NavLink>
-          )}
         </div>
+
       )}
 
       {user && (

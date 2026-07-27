@@ -8,16 +8,17 @@ import AuthLayout from '../layouts/AuthLayout';
 // Pages
 import Home from '../pages/Home';
 import Login from '../pages/Login';
-import Register from '../pages/Register'; // Đã import Register chuẩn
+import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import Bookings from '../pages/Bookings';
 import Tasks from '../pages/Tasks';
+import MyRequests from '../pages/MyRequests';
 import Profile from '../pages/Profile';
-
 import SpaceAssets from '../pages/SpaceAssets';
 
 // Guards
 import ProtectedRoute from './ProtectedRoute';
+import RoleProtectedRoute from './RoleProtectedRoute';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -25,20 +26,29 @@ const AppRoutes: React.FC = () => {
       {/* Public Landing Page */}
       <Route path="/" element={<Home />} />
 
-      {/* Public Auth Routes - Cả Login và Register đều dùng chung AuthLayout */}
+      {/* Public Auth Routes */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} /> {/* <--- Đã đưa vào đây hợp lệ */}
+        <Route path="/register" element={<Register />} />
       </Route>
 
-      {/* Protected Main Routes */}
+      {/* Protected Main Routes - Tất cả role đều vào được */}
       <Route element={<ProtectedRoute />}>
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/bookings" element={<Bookings />} />
-          <Route path="/tasks" element={<Tasks />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/space-assets" element={<SpaceAssets />} />
+
+          {/* STAFF & ADMIN: Trang điều phối công việc nội bộ */}
+          <Route element={<RoleProtectedRoute allowedRoles={['STAFF', 'ADMIN']} redirectTo="/my-requests" />}>
+            <Route path="/tasks" element={<Tasks />} />
+            <Route path="/space-assets" element={<SpaceAssets />} />
+          </Route>
+
+          {/* USER: Trang gửi yêu cầu dịch vụ / báo sự cố */}
+          <Route element={<RoleProtectedRoute allowedRoles={['USER']} redirectTo="/tasks" />}>
+            <Route path="/my-requests" element={<MyRequests />} />
+          </Route>
         </Route>
       </Route>
 

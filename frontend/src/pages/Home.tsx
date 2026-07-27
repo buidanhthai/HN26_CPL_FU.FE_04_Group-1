@@ -367,8 +367,16 @@ const Home: React.FC = () => {
         ) : (
           <div className="spaces-grid">
             {filteredSpaces.slice(0, 50).map((asset: any) => {
-              const isMeeting = (asset.assetType || asset.AssetType || '').toString() === 'Meeting_Room';
-              const icon = isMeeting ? '🤝' : '💻';
+              const assetType = (asset.assetType || asset.AssetType || '').toString();
+              const isMeeting = assetType === 'Meeting_Room';
+              const isWorkshop = assetType === 'Workshop_Space';
+              const icon = isMeeting ? '🤝' : isWorkshop ? '🏢' : '💻';
+              const roomImageMap: Record<string, string> = {
+                'Meeting_Room': '/images/rooms/meeting_room.jpg',
+                'Hot_Desk': '/images/rooms/hot_desk.jpg',
+                'Workshop_Space': '/images/rooms/workshop.jpg',
+              };
+              const roomImageSrc = roomImageMap[assetType] || '/images/rooms/hot_desk.jpg';
               const roomName = asset.assetName || asset.AssetName || 'Phòng làm việc';
               const locationName = asset.locationName || asset.LocationName || 'Không rõ vị trí';
               const price = Number(asset.basePrice ?? asset.BasePrice ?? 0);
@@ -376,7 +384,19 @@ const Home: React.FC = () => {
               return (
                 <div className="space-card" key={asset.id || asset.Id}>
                   <div className="space-img-mock">
-                    {icon}
+                    <img
+                      src={roomImageSrc}
+                      alt={roomName}
+                      className="space-room-img"
+                      loading="lazy"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.style.display = 'none';
+                        const fallback = target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                    <span className="space-img-fallback" style={{ display: 'none' }}>{icon}</span>
                     <span className="space-tag">Sức chứa: {capacity} người</span>
                   </div>
                   <div className="space-content">

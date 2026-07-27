@@ -289,7 +289,29 @@
     justify-content: center;
     font-size: 4rem;
     position: relative;
+    overflow: hidden;
     transition: var(--transition);
+}
+
+.landing-page .space-room-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+}
+
+.landing-page .space-card:hover .space-room-img {
+    transform: scale(1.05);
+}
+
+.landing-page .space-img-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
 }
 
 .landing-page .space-card:hover .space-img-mock {
