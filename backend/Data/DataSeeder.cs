@@ -145,46 +145,70 @@ namespace backend.Data
             }
         }
 
-        // Kịch bản 3: Seed các Task Vận Hành Ca Trực
+        // Kịch bản 3: Seed các Task Vận Hành Ca Trực - đủ loại & trạng thái để test UI
         private static async Task SeedStaffOperationalTasksAsync(AppDbContext context)
         {
-            if (!await context.InternalTasks.AnyAsync(t => t.TaskDescription.Contains("Setup Máy chiếu")))
-            {
-                context.InternalTasks.Add(new InternalTask
-                {
-                    BookingId = 1,
-                    TaskCategory = "LOGISTICS",
-                    TaskDescription = "Setup Máy chiếu & Sơ đồ phòng họp B1 (Cho Booking #1 • Check-in lúc 17:00)",
-                    RequiredStaffCount = 1,
-                    TaskStatus = "Unassigned",
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
+            // Đảm bảo Booking test tồn tại trước khi seed tasks (tránh FK violation)
+            await EnsureTestBookingsExistAsync(context);
 
-            if (!await context.InternalTasks.AnyAsync(t => t.TaskDescription.Contains("Dọn dẹp & Khử khuẩn")))
+            var taskSeeds = new[]
             {
-                context.InternalTasks.Add(new InternalTask
-                {
-                    BookingId = 2,
-                    TaskCategory = "CLEANING",
-                    TaskDescription = "Dọn dẹp & Khử khuẩn Phòng Họp A2 (Sau khi khách Bob checkout)",
-                    RequiredStaffCount = 1,
-                    TaskStatus = "Unassigned",
-                    CreatedAt = DateTime.UtcNow
-                });
-            }
+                // --- UNASSIGNED (hiển thị ở Task Pool) ---
+                new { Desc = "[SEED] Setup Máy chiếu & Sơ đồ chữ U - Phòng Họp Chiến Lược 102 (Booking #2 • Check-in lúc 14:00)", Category = "LOGISTICS", BookingId = 2, Staff = 1, Status = "Unassigned" },
+                new { Desc = "[SEED] Chuẩn bị 10 ghế thêm & Bảng di động - Hội Trường Lớn 101 (Booking #1 • VIP)", Category = "LOGISTICS", BookingId = 1, Staff = 2, Status = "Unassigned" },
+                new { Desc = "[SEED] Kiểm tra điều hòa & mic không dây - Phòng Tiếp Khách VIP 103", Category = "TECHNICAL", BookingId = 3, Staff = 1, Status = "Unassigned" },
+                new { Desc = "[SEED] Phục vụ Trà đá & Bánh ngọt cho đoàn khách 8 người - Phòng 102", Category = "SERVICE", BookingId = 2, Staff = 1, Status = "Unassigned" },
+                new { Desc = "[SEED] Dọn dẹp & Khử khuẩn Phòng Phỏng Vấn 203 (Trước 09:00 sáng mai)", Category = "CLEANING", BookingId = 3, Staff = 1, Status = "Unassigned" },
 
-            if (!await context.InternalTasks.AnyAsync(t => t.TaskDescription.Contains("Kiểm tra nước uống")))
+                // --- IN_PROGRESS (đang thực hiện) ---
+                new { Desc = "[SEED] Sắp xếp bàn ghế sơ đồ lớp học - Phòng Đào Tạo 304 (Đang làm)", Category = "LOGISTICS", BookingId = 1, Staff = 2, Status = "In_Progress" },
+                new { Desc = "[SEED] Sửa bộ chiếu overhead tầng 3 (Kỹ thuật viên đang xử lý)", Category = "TECHNICAL", BookingId = 2, Staff = 1, Status = "In_Progress" },
+
+                // --- COMPLETED (đã hoàn thành, dùng để test filter) ---
+                new { Desc = "[SEED] Vệ sinh phòng họp A2 sau checkout Bob (Hoàn thành 11:30)", Category = "CLEANING", BookingId = 2, Staff = 1, Status = "Completed" },
+                new { Desc = "[SEED] Kiểm tra mạng Wi-Fi tầng 2 (Hoàn thành 09:00)", Category = "TECHNICAL", BookingId = 1, Staff = 1, Status = "Completed" },
+            };
+
+            foreach (var seed in taskSeeds)
             {
-                context.InternalTasks.Add(new InternalTask
+                if (!await context.InternalTasks.AnyAsync(t => t.TaskDescription == seed.Desc))
                 {
-                    BookingId = 3,
-                    TaskCategory = "TECHNICAL",
-                    TaskDescription = "Kiểm tra nước uống bàn C12 (Đã hoàn thành 14:00)",
-                    RequiredStaffCount = 1,
-                    TaskStatus = "Completed",
-                    CreatedAt = DateTime.UtcNow
+                    context.InternalTasks.Add(new InternalTask
+                    {
+                        BookingId = seed.BookingId,
+                        TaskCategory = seed.Category,
+                        TaskDescription = seed.Desc,
+                        RequiredStaffCount = seed.Staff,
+                        TaskStatus = seed.Status,
+                        CreatedAt = DateTime.UtcNow.AddMinutes(-new Random().Next(5, 120))
+                    });
+                }
+            }
+        }
+
+        // Helper: Đảm bảo các Booking giả tồn tại để tasks không bị FK error
+        private static async Task EnsureTestBookingsExistAsync(AppDbContext context)
+        {
+            var now = DateTime.UtcNow;
+
+            // Booking #1 - nếu chưa có (có thể bị xóa hoặc chưa seed)
+            if (!await context.Bookings.AnyAsync(b => b.Id == 1))
+            {
+                context.Bookings.Add(new Booking
+                {
+                    Id = 1,
+                    UserId = 3,
+                    AssetId = 1,
+                    CustomerName = "Alice User",
+                    StartTime = now.AddHours(3),
+                    EndTime = now.AddHours(5),
+                    BookingStatus = "Confirmed",
+                    BookingCode = "BK-SEED-001",
+                    SnapshotBasePrice = 300000m,
+                    SnapshotPriceModifier = 0m,
+                    CreatedAt = now.AddHours(-1)
                 });
+                await context.SaveChangesAsync();
             }
         }
     }
