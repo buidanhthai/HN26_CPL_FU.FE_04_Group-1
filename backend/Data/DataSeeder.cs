@@ -22,6 +22,10 @@ namespace backend.Data
                 await SeedStaffOperationalTasksAsync(context);
                 await Seeders.MaintenanceSeeder.SeedMaintenanceDataAsync(context);
                 await Seeders.OverdueBookingSeeder.SeedOverdueBookingAsync(context);
+                await Seeders.HappyPathSeeder.SeedHappyPathAsync(context);
+                await Seeders.ExceptionPathSeeder.SeedExceptionPathsAsync(context);
+                await Seeders.EdgeCasePathSeeder.SeedEdgeCasesAsync(context);
+                await Seeders.BoundaryDataSeeder.SeedBoundaryDataAsync(context);
 
                 await context.SaveChangesAsync();
             }
@@ -213,7 +217,20 @@ namespace backend.Data
                     CreatedAt = now.AddHours(-1),
                     Arrived = true
                 });
-                await context.SaveChangesAsync();
+                
+                using var transaction = await context.Database.BeginTransactionAsync();
+                try
+                {
+                    await context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Booking ON");
+                    await context.SaveChangesAsync();
+                    await context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Booking OFF");
+                    await transaction.CommitAsync();
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
             }
             else
             {
@@ -221,6 +238,7 @@ namespace backend.Data
                 aliceBooking.EndTime = now.AddHours(2);
                 aliceBooking.BookingStatus = "Confirmed";
                 aliceBooking.Arrived = true;
+                await context.SaveChangesAsync();
             }
 
             // Booking #5 - Khách B (Sẵn sàng Check-in vì LOGISTICS task is Completed)
@@ -243,7 +261,20 @@ namespace backend.Data
                     CreatedAt = now.AddHours(-1),
                     Arrived = true
                 });
-                await context.SaveChangesAsync();
+                
+                using var transaction = await context.Database.BeginTransactionAsync();
+                try
+                {
+                    await context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Booking ON");
+                    await context.SaveChangesAsync();
+                    await context.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT Booking OFF");
+                    await transaction.CommitAsync();
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
             }
             else
             {
@@ -251,6 +282,7 @@ namespace backend.Data
                 readyBooking.EndTime = now.AddHours(2);
                 readyBooking.BookingStatus = "Confirmed";
                 readyBooking.Arrived = true;
+                await context.SaveChangesAsync();
             }
         }
     }
