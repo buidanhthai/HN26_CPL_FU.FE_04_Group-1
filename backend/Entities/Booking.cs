@@ -31,6 +31,9 @@ namespace backend.Entities
         public decimal RefundAmount { get; set; } = 0.0m;
         public string? CancellationReason { get; set; }
 
+        public int? Rating { get; set; }
+        public string? ReviewComment { get; set; }
+
         // Navigation properties
         public User? User { get; set; }
         public User? CheckedInByAdmin { get; set; }

@@ -27,34 +27,15 @@ export const TaskPool: React.FC<TaskPoolProps> = ({
   return (
     <div className="panel-card">
       <h2 className="panel-title">Task Pool (Hàng đợi tự nhận việc)</h2>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <div className="task-list">
         {tasks.map((t) => (
           <div 
             key={t.id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '16px 20px',
-              borderRadius: '12px',
-              backgroundColor: t.taskStatus === 'Completed' ? 'rgba(111, 78, 55, 0.05)' : 'var(--background-color)',
-              border: '1px solid var(--border-color)',
-              opacity: t.taskStatus === 'Completed' ? 0.75 : 1,
-              transition: 'var(--transition)',
-              boxShadow: '0 2px 4px rgba(60, 42, 33, 0.02)'
-            }}
+            className={`task-item${t.taskStatus === 'Completed' ? ' task-item-completed' : ''}`}
           >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{
-                  padding: '4px 8px',
-                  backgroundColor: 'var(--surface-color)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '4px',
-                  fontSize: '0.75rem',
-                  fontWeight: 'bold',
-                  color: 'var(--secondary-text)'
-                }}>
+            <div className="flex-col gap-1">
+              <div className="flex items-center gap-3">
+                <span className="task-item-category">
                   {t.taskCategory}
                 </span>
                 <span className={`badge ${
@@ -64,29 +45,20 @@ export const TaskPool: React.FC<TaskPoolProps> = ({
                   {t.taskStatus}
                 </span>
               </div>
-              <div style={{
-                fontWeight: '600',
-                fontSize: '0.95rem',
-                textDecoration: t.taskStatus === 'Completed' ? 'line-through' : 'none',
-                color: t.taskStatus === 'Completed' ? 'var(--secondary-text)' : 'var(--primary-text)'
-              }}>
+              <div className={t.taskStatus === 'Completed' ? 'task-item-desc task-item-desc-completed' : 'task-item-desc'}>
                 {t.taskDescription}
               </div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--secondary-text)' }}>
+              <div className="text-xs text-secondary">
                 Mã đặt chỗ: #{t.bookingId} | Số nhân viên yêu cầu: {t.requiredStaffCount}
               </div>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
+            <div className="flex-col gap-2 align-end">
               {t.taskStatus === 'Unassigned' && userRole === 'STAFF' && (
                 <button 
                   onClick={() => onUpdateStatus(t, 'In_Progress')}
-                  className="btn btn-primary"
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontSize: '0.8rem'
-                  }}
+                  className="btn btn-primary text-xs"
+                  style={{ padding: '6px 12px', borderRadius: '6px' }}
                 >
                   Nhận việc
                 </button>
@@ -94,12 +66,8 @@ export const TaskPool: React.FC<TaskPoolProps> = ({
               {t.taskStatus === 'In_Progress' && userRole === 'STAFF' && (
                 <button 
                   onClick={() => onUpdateStatus(t, 'Completed')}
-                  className="btn btn-secondary"
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontSize: '0.8rem'
-                  }}
+                  className="btn btn-secondary text-xs"
+                  style={{ padding: '6px 12px', borderRadius: '6px' }}
                 >
                   Hoàn thành
                 </button>

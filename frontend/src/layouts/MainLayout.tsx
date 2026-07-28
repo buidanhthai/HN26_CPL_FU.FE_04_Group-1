@@ -4,9 +4,9 @@ import Navbar from '../components/Navbar';
 
 const MainLayout: React.FC = () => {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--background-color)', color: 'var(--primary-text)' }}>
+    <div className="main-layout">
       <Navbar />
-      <main style={{ flex: 1, padding: '40px 8%', overflowY: 'auto', boxSizing: 'border-box' }}>
+      <main className="main-content">
         <Outlet />
       </main>
     </div>

@@ -39,25 +39,22 @@ export const VisualFloorMapModal: React.FC<VisualFloorMapModalProps> = ({
     <div className="modal-overlay">
       <div className="modal-content" style={{ width: '1000px' }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '2px solid var(--border-color)', paddingBottom: '10px' }}>
-          <h3 style={{ fontSize: '1.4rem', margin: 0, color: 'var(--nature-accent)', fontFamily: 'var(--font-title)', fontWeight: 'bold' }}>
+        <div className="flex justify-between items-center mb-4" style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '10px' }}>
+          <h3 className="panel-title text-primary" style={{ margin: 0 }}>
             🗺️ Chọn không gian qua sơ đồ
           </h3>
           <button 
             type="button" 
             onClick={onClose}
             className="btn-link-danger"
-            style={{
-              fontSize: '1.5rem',
-              color: 'var(--secondary-text)',
-            }}
+            style={{ fontSize: '1.5rem', color: 'var(--secondary-text)' }}
           >
             &times;
           </button>
         </div>
 
         {/* Floor selector buttons */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <div className="flex gap-2 mb-4">
           {['Lầu 1', 'Lầu 2', 'Lầu 3'].map((floor) => (
             <button
               key={floor}
@@ -79,13 +76,13 @@ export const VisualFloorMapModal: React.FC<VisualFloorMapModalProps> = ({
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '20px', alignItems: 'start' }}>
+        <div className="floor-map-container">
           {/* Left Column: Interactive Map */}
-          <div style={{ position: 'relative', border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden' }}>
+          <div className="floor-map-left">
             <img 
               src={theBuildingImg} 
               alt="Sơ đồ Cozy Space" 
-              style={{ width: '100%', display: 'block', height: 'auto' }} 
+              className="floor-map-image" 
             />
             
             {spaceAssets
@@ -100,18 +97,12 @@ export const VisualFloorMapModal: React.FC<VisualFloorMapModalProps> = ({
                   <div
                     key={asset.id}
                     onClick={() => setMapSelectedRoom(asset)}
+                    className="floor-map-hitbox"
                     style={{
-                      position: 'absolute',
                       top: layout.top,
                       left: layout.left,
                       width: layout.width,
                       height: layout.height,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.15s ease',
-                      borderRadius: '4px',
                       backgroundColor: isCurrentSelected ? 'rgba(0, 86, 179, 0.35)' : 'transparent',
                       border: isCurrentSelected ? '2px solid #0056b3' : '2px dashed transparent'
                     }}
@@ -134,17 +125,7 @@ export const VisualFloorMapModal: React.FC<VisualFloorMapModalProps> = ({
                     }}
                   >
                     {(mapHoveredRoom?.id === asset.id || isCurrentSelected) && (
-                      <span style={{
-                        backgroundColor: 'var(--surface-color)',
-                        color: 'var(--primary-text)',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        fontSize: '10px',
-                        fontWeight: 'bold',
-                        boxShadow: 'var(--shadow)',
-                        border: '1px solid var(--border-color)',
-                        pointerEvents: 'none'
-                      }}>
+                      <span className="floor-map-hitbox-label">
                         {asset.assetName}
                       </span>
                     )}
@@ -154,13 +135,13 @@ export const VisualFloorMapModal: React.FC<VisualFloorMapModalProps> = ({
           </div>
 
           {/* Right Column: Selected Room Details & Confirm Button */}
-          <div style={{ padding: '20px', border: '1px solid var(--border-color)', borderRadius: '8px', backgroundColor: 'rgba(0,0,0,0.02)' }}>
+          <div className="floor-map-right">
             <h4 style={{ margin: '0 0 15px 0', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', fontFamily: 'var(--font-title)' }}>
               Chi tiết phòng chọn
             </h4>
             
             {mapSelectedRoom ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.9rem' }}>
+              <div className="flex-col gap-2 text-sm">
                 <p style={{ margin: 0 }}><strong>Tên phòng:</strong> {mapSelectedRoom.assetName}</p>
                 <p style={{ margin: 0 }}><strong>Vị trí:</strong> {mapSelectedRoom.locationName}</p>
                 <p style={{ margin: 0 }}><strong>Sức chứa:</strong> {mapSelectedRoom.capacity} người</p>
@@ -173,8 +154,8 @@ export const VisualFloorMapModal: React.FC<VisualFloorMapModalProps> = ({
                     onSelectRoom(mapSelectedRoom);
                     onClose();
                   }}
-                  className="btn btn-primary"
-                  style={{ width: '100%', marginTop: '15px', padding: '10px' }}
+                  className="btn btn-primary mt-3"
+                  style={{ width: '100%', padding: '10px' }}
                 >
                   Xác nhận chọn phòng
                 </button>
@@ -189,29 +170,19 @@ export const VisualFloorMapModal: React.FC<VisualFloorMapModalProps> = ({
 
         {/* Floating Hover Tooltip */}
         {mapHoveredRoom && (
-          <div style={{
-            position: 'fixed',
-            top: mapMousePos.y + 15,
-            left: mapMousePos.x + 15,
-            backgroundColor: 'rgba(23, 23, 23, 0.95)',
-            color: '#fff',
-            padding: '12px 16px',
-            borderRadius: '6px',
-            fontSize: '13px',
-            zIndex: 9999,
-            pointerEvents: 'none',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-            lineHeight: '1.6',
-            minWidth: '220px'
-          }}>
-            <b style={{ color: '#4ba35b', fontSize: '14px', display: 'block', marginBottom: '4px' }}>
-              🏢 {mapHoveredRoom.assetName}
-            </b>
-            <div style={{ borderBottom: '1px solid #444', marginBottom: '8px' }}></div>
-            <p style={{ margin: '2px 0' }}>📍 <strong>Vị trí:</strong> {mapHoveredRoom.locationName}</p>
-            <p style={{ margin: '2px 0' }}>👥 <strong>Sức chứa:</strong> {mapHoveredRoom.capacity} người</p>
-            <p style={{ margin: '2px 0' }}>📐 <strong>Diện tích:</strong> {mapHoveredRoom.areaM2} m² ({mapHoveredRoom.dimensions})</p>
-            <p style={{ margin: '4px 0 0 0', fontSize: '13px' }}>
+          <div 
+            className="floor-map-tooltip"
+            style={{
+              top: mapMousePos.y + 15,
+              left: mapMousePos.x + 15,
+            }}
+          >
+            <b>🏢 {mapHoveredRoom.assetName}</b>
+            <hr />
+            <p>📍 <strong>Vị trí:</strong> {mapHoveredRoom.locationName}</p>
+            <p>👥 <strong>Sức chứa:</strong> {mapHoveredRoom.capacity} người</p>
+            <p>📐 <strong>Diện tích:</strong> {mapHoveredRoom.areaM2} m² ({mapHoveredRoom.dimensions})</p>
+            <p style={{ marginTop: '4px' }}>
               💰 <strong>Giá thuê:</strong> <span style={{ color: '#ffdd57', fontWeight: 'bold' }}>{(mapHoveredRoom.basePrice ?? 0).toLocaleString()}đ/h</span>
             </p>
           </div>

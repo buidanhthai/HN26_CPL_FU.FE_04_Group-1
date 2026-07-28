@@ -8,6 +8,7 @@ import { ServiceMenuModal } from '../../../components/ServiceMenuModal';
 import { bookingService } from '../../../services/bookingService';
 import { ExtendBookingModal } from './staff/ExtendBookingModal';
 import { SwitchRoomModal } from './staff/SwitchRoomModal';
+import { StaffServiceRequestsPanel } from './staff/StaffServiceRequestsPanel';
 
 interface AdminStaffDashboardProps {
   userFullName: string;
@@ -24,8 +25,10 @@ const AdminStaffDashboard: React.FC<AdminStaffDashboardProps> = ({ userFullName,
     overdueSessions,
     upcoming2h,
     pendingTasks,
+    serviceRequests,
     refreshData,
     toggleTaskStatus,
+    updateRequestStatus,
     createQuickTask,
   } = useStaffDashboardData();
 
@@ -97,9 +100,9 @@ const AdminStaffDashboard: React.FC<AdminStaffDashboardProps> = ({ userFullName,
         pendingTaskCount={pendingTasks.length}
       />
 
-      {/* Split View: Left Column (Active Sessions) & Right Column (Staff Tasks) */}
+      {/* Split View: Left Column (Active Sessions & Requests) & Right Column (Staff Tasks) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-8">
           <StaffActiveSessionsList
             activeSessions={activeSessions}
             spaceAssets={spaceAssets}
@@ -108,6 +111,11 @@ const AdminStaffDashboard: React.FC<AdminStaffDashboardProps> = ({ userFullName,
             onCheckout={handleCheckout}
             onOpenExtend={handleOpenExtend}
             onOpenSwitch={handleOpenSwitch}
+          />
+
+          <StaffServiceRequestsPanel
+            requests={serviceRequests}
+            onUpdateRequestStatus={updateRequestStatus}
           />
         </div>
 

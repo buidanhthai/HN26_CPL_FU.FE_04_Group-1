@@ -44,7 +44,9 @@ namespace backend.Controllers
                     CustomerName = isUser && b.UserId != userId ? "Đã được đặt" : b.CustomerName,
                     CustomerPhone = isUser && b.UserId != userId ? "Liên hệ lễ tân" : b.CustomerPhone,
                     CreatedByUserId = isUser && b.UserId != userId ? null : b.CreatedByUserId,
-                    SetupTaskStatus = isUser && b.UserId != userId ? null : (b.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS") != null ? b.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS").TaskStatus : "Unassigned")
+                    SetupTaskStatus = isUser && b.UserId != userId ? null : (b.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS") != null ? b.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS").TaskStatus : "Unassigned"),
+                    Rating = isUser && b.UserId != userId ? null : b.Rating,
+                    ReviewComment = isUser && b.UserId != userId ? null : b.ReviewComment
                 }).ToListAsync();
 
             return Ok(bookings);
@@ -136,7 +138,9 @@ namespace backend.Controllers
                     SnapshotPriceModifier = booking.SnapshotPriceModifier,
                     CreatedAt = booking.CreatedAt,
                     BookingCode = booking.BookingCode,
-                    SetupTaskStatus = booking.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS")?.TaskStatus
+                    SetupTaskStatus = booking.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS")?.TaskStatus,
+                    Rating = booking.Rating,
+                    ReviewComment = booking.ReviewComment
                 },
                 spaceAsset = new
                 {
@@ -412,7 +416,9 @@ namespace backend.Controllers
                     SnapshotPriceModifier = booking.SnapshotPriceModifier,
                     CreatedAt = booking.CreatedAt,
                     BookingCode = booking.BookingCode,
-                    SetupTaskStatus = booking.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS")?.TaskStatus
+                    SetupTaskStatus = booking.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS")?.TaskStatus,
+                    Rating = booking.Rating,
+                    ReviewComment = booking.ReviewComment
                 },
                 spaceAsset = new
                 {

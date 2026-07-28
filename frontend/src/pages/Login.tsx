@@ -57,15 +57,15 @@ const Login: React.FC = () => {
 
   return (
     <div className="auth-container">
-      <h2 className="panel-title" style={{ textAlign: 'center', fontSize: '2rem', marginBottom: '8px' }}>
+      <h2 className="panel-title text-center mb-2" style={{ fontSize: '2rem' }}>
         Đăng nhập
       </h2>
-      <p className="page-desc" style={{ textAlign: 'center' }}>
+      <p className="page-desc text-center">
         Nhập thông tin tài khoản để truy cập hệ thống
       </p>
 
       {error && (
-        <div className="badge-unassigned" style={{ display: 'block', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.85rem', textAlign: 'center' }}>
+        <div className="alert-box alert-error text-center">
           {error}
         </div>
       )}
@@ -97,7 +97,7 @@ const Login: React.FC = () => {
           />
         </div>
 
-        <Button type="submit" disabled={loading} style={{ marginTop: '15px' }}>
+        <Button type="submit" disabled={loading} className="mt-3">
           {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
         </Button>
       </form>

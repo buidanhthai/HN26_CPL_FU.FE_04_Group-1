@@ -93,21 +93,22 @@ export default function FloorSelection() {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Segoe UI, sans-serif', maxWidth: '1300px', margin: '0 auto' }}>
+    <div className="profile-container" style={{ maxWidth: '1300px' }}>
       
       {/* Header điều hướng */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
-        <h2>Sơ Đồ Chọn Phòng Họp Trực Quan</h2>
+      <div className="flex justify-between items-center mb-4" style={{ borderBottom: '2px solid var(--border-color)', paddingBottom: '10px' }}>
+        <h2 style={{ margin: 0 }}>Sơ Đồ Chọn Phòng Họp Trực Quan</h2>
         <button 
           onClick={() => navigate('/bookings')}
-          style={{ padding: '10px 15px', backgroundColor: '#6c757d', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+          className="btn btn-secondary"
+          style={{ padding: '10px 15px', fontWeight: 'bold' }}
         >
           📜 Xem Lịch Sử Đặt Phòng
         </button>
       </div>
 
       {/* Bộ nút chuyển đổi tầng - Bổ sung thêm nút Tổng quan */}
-      <div style={{ margin: '20px 0' }}>
+      <div className="mb-4 mt-4">
         {['Tổng quan', 'Lầu 1', 'Lầu 2', 'Lầu 3'].map((floor) => (
           <button
             key={floor}
@@ -132,16 +133,16 @@ export default function FloorSelection() {
       {loading ? (
         <p>Đang đồng bộ dữ liệu sơ đồ...</p>
       ) : (
-        <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
+        <div className="floor-map-container">
           
           {/* CỘT TRÁI */}
-          <div style={{ position: 'relative', width: '70%', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+          <div className="floor-map-left">
             
             {/* SỬA ĐỔI: Ảnh thay đổi tự động dựa vào hàm getFloorImage */}
             <img 
               src={getFloorImage()} 
               alt={`Mặt bằng ${currentFloor}`} 
-              style={{ width: '100%', display: 'block', height: 'auto' }} 
+              className="floor-map-image" 
             />
 
             {/* Render Hitbox các phòng */}
@@ -155,18 +156,12 @@ export default function FloorSelection() {
                 <div
                   key={room.Id}
                   onClick={() => setSelectedRoom(room)}
+                  className="floor-map-hitbox"
                   style={{
-                    position: 'absolute',
                     top: layout.top,
                     left: layout.left,
                     width: layout.width,
                     height: layout.height,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.15s ease',
-                    borderRadius: '4px',
                     backgroundColor: isCurrentSelected ? 'rgba(0, 86, 179, 0.35)' : 'transparent',
                     border: isCurrentSelected ? '2px solid #0056b3' : '2px dashed transparent'
                   }}
@@ -187,16 +182,7 @@ export default function FloorSelection() {
                   }}
                 >
                   {(hoveredRoom?.Id === room.Id || isCurrentSelected) && (
-                    <span style={{
-                      backgroundColor: 'rgba(255,255,255,0.9)',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      fontWeight: 'bold',
-                      color: '#111',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                      animation: 'fadeIn 0.2s ease-in-out'
-                    }}>
+                    <span className="floor-map-hitbox-label">
                       {room.AssetName}
                     </span>
                   )}
@@ -207,10 +193,10 @@ export default function FloorSelection() {
           </div>
 
           {/* CỘT PHẢI */}
-          <div style={{ width: '30%', padding: '20px', border: '1px solid #eee', borderRadius: '8px', backgroundColor: '#fafafa' }}>
-            <h3 style={{ marginTop: 0, borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>Chi Tiết Phòng Đang Chọn</h3>
+          <div className="floor-map-right">
+            <h3 style={{ marginTop: 0, borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>Chi Tiết Phòng Đang Chọn</h3>
             {selectedRoom ? (
-              <div>
+              <div className="flex-col gap-2 text-sm">
                 <p><strong>Tên phòng:</strong> {selectedRoom.AssetName}</p>
                 <p><strong>Vị trí:</strong> {selectedRoom.LocationName}</p>
                 <p><strong>Sức chứa:</strong> {selectedRoom.Capacity} người</p>
@@ -219,18 +205,8 @@ export default function FloorSelection() {
                 
                 <button
                   onClick={() => alert(`Đã tạo đơn đăng ký thành công cho phòng: ${selectedRoom.AssetName}`)}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    backgroundColor: '#28a745',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '5px',
-                    fontWeight: 'bold',
-                    fontSize: '15px',
-                    cursor: 'pointer',
-                    marginTop: '15px'
-                  }}
+                  className="btn btn-primary mt-3"
+                  style={{ width: '100%', padding: '12px' }}
                 >
                   Xác Nhận Đặt Phòng
                 </button>
@@ -245,29 +221,20 @@ export default function FloorSelection() {
 
       {/* POPUP TOOLTIP */}
       {hoveredRoom && (
-        <div style={{
-          position: 'fixed',
-          top: mousePos.y + 15,
-          left: mousePos.x + 15,
-          backgroundColor: 'rgba(23, 23, 23, 0.95)',
-          color: '#fff',
-          padding: '12px 16px',
-          borderRadius: '6px',
-          fontSize: '13px',
-          zIndex: 9999,
-          pointerEvents: 'none',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-          lineHeight: '1.6',
-          minWidth: '220px'
-        }}>
-          <b style={{ color: '#4ba35b', fontSize: '14px', display: 'block', marginBottom: '4px' }}>
-            🏢 {hoveredRoom.AssetName}
-          </b>
-          <div style={{ borderBottom: '1px solid #444', marginBottom: '8px' }}></div>
-          <p style={{ margin: '2px 0' }}>📍 <strong>Vị trí:</strong> {hoveredRoom.LocationName}</p>
-          <p style={{ margin: '2px 0' }}>👥 <strong>Sức chứa:</strong> {hoveredRoom.Capacity} người</p>
-          <p style={{ margin: '2px 0' }}>📐 <strong>Diện tích:</strong> {hoveredRoom.AreaM2} m² ({hoveredRoom.Dimensions})</p>
-          <p style={{ margin: '4px 0 0 0', fontSize: '13px' }}>
+        <div 
+          className="floor-map-tooltip"
+          style={{
+            position: 'fixed',
+            top: mousePos.y + 15,
+            left: mousePos.x + 15,
+          }}
+        >
+          <b>🏢 {hoveredRoom.AssetName}</b>
+          <hr />
+          <p>📍 <strong>Vị trí:</strong> {hoveredRoom.LocationName}</p>
+          <p>👥 <strong>Sức chứa:</strong> {hoveredRoom.Capacity} người</p>
+          <p>📐 <strong>Diện tích:</strong> {hoveredRoom.AreaM2} m² ({hoveredRoom.Dimensions})</p>
+          <p style={{ marginTop: '4px' }}>
             💰 <strong>Giá thuê:</strong> <span style={{ color: '#ffdd57', fontWeight: 'bold' }}>{hoveredRoom.BasePrice.toLocaleString()} đ/h</span>
           </p>
         </div>

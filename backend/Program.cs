@@ -3,25 +3,11 @@ using backend.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using FluentValidation;
-using MediatR;
-using backend.Application.Common.Behaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-
-// Register FluentValidation
-builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
-
-// Register MediatR & behaviors
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
-    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
-    cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
-});
 
 builder.Services.AddHostedService<backend.Services.BookingTimeoutService>();
 builder.Services.AddHostedService<backend.Services.BookingSetupTaskService>();

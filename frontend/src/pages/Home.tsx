@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { bookingService } from '../services/bookingService';
 import api from '../services/api';
-import './Home.css';
 
 interface AddonItem {
   id: number;

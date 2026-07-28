@@ -21,6 +21,8 @@ export interface Booking {
   noShowTimeoutMinutes?: number;
   refundAmount?: number;
   cancellationReason?: string;
+  rating?: number;
+  reviewComment?: string;
 }
 
 export interface CreateBookingRequest {

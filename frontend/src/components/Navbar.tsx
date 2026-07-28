@@ -31,15 +31,7 @@ const Navbar: React.FC = () => {
             📅 Lịch đặt chỗ
           </NavLink>
 
-          {/* USER → trang gửi yêu cầu dịch vụ */}
-          {user.role === 'USER' && (
-            <NavLink
-              to="/my-requests"
-              className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-            >
-              📩 Yêu cầu của tôi
-            </NavLink>
-          )}
+
 
           {/* STAFF / ADMIN → trang điều phối nội bộ */}
           {(user.role === 'STAFF' || user.role === 'ADMIN') && (
@@ -70,14 +62,14 @@ const Navbar: React.FC = () => {
       )}
 
       {user && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '0.95rem' }}>
-          <span style={{ color: 'var(--secondary-text)' }}>
-            Xin chào, <strong style={{ color: 'var(--primary-text)' }}>{user.fullName}</strong>
+        <div className="flex items-center gap-3 text-sm">
+          <span className="text-secondary">
+            Xin chào, <strong className="text-primary">{user.fullName}</strong>
           </span>
           <button
             onClick={logout}
-            className="btn btn-danger hover-lift"
-            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+            className="btn btn-danger hover-lift text-sm"
+            style={{ padding: '8px 16px' }}
           >
             Đăng xuất
           </button>

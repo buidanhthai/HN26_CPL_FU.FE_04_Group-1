@@ -9,6 +9,8 @@ import api from '../../../services/api';
 import ActiveSessionCard from './ActiveSessionCard';
 import BillDetailsCard from './BillDetailsCard';
 import EmptyBookingState from './EmptyBookingState';
+import { DashboardRequestsPanel } from './DashboardRequestsPanel';
+import { PastBookingItem } from './PastBookingItem';
 
 interface UserDashboardProps {
   userFullName: string;
@@ -25,8 +27,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userFullName, userRole })
     addonServices, 
     upcomingBookings, 
     allUserBookings,
+    pastBookings,
     loadingActive, 
-    fetchActiveBooking 
+    fetchActiveBooking,
+    refreshData
   } = useActiveBooking(userRole);
 
   const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false);
@@ -181,6 +185,12 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userFullName, userRole })
                 onRefresh={() => fetchActiveBooking(selectedManageBookingId)}
               />
               <BillDetailsCard activeBooking={activeBooking} formatCurrency={formatCurrency} />
+              
+              <DashboardRequestsPanel
+                bookingId={activeBooking.booking.id}
+                roomName={activeBooking.spaceAsset?.assetName || ''}
+                addonServices={addonServices}
+              />
             </div>
           ) : (
             /* Empty State */
@@ -188,6 +198,36 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userFullName, userRole })
               setServiceBookingId(undefined);
               setIsServiceMenuOpen(true);
             }} />
+          )}
+
+          {/* Past/Completed Bookings Section */}
+          {pastBookings && pastBookings.length > 0 && (
+            <div style={{ marginTop: '32px' }}>
+              <h2 style={{ 
+                fontSize: '1.25rem', 
+                fontFamily: 'var(--font-title)', 
+                color: 'var(--primary-text)', 
+                marginBottom: '16px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px' 
+              }}>
+                ✅ Lịch sử sử dụng phòng ({pastBookings.length})
+              </h2>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+                {pastBookings.map((b) => {
+                  const asset = spaceAssets.find(a => a.id === b.assetId || a.Id === b.assetId);
+                  return (
+                    <PastBookingItem
+                      key={b.id}
+                      booking={b}
+                      spaceAsset={asset}
+                      onReviewSubmitted={() => refreshData(selectedManageBookingId)}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           )}
         </>
       )}

@@ -7,6 +7,7 @@ export function useActiveBooking(userRole?: string) {
   const [addonServices, setAddonServices] = useState<any[]>([]);
   const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
   const [allUserBookings, setAllUserBookings] = useState<Booking[]>([]);
+  const [pastBookings, setPastBookings] = useState<Booking[]>([]);
   const [loadingActive, setLoadingActive] = useState(true);
 
   const fetchActiveBooking = async (bookingId?: number) => {
@@ -38,10 +39,17 @@ export function useActiveBooking(userRole?: string) {
         b.bookingStatus !== 'Cancelled' && b.bookingStatus !== 'Checked_Out'
       );
       setAllUserBookings(activeOrUpcoming);
+
+      // Lọc các booking đã Checked_Out
+      const past = data.filter((b: Booking) => 
+        b.bookingStatus === 'Checked_Out'
+      );
+      setPastBookings(past);
     } catch (err) {
       console.error('Error fetching upcoming bookings:', err);
       setUpcomingBookings([]);
       setAllUserBookings([]);
+      setPastBookings([]);
     }
   };
 
@@ -81,6 +89,7 @@ export function useActiveBooking(userRole?: string) {
     addonServices,
     upcomingBookings,
     allUserBookings,
+    pastBookings,
     loadingActive,
     fetchActiveBooking,
     refreshData

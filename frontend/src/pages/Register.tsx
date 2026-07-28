@@ -83,23 +83,23 @@ const Register: React.FC = () => {
 
   return (
     <div className="auth-container">
-      <h2 className="panel-title" style={{ textAlign: 'center', fontSize: '2rem', marginBottom: '8px' }}>
+      <h2 className="panel-title text-center mb-2" style={{ fontSize: '2rem' }}>
         Đăng ký
       </h2>
-      <p className="page-desc" style={{ textAlign: 'center' }}>
+      <p className="page-desc text-center">
         Tạo tài khoản mới để bắt đầu sử dụng hệ thống
       </p>
 
       {/* Thông báo lỗi nếu có */}
       {error && (
-        <div className="badge-unassigned" style={{ display: 'block', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.85rem', textAlign: 'center' }}>
+        <div className="alert-box alert-error text-center">
           {error}
         </div>
       )}
 
       {/* Thông báo thành công nếu có */}
       {success && (
-        <div className="badge-completed" style={{ display: 'block', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.85rem', textAlign: 'center' }}>
+        <div className="alert-box alert-success text-center">
           {success}
         </div>
       )}
@@ -172,7 +172,7 @@ const Register: React.FC = () => {
         <Button
           type="submit"
           disabled={isLoading}
-          style={{ marginTop: '10px' }}
+          className="mt-2"
         >
           {isLoading ? 'Đang xử lý...' : 'Đăng ký tài khoản'}
         </Button>

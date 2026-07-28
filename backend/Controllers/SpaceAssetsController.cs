@@ -6,8 +6,6 @@ using backend.DTOs;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
-using MediatR;
-using backend.Application.SpaceAssets.Queries.GetSpaceAssets;
 
 namespace backend.Controllers
 {
@@ -17,20 +15,32 @@ namespace backend.Controllers
     public class SpaceAssetsController : ControllerBase
     {
         private readonly AppDbContext _context;
-        private readonly IMediator _mediator;
 
-        public SpaceAssetsController(AppDbContext context, IMediator mediator)
+        public SpaceAssetsController(AppDbContext context)
         {
             _context = context;
-            _mediator = mediator;
         }
 
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
-            var query = new GetSpaceAssetsQuery();
-            var assets = await _mediator.Send(query);
+            var assets = await _context.SpaceAssets
+                .AsNoTracking()
+                .Select(a => new SpaceAssetDto
+                {
+                    Id = a.Id,
+                    LocationName = a.LocationName,
+                    AssetName = a.AssetName,
+                    AssetType = a.AssetType,
+                    Capacity = a.Capacity,
+                    Dimensions = a.Dimensions,
+                    AreaM2 = a.AreaM2,
+                    BasePrice = a.BasePrice,
+                    IsActive = a.IsActive,
+                    Description = a.Description
+                })
+                .ToListAsync();
             return Ok(assets);
         }
 

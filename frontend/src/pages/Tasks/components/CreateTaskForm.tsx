@@ -48,7 +48,7 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onCreate }) => {
       <h2 className="panel-title">Tạo Task thủ công</h2>
 
       {error && (
-        <div style={{ color: '#e07a5f', fontSize: '0.85rem', marginBottom: '15px', fontWeight: '500' }}>
+        <div className="alert-box alert-error">
           ⚠️ {error}
         </div>
       )}
@@ -79,7 +79,7 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onCreate }) => {
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div className="grid-2">
           <div className="form-group">
             <label className="form-label">Mã Booking ID</label>
             <input 
@@ -103,7 +103,7 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onCreate }) => {
           </div>
         </div>
 
-        <Button type="submit" style={{ marginTop: '10px' }} disabled={submitting}>
+        <Button type="submit" className="mt-2" disabled={submitting}>
           {submitting ? 'Đang tạo...' : 'Tạo công việc'}
         </Button>
       </form>

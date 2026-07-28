@@ -33,6 +33,7 @@ export function useStaffDashboardData() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [spaceAssets, setSpaceAssets] = useState<any[]>([]);
   const [addonServices, setAddonServices] = useState<any[]>([]);
+  const [serviceRequests, setServiceRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   const fetchData = useCallback(async () => {
@@ -40,7 +41,7 @@ export function useStaffDashboardData() {
       setLoading(true);
       console.log('[StaffDashboard] Initiating API data fetch...');
 
-      const [bookingsData, tasksData, assetsRes, servicesData] = await Promise.all([
+      const [bookingsData, tasksData, assetsRes, servicesData, requestsRes] = await Promise.all([
         bookingService.getBookings().then((res) => {
           console.log('[StaffDashboard] /api/bookings success:', res.length, 'records');
           return res;
@@ -71,6 +72,14 @@ export function useStaffDashboardData() {
         }).catch((err) => {
           console.error('[StaffDashboard Error] /api/addon-services failed:', err?.response?.data || err.message);
           return [];
+        }),
+
+        api.get<any[]>('/api/requests').then((res) => {
+          console.log('[StaffDashboard] /api/requests success:', res.data?.length, 'records');
+          return res.data || [];
+        }).catch((err) => {
+          console.error('[StaffDashboard Error] /api/requests failed:', err?.response?.data || err.message);
+          return [];
         })
       ]);
 
@@ -78,6 +87,7 @@ export function useStaffDashboardData() {
       setTasks(tasksData);
       setSpaceAssets(assetsRes.data || []);
       setAddonServices(servicesData);
+      setServiceRequests(requestsRes);
 
       // Filter active sessions and fetch detailed services + backend overdue calculations
       const activeList = bookingsData.filter((b) => {
@@ -147,6 +157,17 @@ export function useStaffDashboardData() {
     }
   };
 
+  const updateRequestStatus = async (requestId: number, nextStatus: string) => {
+    try {
+      await api.put(`/api/requests/${requestId}/status`, { requestStatus: nextStatus });
+      setServiceRequests((prev) =>
+        prev.map((r) => (r.id === requestId ? { ...r, requestStatus: nextStatus } : r))
+      );
+    } catch (err) {
+      console.error('Error updating request status:', err);
+    }
+  };
+
   const createQuickTask = async (description: string) => {
     try {
       const newTask = await taskService.createTask({
@@ -167,12 +188,14 @@ export function useStaffDashboardData() {
     tasks,
     spaceAssets,
     addonServices,
+    serviceRequests,
     loading,
     overdueSessions,
     upcoming2h,
     pendingTasks,
     refreshData: fetchData,
     toggleTaskStatus,
+    updateRequestStatus,
     createQuickTask
   };
 }
