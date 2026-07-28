@@ -1,5 +1,7 @@
-import React from 'react';
-import type { Booking } from '../../../types/booking.types';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import type { Booking, CheckInEligibility } from '../../../types/booking.types';
+import { bookingService } from '../../../services/bookingService';
 
 interface BookingHistoryTableProps {
   bookings: Booking[];
@@ -8,7 +10,7 @@ interface BookingHistoryTableProps {
   onViewDetails: (id: number) => void;
   onPayment: (id: number) => void;
   onCheckout: (booking: Booking) => void;
-  onCheckin: (id: number) => Promise<void>;
+  onCheckin: (id: number, forceByAdmin?: boolean) => Promise<void>;
   onDelete: (id: number) => void;
   loading: boolean;
 }
@@ -24,6 +26,28 @@ export const BookingHistoryTable: React.FC<BookingHistoryTableProps> = ({
   onDelete,
   loading
 }) => {
+  const navigate = useNavigate();
+  const [eligibilityMap, setEligibilityMap] = useState<Record<number, CheckInEligibility>>({});
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  useEffect(() => {
+    const fetchEligibility = async () => {
+      const confirmedBookings = bookings.filter(b => b.bookingStatus === 'Confirmed');
+      const tempMap: Record<number, CheckInEligibility> = {};
+      for (const b of confirmedBookings) {
+        try {
+          const eligibility = await bookingService.getCheckInEligibility(b.id);
+          tempMap[b.id] = eligibility;
+        } catch (err) {
+          console.error("Lỗi khi tải độ khả thi checkin", err);
+        }
+      }
+      setEligibilityMap(tempMap);
+    };
+    if (bookings.length > 0) {
+      fetchEligibility();
+    }
+  }, [bookings, refreshTrigger]);
 
   return (
     <div className="panel-card">
@@ -98,27 +122,86 @@ export const BookingHistoryTable: React.FC<BookingHistoryTableProps> = ({
                         </button>
                       )}
                       {b.bookingStatus === 'Confirmed' && (
-                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                           {user?.role === 'USER' ? (
                             <span style={{ fontSize: '0.8rem', color: 'var(--secondary-text)', fontStyle: 'italic' }}>
                               Đã xác nhận đặt chỗ
                             </span>
                           ) : (
-                            <button
-                              onClick={() => onCheckin(b.id)}
-                              disabled={b.setupTaskStatus !== 'Completed'}
-                              title={b.setupTaskStatus !== 'Completed' ? "Nút bị khóa do phòng chưa dọn xong" : "Xác nhận nhận phòng (Check-in)"}
-                              className={`btn ${b.setupTaskStatus === 'Completed' ? 'btn-primary' : 'btn-secondary'}`}
-                              style={{
-                                padding: '5px 10px',
-                                borderRadius: '4px',
-                                fontSize: '0.8rem',
-                                cursor: b.setupTaskStatus === 'Completed' ? 'pointer' : 'not-allowed',
-                                opacity: b.setupTaskStatus === 'Completed' ? 1 : 0.6
-                              }}
-                            >
-                              Check-in
-                            </button>
+                            (() => {
+                              const eligibility = eligibilityMap[b.id];
+                              const canCheckIn = eligibility ? eligibility.canCheckIn : false;
+                              const reasonCode = eligibility ? eligibility.reasonCode : 'LOADING';
+                              const tooltipMsg = eligibility ? eligibility.userFriendlyMessage : 'Đang kiểm tra điều kiện check-in...';
+                              const isTooEarly = reasonCode === 'TOO_EARLY';
+                              const isTaskBlocked = reasonCode === 'TASK_NOT_COMPLETED';
+
+                              return (
+                                <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                  <button
+                                    onClick={() => onCheckin(b.id)}
+                                    disabled={!canCheckIn}
+                                    title={tooltipMsg}
+                                    className={`btn ${canCheckIn ? 'btn-success' : 'btn-secondary'}`}
+                                    style={{
+                                      padding: '5px 10px',
+                                      borderRadius: '4px',
+                                      fontSize: '0.8rem',
+                                      cursor: canCheckIn ? 'pointer' : 'not-allowed',
+                                      opacity: canCheckIn ? 1 : 0.6,
+                                      backgroundColor: canCheckIn ? '#28a745' : undefined,
+                                      borderColor: canCheckIn ? '#28a745' : undefined,
+                                      color: '#fff'
+                                    }}
+                                  >
+                                    Check-in
+                                  </button>
+
+                                  {isTaskBlocked && eligibility?.actionTaskHintId && (
+                                    <button
+                                      onClick={() => navigate(`/tasks?id=${eligibility.actionTaskHintId}`)}
+                                      className="btn"
+                                      title={`Task Hậu cần #${eligibility.actionTaskHintId} chưa xong. Nhấn để đi tới trang dọn dẹp.`}
+                                      style={{
+                                        padding: '5px 8px',
+                                        borderRadius: '4px',
+                                        fontSize: '0.75rem',
+                                        backgroundColor: '#ffc107',
+                                        borderColor: '#ffc107',
+                                        color: '#212529',
+                                        cursor: 'pointer'
+                                      }}
+                                    >
+                                      🧹 Mở Task dọn phòng
+                                    </button>
+                                  )}
+
+                                  {isTooEarly && user?.role === 'ADMIN' && (
+                                    <button
+                                      onClick={async () => {
+                                        if (window.confirm("Bạn có chắc chắn muốn duyệt đặc cách CHECK-IN SỚM cho đơn này?")) {
+                                          await onCheckin(b.id, true);
+                                          setRefreshTrigger(prev => prev + 1);
+                                        }
+                                      }}
+                                      className="btn"
+                                      title="Duyệt Check-in sớm đặc cách (Chỉ dành cho Admin)"
+                                      style={{
+                                        padding: '5px 8px',
+                                        borderRadius: '4px',
+                                        fontSize: '0.75rem',
+                                        backgroundColor: '#17a2b8',
+                                        borderColor: '#17a2b8',
+                                        color: '#fff',
+                                        cursor: 'pointer'
+                                      }}
+                                    >
+                                      ⚡ Duyệt sớm (Admin)
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })()
                           )}
                         </div>
                       )}

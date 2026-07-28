@@ -6,6 +6,8 @@ import StaffTasksPanel from './staff/StaffTasksPanel';
 import AdminToolsCard from './staff/AdminToolsCard';
 import { ServiceMenuModal } from '../../../components/ServiceMenuModal';
 import { bookingService } from '../../../services/bookingService';
+import { ExtendBookingModal } from './staff/ExtendBookingModal';
+import { SwitchRoomModal } from './staff/SwitchRoomModal';
 
 interface AdminStaffDashboardProps {
   userFullName: string;
@@ -30,9 +32,27 @@ const AdminStaffDashboard: React.FC<AdminStaffDashboardProps> = ({ userFullName,
   const [isServiceMenuOpen, setIsServiceMenuOpen] = useState(false);
   const [serviceBookingId, setServiceBookingId] = useState<number | undefined>(undefined);
 
+  const [isExtendOpen, setIsExtendOpen] = useState(false);
+  const [extendBookingId, setExtendBookingId] = useState<number | null>(null);
+
+  const [isSwitchOpen, setIsSwitchOpen] = useState(false);
+  const [switchBookingId, setSwitchBookingId] = useState<number | null>(null);
+  const [switchCurrentAssetId, setSwitchCurrentAssetId] = useState<number | null>(null);
+
   const handleOpenAddService = (bookingId: number) => {
     setServiceBookingId(bookingId);
     setIsServiceMenuOpen(true);
+  };
+
+  const handleOpenExtend = (bookingId: number) => {
+    setExtendBookingId(bookingId);
+    setIsExtendOpen(true);
+  };
+
+  const handleOpenSwitch = (bookingId: number, currentAssetId: number) => {
+    setSwitchBookingId(bookingId);
+    setSwitchCurrentAssetId(currentAssetId);
+    setIsSwitchOpen(true);
   };
 
   const handleCheckout = async (bookingId: number) => {
@@ -86,6 +106,8 @@ const AdminStaffDashboard: React.FC<AdminStaffDashboardProps> = ({ userFullName,
             onRefresh={refreshData}
             onOpenAddService={handleOpenAddService}
             onCheckout={handleCheckout}
+            onOpenExtend={handleOpenExtend}
+            onOpenSwitch={handleOpenSwitch}
           />
         </div>
 
@@ -108,6 +130,31 @@ const AdminStaffDashboard: React.FC<AdminStaffDashboardProps> = ({ userFullName,
         bookingId={serviceBookingId}
         addonServices={addonServices}
         onOrderSuccess={refreshData}
+      />
+
+      {/* Extend Booking Modal */}
+      <ExtendBookingModal
+        isOpen={isExtendOpen}
+        onClose={() => {
+          setIsExtendOpen(false);
+          setExtendBookingId(null);
+        }}
+        bookingId={extendBookingId}
+        onSuccess={refreshData}
+      />
+
+      {/* Switch Room Modal */}
+      <SwitchRoomModal
+        isOpen={isSwitchOpen}
+        onClose={() => {
+          setIsSwitchOpen(false);
+          setSwitchBookingId(null);
+          setSwitchCurrentAssetId(null);
+        }}
+        bookingId={switchBookingId}
+        currentAssetId={switchCurrentAssetId}
+        spaceAssets={spaceAssets}
+        onSuccess={refreshData}
       />
     </div>
   );

@@ -16,7 +16,7 @@ const Navbar: React.FC = () => {
       </NavLink>
 
       {user && (
-      <div className="nav-menu">
+        <div className="nav-menu">
           <NavLink
             to="/dashboard"
             end
@@ -80,7 +80,7 @@ const Navbar: React.FC = () => {
           <span style={{ color: 'var(--secondary-text)' }}>
             Xin chào, <strong style={{ color: 'var(--primary-text)' }}>{user.fullName}</strong>
           </span>
-          <button 
+          <button
             onClick={logout}
             className="btn btn-danger hover-lift"
             style={{ padding: '8px 16px', fontSize: '0.85rem' }}

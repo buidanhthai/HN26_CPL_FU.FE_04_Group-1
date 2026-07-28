@@ -1,13 +1,11 @@
 import React from 'react';
-import { VisualFloorMapModal } from './components/VisualFloorMapModal';
-import { BookingDetailModal } from './components/BookingDetailModal';
-import { BookingCheckoutModal } from './components/BookingCheckoutModal';
 import { BookingTimeline } from './components/BookingTimeline';
 import { BookingHistoryTable } from './components/BookingHistoryTable';
 import { BookingForm } from './components/BookingForm';
 import { bookingService } from '../../services/bookingService';
 import BookingTabNav from './components/BookingTabNav';
 import { useBookings } from './hooks/useBookings';
+import { BookingModalsContainer } from './components/BookingModalsContainer';
 
 const Bookings: React.FC = () => {
   const {
@@ -136,38 +134,19 @@ const Bookings: React.FC = () => {
         />
       </div>
 
-      {/* Modals */}
-      <VisualFloorMapModal
-        isOpen={isMapModalOpen}
-        onClose={() => setIsMapModalOpen(false)}
+      {/* Modals Container */}
+      <BookingModalsContainer
+        isMapModalOpen={isMapModalOpen}
+        setIsMapModalOpen={setIsMapModalOpen}
+        selectedBookingDetails={selectedBookingDetails}
+        setSelectedBookingDetails={setSelectedBookingDetails}
+        checkoutDetails={checkoutDetails}
+        setCheckoutDetails={setCheckoutDetails}
         spaceAssets={spaceAssets}
-        onSelectRoom={(room) => setAssetId(room.id)}
-      />
-
-      <BookingDetailModal
-        details={selectedBookingDetails}
-        onClose={() => setSelectedBookingDetails(null)}
-        spaceAssets={spaceAssets}
-        onRefresh={fetchBookings}
-      />
-
-      <BookingCheckoutModal
-        details={checkoutDetails}
-        onClose={() => {
-          setCheckoutDetails(null);
-          fetchBookings();
-        }}
-        onConfirmCheckout={async () => {
-          if (checkoutDetails) {
-            await handleConfirmCheckout(checkoutDetails.booking.id);
-          }
-        }}
-        onPayFinal={async () => {
-          if (checkoutDetails) {
-            await handlePayFinal(checkoutDetails.booking.id);
-          }
-        }}
-        spaceAssets={spaceAssets}
+        setAssetId={setAssetId}
+        fetchBookings={fetchBookings}
+        handleConfirmCheckout={handleConfirmCheckout}
+        handlePayFinal={handlePayFinal}
       />
     </div>
   );

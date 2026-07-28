@@ -25,7 +25,8 @@ namespace backend.Data
         public DbSet<InternalTask> InternalTasks { get; set; }
         public DbSet<TaskAllocation> TaskAllocations { get; set; }
         public DbSet<BookingLog> BookingLogs { get; set; }
-        public DbSet<CustomerRequest> CustomerRequests { get; set; }
+        public DbSet<AssetUnavailability> AssetUnavailabilities { get; set; }
+        public DbSet<ServiceRequest> ServiceRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

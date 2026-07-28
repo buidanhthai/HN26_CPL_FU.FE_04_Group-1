@@ -52,6 +52,15 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 }) => {
   const isStaffOrAdmin = user?.role === 'ADMIN' || user?.role === 'STAFF';
 
+  const isPast = React.useMemo(() => {
+    if (!startDate || !startTimeStr) return false;
+    const selectedStart = new Date(`${startDate}T${startTimeStr}:00`);
+    const now = new Date();
+    // Trừ 1 phút đệm thao tác
+    now.setMinutes(now.getMinutes() - 1);
+    return selectedStart < now;
+  }, [startDate, startTimeStr]);
+
   return (
     <div className="panel-card">
       <h2 className="panel-title">
@@ -152,7 +161,18 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           </div>
         </div>
 
-        <Button type="submit" style={{ marginTop: '10px' }}>Đặt chỗ ngay</Button>
+        <Button 
+          type="submit" 
+          disabled={isPast} 
+          style={{ marginTop: '10px', opacity: isPast ? 0.5 : 1, cursor: isPast ? 'not-allowed' : 'pointer' }}
+        >
+          Đặt chỗ ngay
+        </Button>
+        {isPast && (
+          <div style={{ color: '#e07a5f', fontSize: '0.8rem', marginTop: '5px', fontWeight: 'bold' }}>
+            ⚠️ Thời gian đặt phòng không được nằm trong quá khứ.
+          </div>
+        )}
       </form>
     </div>
   );

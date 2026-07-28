@@ -13,10 +13,12 @@ namespace backend.Entities
         public string Dimensions { get; set; } = string.Empty;
         public decimal AreaM2 { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool IsMaintenance { get; set; } = false;
         public string? Description { get; set; }
 
         // Navigation properties
         public ICollection<RoomLayout> RoomLayouts { get; set; } = new List<RoomLayout>();
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+        public ICollection<AssetUnavailability> AssetUnavailabilities { get; set; } = new List<AssetUnavailability>();
     }
 }

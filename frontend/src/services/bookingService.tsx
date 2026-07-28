@@ -1,5 +1,5 @@
 import api from './api';
-import type { Booking, CreateBookingRequest, ActiveBookingResponse } from '../types/booking.types';
+import type { Booking, CreateBookingRequest, ActiveBookingResponse, CheckInEligibility } from '../types/booking.types';
 
 export const bookingService = {
   async getBookings(): Promise<Booking[]> {
@@ -16,8 +16,13 @@ export const bookingService = {
     await api.put(`/bookings/${id}/pay`);
   },
 
-  async checkinBooking(id: number): Promise<any> {
-    const response = await api.post(`/bookings/${id}/check-in`);
+  async checkinBooking(id: number, forceByAdmin: boolean = false): Promise<any> {
+    const response = await api.post(`/bookings/${id}/check-in${forceByAdmin ? '?forceByAdmin=true' : ''}`);
+    return response.data;
+  },
+
+  async getCheckInEligibility(id: number): Promise<CheckInEligibility> {
+    const response = await api.get<CheckInEligibility>(`/bookings/${id}/checkin-eligibility`);
     return response.data;
   },
 

@@ -120,6 +120,37 @@ namespace backend.Migrations
                         });
                 });
 
+            modelBuilder.Entity("backend.Entities.AssetUnavailability", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AssetId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("SpaceAssetId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpaceAssetId");
+
+                    b.ToTable("AssetUnavailabilities");
+                });
+
             modelBuilder.Entity("backend.Entities.Booking", b =>
                 {
                     b.Property<int>("Id")
@@ -127,6 +158,12 @@ namespace backend.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("ActualEndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Arrived")
+                        .HasColumnType("bit");
 
                     b.Property<int>("AssetId")
                         .HasColumnType("int");
@@ -142,6 +179,9 @@ namespace backend.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("nvarchar(25)")
                         .HasDefaultValue("Pending");
+
+                    b.Property<string>("CancellationReason")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("CheckedInAt")
                         .HasColumnType("datetime2");
@@ -172,8 +212,17 @@ namespace backend.Migrations
                     b.Property<int>("LayoutId")
                         .HasColumnType("int");
 
+                    b.Property<int>("NoShowTimeoutMinutes")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("PaymentDeadline")
                         .HasColumnType("datetime2");
+
+                    b.Property<decimal>("RefundAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)")
+                        .HasDefaultValue(0m);
 
                     b.Property<decimal>("SnapshotBasePrice")
                         .HasPrecision(12, 2)
@@ -210,44 +259,53 @@ namespace backend.Migrations
                         new
                         {
                             Id = 1,
+                            Arrived = false,
                             AssetId = 1,
                             BookingCode = "BK-260716-01",
                             BookingStatus = "Awaiting_Payment",
-                            CreatedAt = new DateTime(2026, 7, 16, 3, 43, 41, 925, DateTimeKind.Utc).AddTicks(9099),
-                            EndTime = new DateTime(2026, 7, 17, 5, 43, 41, 925, DateTimeKind.Utc).AddTicks(8245),
+                            CreatedAt = new DateTime(2026, 7, 27, 7, 9, 7, 53, DateTimeKind.Utc).AddTicks(1419),
+                            EndTime = new DateTime(2026, 7, 28, 9, 9, 7, 53, DateTimeKind.Utc).AddTicks(367),
                             LayoutId = 1,
-                            PaymentDeadline = new DateTime(2026, 7, 16, 3, 53, 41, 925, DateTimeKind.Utc).AddTicks(8915),
+                            NoShowTimeoutMinutes = 30,
+                            PaymentDeadline = new DateTime(2026, 7, 27, 7, 19, 7, 53, DateTimeKind.Utc).AddTicks(1209),
+                            RefundAmount = 0.0m,
                             SnapshotBasePrice = 50000m,
                             SnapshotPriceModifier = 0m,
-                            StartTime = new DateTime(2026, 7, 17, 3, 43, 41, 925, DateTimeKind.Utc).AddTicks(8005),
+                            StartTime = new DateTime(2026, 7, 28, 7, 9, 7, 53, DateTimeKind.Utc).AddTicks(1),
                             UserId = 3
                         },
                         new
                         {
                             Id = 2,
+                            Arrived = false,
                             AssetId = 2,
                             BookingCode = "BK-260716-02",
                             BookingStatus = "Confirmed",
-                            CreatedAt = new DateTime(2026, 7, 16, 3, 43, 41, 925, DateTimeKind.Utc).AddTicks(9234),
-                            EndTime = new DateTime(2026, 7, 18, 7, 43, 41, 925, DateTimeKind.Utc).AddTicks(9232),
+                            CreatedAt = new DateTime(2026, 7, 27, 7, 9, 7, 53, DateTimeKind.Utc).AddTicks(1564),
+                            EndTime = new DateTime(2026, 7, 29, 11, 9, 7, 53, DateTimeKind.Utc).AddTicks(1562),
                             LayoutId = 1,
+                            NoShowTimeoutMinutes = 30,
+                            RefundAmount = 0.0m,
                             SnapshotBasePrice = 1200000m,
                             SnapshotPriceModifier = 50000m,
-                            StartTime = new DateTime(2026, 7, 18, 3, 43, 41, 925, DateTimeKind.Utc).AddTicks(9231),
+                            StartTime = new DateTime(2026, 7, 29, 7, 9, 7, 53, DateTimeKind.Utc).AddTicks(1562),
                             UserId = 4
                         },
                         new
                         {
                             Id = 3,
+                            Arrived = false,
                             AssetId = 2,
                             BookingCode = "BK-260716-03",
                             BookingStatus = "Checked_In",
-                            CreatedAt = new DateTime(2026, 7, 16, 3, 43, 41, 925, DateTimeKind.Utc).AddTicks(9238),
-                            EndTime = new DateTime(2026, 7, 16, 5, 43, 41, 925, DateTimeKind.Utc).AddTicks(9236),
+                            CreatedAt = new DateTime(2026, 7, 27, 7, 9, 7, 53, DateTimeKind.Utc).AddTicks(1569),
+                            EndTime = new DateTime(2026, 7, 27, 9, 9, 7, 53, DateTimeKind.Utc).AddTicks(1567),
                             LayoutId = 2,
+                            NoShowTimeoutMinutes = 30,
+                            RefundAmount = 0.0m,
                             SnapshotBasePrice = 900000m,
                             SnapshotPriceModifier = 0m,
-                            StartTime = new DateTime(2026, 7, 16, 2, 43, 41, 925, DateTimeKind.Utc).AddTicks(9236),
+                            StartTime = new DateTime(2026, 7, 27, 6, 9, 7, 53, DateTimeKind.Utc).AddTicks(1567),
                             UserId = 3
                         });
                 });
@@ -368,7 +426,7 @@ namespace backend.Migrations
                         {
                             Id = 1,
                             BookingId = 2,
-                            CreatedAt = new DateTime(2026, 7, 16, 3, 43, 41, 929, DateTimeKind.Utc).AddTicks(7703),
+                            CreatedAt = new DateTime(2026, 7, 27, 7, 9, 7, 57, DateTimeKind.Utc).AddTicks(6342),
                             RequiredStaffCount = 1,
                             TaskCategory = "LOGISTICS",
                             TaskDescription = "Setup Chữ U cho Booking #2 (Bob)",
@@ -378,7 +436,7 @@ namespace backend.Migrations
                         {
                             Id = 2,
                             BookingId = 3,
-                            CreatedAt = new DateTime(2026, 7, 16, 3, 43, 41, 929, DateTimeKind.Utc).AddTicks(7838),
+                            CreatedAt = new DateTime(2026, 7, 27, 7, 9, 7, 57, DateTimeKind.Utc).AddTicks(6502),
                             RequiredStaffCount = 1,
                             TaskCategory = "CLEANING",
                             TaskDescription = "Dọn phòng sau khi Booking #3 (Alice) checkout",
@@ -490,6 +548,62 @@ namespace backend.Migrations
                         });
                 });
 
+            modelBuilder.Entity("backend.Entities.ServiceRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AddOnServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Detail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RequestStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RequestType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RoomName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ServiceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddOnServiceId");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ServiceRequests");
+                });
+
             modelBuilder.Entity("backend.Entities.SpaceAsset", b =>
                 {
                     b.Property<int>("Id")
@@ -532,6 +646,9 @@ namespace backend.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
+                    b.Property<bool>("IsMaintenance")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LocationName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -552,6 +669,7 @@ namespace backend.Migrations
                             Capacity = 15,
                             Dimensions = "6m x 5m",
                             IsActive = true,
+                            IsMaintenance = false,
                             LocationName = "Lầu 1"
                         },
                         new
@@ -564,6 +682,7 @@ namespace backend.Migrations
                             Capacity = 10,
                             Dimensions = "5m x 4m",
                             IsActive = true,
+                            IsMaintenance = false,
                             LocationName = "Lầu 1"
                         },
                         new
@@ -576,6 +695,7 @@ namespace backend.Migrations
                             Capacity = 6,
                             Dimensions = "4m x 4m",
                             IsActive = true,
+                            IsMaintenance = false,
                             LocationName = "Lầu 1"
                         },
                         new
@@ -588,6 +708,7 @@ namespace backend.Migrations
                             Capacity = 6,
                             Dimensions = "4m x 3m",
                             IsActive = true,
+                            IsMaintenance = false,
                             LocationName = "Lầu 2"
                         },
                         new
@@ -600,6 +721,7 @@ namespace backend.Migrations
                             Capacity = 6,
                             Dimensions = "4m x 3m",
                             IsActive = true,
+                            IsMaintenance = false,
                             LocationName = "Lầu 2"
                         },
                         new
@@ -612,6 +734,7 @@ namespace backend.Migrations
                             Capacity = 4,
                             Dimensions = "3m x 3m",
                             IsActive = true,
+                            IsMaintenance = false,
                             LocationName = "Lầu 2"
                         },
                         new
@@ -624,6 +747,7 @@ namespace backend.Migrations
                             Capacity = 8,
                             Dimensions = "4m x 4m",
                             IsActive = true,
+                            IsMaintenance = false,
                             LocationName = "Lầu 2"
                         },
                         new
@@ -636,6 +760,7 @@ namespace backend.Migrations
                             Capacity = 5,
                             Dimensions = "3.5m x 3m",
                             IsActive = true,
+                            IsMaintenance = false,
                             LocationName = "Lầu 3"
                         },
                         new
@@ -648,6 +773,7 @@ namespace backend.Migrations
                             Capacity = 5,
                             Dimensions = "3.5m x 3m",
                             IsActive = true,
+                            IsMaintenance = false,
                             LocationName = "Lầu 3"
                         },
                         new
@@ -660,6 +786,7 @@ namespace backend.Migrations
                             Capacity = 12,
                             Dimensions = "5m x 5m",
                             IsActive = true,
+                            IsMaintenance = false,
                             LocationName = "Lầu 3"
                         },
                         new
@@ -672,6 +799,7 @@ namespace backend.Migrations
                             Capacity = 20,
                             Dimensions = "8m x 5m",
                             IsActive = true,
+                            IsMaintenance = false,
                             LocationName = "Lầu 3"
                         });
                 });
@@ -746,7 +874,7 @@ namespace backend.Migrations
                             CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@example.com",
                             FullName = "System Admin",
-                            PasswordHash = "$2a$11$B6p17PohgUjfOGnq3qI1qOnQllc72Z2LD5KB9sVDiEzIzdDlj.Fde",
+                            PasswordHash = "$2a$11$nxDGINWj49/OnTNqXcBdQOUsQ2WLshkVkmGQrnsKzWkwfrEzD.pi6",
                             Role = "ADMIN"
                         },
                         new
@@ -755,7 +883,7 @@ namespace backend.Migrations
                             CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "staff@example.com",
                             FullName = "John Staff",
-                            PasswordHash = "$2a$11$B6p17PohgUjfOGnq3qI1qOnQllc72Z2LD5KB9sVDiEzIzdDlj.Fde",
+                            PasswordHash = "$2a$11$nxDGINWj49/OnTNqXcBdQOUsQ2WLshkVkmGQrnsKzWkwfrEzD.pi6",
                             Role = "STAFF"
                         },
                         new
@@ -764,7 +892,7 @@ namespace backend.Migrations
                             CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "alice@example.com",
                             FullName = "Alice User",
-                            PasswordHash = "$2a$11$B6p17PohgUjfOGnq3qI1qOnQllc72Z2LD5KB9sVDiEzIzdDlj.Fde",
+                            PasswordHash = "$2a$11$nxDGINWj49/OnTNqXcBdQOUsQ2WLshkVkmGQrnsKzWkwfrEzD.pi6",
                             Role = "USER"
                         },
                         new
@@ -773,9 +901,18 @@ namespace backend.Migrations
                             CreatedAt = new DateTime(2026, 7, 6, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "bob@example.com",
                             FullName = "Bob User",
-                            PasswordHash = "$2a$11$B6p17PohgUjfOGnq3qI1qOnQllc72Z2LD5KB9sVDiEzIzdDlj.Fde",
+                            PasswordHash = "$2a$11$nxDGINWj49/OnTNqXcBdQOUsQ2WLshkVkmGQrnsKzWkwfrEzD.pi6",
                             Role = "USER"
                         });
+                });
+
+            modelBuilder.Entity("backend.Entities.AssetUnavailability", b =>
+                {
+                    b.HasOne("backend.Entities.SpaceAsset", "SpaceAsset")
+                        .WithMany("AssetUnavailabilities")
+                        .HasForeignKey("SpaceAssetId");
+
+                    b.Navigation("SpaceAsset");
                 });
 
             modelBuilder.Entity("backend.Entities.Booking", b =>
@@ -875,6 +1012,29 @@ namespace backend.Migrations
                     b.Navigation("SpaceAsset");
                 });
 
+            modelBuilder.Entity("backend.Entities.ServiceRequest", b =>
+                {
+                    b.HasOne("backend.Entities.AddOnService", "AddOnService")
+                        .WithMany()
+                        .HasForeignKey("AddOnServiceId");
+
+                    b.HasOne("backend.Entities.Booking", "Booking")
+                        .WithMany("ServiceRequests")
+                        .HasForeignKey("BookingId");
+
+                    b.HasOne("backend.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AddOnService");
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("backend.Entities.TaskAllocation", b =>
                 {
                     b.HasOne("backend.Entities.User", "Staff")
@@ -908,6 +1068,8 @@ namespace backend.Migrations
                     b.Navigation("InternalTasks");
 
                     b.Navigation("Invoices");
+
+                    b.Navigation("ServiceRequests");
                 });
 
             modelBuilder.Entity("backend.Entities.InternalTask", b =>
@@ -922,6 +1084,8 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Entities.SpaceAsset", b =>
                 {
+                    b.Navigation("AssetUnavailabilities");
+
                     b.Navigation("Bookings");
 
                     b.Navigation("RoomLayouts");

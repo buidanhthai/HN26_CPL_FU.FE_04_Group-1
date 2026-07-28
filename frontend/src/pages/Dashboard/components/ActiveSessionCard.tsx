@@ -1,6 +1,12 @@
 import React from 'react';
 import { bookingService } from '../../../services/bookingService';
 import type { ActiveBookingResponse } from '../../../types/booking.types';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface ActiveSessionCardProps {
   activeBooking: ActiveBookingResponse;
@@ -19,11 +25,10 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
   React.useEffect(() => {
     const checkOverdueStatus = () => {
       if (activeBooking.booking.bookingStatus === 'Checked_In') {
-        const endTime = new Date(activeBooking.booking.endTime);
-        const now = new Date();
-        if (now > endTime) {
-          const diffMs = now.getTime() - endTime.getTime();
-          const diffMins = Math.floor(diffMs / 60000);
+        const endTimeTz = dayjs(activeBooking.booking.endTime).tz('Asia/Ho_Chi_Minh');
+        const nowTz = dayjs().tz('Asia/Ho_Chi_Minh');
+        if (nowTz.isAfter(endTimeTz)) {
+          const diffMins = Math.floor(nowTz.diff(endTimeTz, 'minute', true));
           setIsOverdue(true);
           setOverdueMinutes(diffMins);
         } else {
@@ -41,6 +46,82 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
     const intervalId = setInterval(checkOverdueStatus, 10000);
     return () => clearInterval(intervalId);
   }, [activeBooking.booking.endTime, activeBooking.booking.bookingStatus]);
+
+  const getStatusBadgeInfo = () => {
+    const status = activeBooking.booking.bookingStatus;
+    const startTimeTz = dayjs(activeBooking.booking.startTime).tz('Asia/Ho_Chi_Minh');
+    const nowTz = dayjs().tz('Asia/Ho_Chi_Minh');
+
+    if (status === 'Awaiting_Payment') {
+      return {
+        text: 'Chờ thanh toán',
+        bgColor: '#D9534F',
+        color: '#fff',
+        animation: 'none',
+        leftBarColor: '#D9534F'
+      };
+    }
+    
+    if (status === 'Confirmed') {
+      if (nowTz.isBefore(startTimeTz)) {
+        return {
+          text: 'Sắp diễn ra',
+          bgColor: '#0275d8',
+          color: '#fff',
+          animation: 'none',
+          leftBarColor: '#0275d8'
+        };
+      } else {
+        return {
+          text: 'Chờ Check-in',
+          bgColor: '#f0ad4e',
+          color: '#fff',
+          animation: 'pulse-warning 2s infinite',
+          leftBarColor: '#f0ad4e'
+        };
+      }
+    }
+
+    if (status === 'Checked_In') {
+      if (isOverdue) {
+        return {
+          text: `⚠️ Quá hạn ${overdueMinutes} phút`,
+          bgColor: '#e07a5f',
+          color: '#fff',
+          animation: 'pulse-danger 2s infinite',
+          leftBarColor: '#e07a5f'
+        };
+      } else {
+        return {
+          text: 'Đang hoạt động',
+          bgColor: 'var(--nature-accent)',
+          color: '#fff',
+          animation: 'pulse 2s infinite',
+          leftBarColor: 'var(--nature-accent)'
+        };
+      }
+    }
+
+    if (status === 'Awaiting_Checkout') {
+      return {
+        text: 'Chờ Checkout',
+        bgColor: '#5bc0de',
+        color: '#fff',
+        animation: 'none',
+        leftBarColor: '#5bc0de'
+      };
+    }
+
+    return {
+      text: status,
+      bgColor: 'var(--secondary-text)',
+      color: '#fff',
+      animation: 'none',
+      leftBarColor: 'var(--border-color)'
+    };
+  };
+
+  const badgeInfo = getStatusBadgeInfo();
 
   return (
     <div
@@ -63,11 +144,11 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
           left: 0,
           width: '6px',
           height: '100%',
-          backgroundColor: isOverdue ? '#e07a5f' : 'var(--nature-accent)',
+          backgroundColor: badgeInfo.leftBarColor,
           transition: 'background-color 0.3s ease',
         }}
       />
-
+ 
       {/* Header: status badge + booking id + check-in code */}
       <div
         style={{
@@ -80,39 +161,21 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {isOverdue ? (
-            <span
-              style={{
-                backgroundColor: '#e07a5f',
-                color: '#fff',
-                fontSize: '0.75rem',
-                fontWeight: 'bold',
-                padding: '4px 10px',
-                borderRadius: '12px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                animation: 'pulse-danger 2s infinite',
-              }}
-            >
-              ⚠️ Quá hạn {overdueMinutes} phút
-            </span>
-          ) : (
-            <span
-              style={{
-                backgroundColor: 'var(--nature-accent)',
-                color: '#fff',
-                fontSize: '0.75rem',
-                fontWeight: 'bold',
-                padding: '4px 10px',
-                borderRadius: '12px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                animation: 'pulse 2s infinite',
-              }}
-            >
-              Đang hoạt động
-            </span>
-          )}
+          <span
+            style={{
+              backgroundColor: badgeInfo.bgColor,
+              color: badgeInfo.color,
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              padding: '4px 10px',
+              borderRadius: '12px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              animation: badgeInfo.animation,
+            }}
+          >
+            {badgeInfo.text}
+          </span>
           <span
             style={{ fontSize: '0.85rem', color: 'var(--secondary-text)', fontWeight: 'bold' }}
           >
@@ -277,6 +340,11 @@ const ActiveSessionCard: React.FC<ActiveSessionCardProps> = ({
           0% { box-shadow: 0 0 0 0 rgba(224, 122, 95, 0.4); }
           70% { box-shadow: 0 0 0 8px rgba(224, 122, 95, 0); }
           100% { box-shadow: 0 0 0 0 rgba(224, 122, 95, 0); }
+        }
+        @keyframes pulse-warning {
+          0% { box-shadow: 0 0 0 0 rgba(240, 173, 78, 0.4); }
+          70% { box-shadow: 0 0 0 8px rgba(240, 173, 78, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(240, 173, 78, 0); }
         }
       `}</style>
     </div>

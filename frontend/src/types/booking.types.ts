@@ -16,6 +16,11 @@ export interface Booking {
   customerName?: string;
   customerPhone?: string;
   createdByUserId?: number;
+  arrived?: boolean;
+  actualEndTime?: string;
+  noShowTimeoutMinutes?: number;
+  refundAmount?: number;
+  cancellationReason?: string;
 }
 
 export interface CreateBookingRequest {
@@ -63,4 +68,12 @@ export interface ActiveBookingResponse {
   totalAmount: number;
   isOverdue?: boolean;
   overdueMinutes?: number;
+}
+
+export interface CheckInEligibility {
+  canCheckIn: boolean;
+  reasonCode: 'SUCCESS' | 'INVALID_STATUS' | 'TASK_NOT_COMPLETED' | 'TOO_EARLY' | 'EXPIRED' | 'NOT_ARRIVED' | 'MAINTENANCE_LOCK' | 'UNPAID_DEBT';
+  userFriendlyMessage: string;
+  requiredActionRole: 'Staff' | 'Admin' | 'User' | 'None';
+  actionTaskHintId?: number;
 }
