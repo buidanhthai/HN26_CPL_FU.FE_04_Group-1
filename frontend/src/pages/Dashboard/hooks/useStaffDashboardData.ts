@@ -24,6 +24,7 @@ export interface ActiveSessionDetailed extends Booking {
   isOverdue?: boolean;
   overdueMinutes?: number;
   overtimeFee?: number;
+  cleaningStatus?: string;
 }
 
 export function useStaffDashboardData() {
@@ -90,13 +91,15 @@ export function useStaffDashboardData() {
         activeList.map(async (b) => {
           try {
             const details = await bookingService.getBookingDetails(b.id);
+            const cleaningTask = tasksData.find(t => t.bookingId === b.id && t.taskCategory === 'CLEANING');
             return {
               ...b,
               services: details.services || [],
               customerFullName: details.user?.fullName || b.customerName || `Khách hàng #${b.userId}`,
               isOverdue: details.isOverdue ?? (b.bookingStatus === 'Checked_In' && dayjs().tz('Asia/Ho_Chi_Minh').isAfter(dayjs(b.endTime).tz('Asia/Ho_Chi_Minh'))),
               overdueMinutes: details.overdueMinutes ?? 0,
-              overtimeFee: details.overtimeFee ?? 0
+              overtimeFee: details.overtimeFee ?? 0,
+              cleaningStatus: cleaningTask ? cleaningTask.taskStatus : undefined
             };
           } catch (err: any) {
             console.error(`[StaffDashboard Error] Booking Details #${b.id} failed:`, err?.message);

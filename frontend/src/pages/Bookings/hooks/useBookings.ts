@@ -147,9 +147,9 @@ export function useBookings() {
     }
   };
 
-  const handleCheckin = async (id: number) => {
+  const handleCheckin = async (id: number, forceByAdmin: boolean = false) => {
     try {
-      await bookingService.checkinBooking(id);
+      await bookingService.checkinBooking(id, forceByAdmin);
       alert('Check-in thành công!');
       fetchBookings();
     } catch (e: any) {

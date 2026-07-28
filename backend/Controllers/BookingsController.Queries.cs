@@ -23,31 +23,28 @@ namespace backend.Controllers
 
             var query = _context.Bookings.AsQueryable();
 
-            if (string.Equals(userRole, "USER", StringComparison.OrdinalIgnoreCase))
-            {
-                query = query.Where(b => b.UserId == userId);
-            }
+            bool isUser = string.Equals(userRole, "USER", StringComparison.OrdinalIgnoreCase);
 
             var bookings = await query
                 .Select(b => new BookingDto
                 {
                     Id = b.Id,
-                    UserId = b.UserId,
+                    UserId = isUser && b.UserId != userId ? 0 : b.UserId,
                     AssetId = b.AssetId,
                     LayoutId = b.LayoutId,
                     StartTime = b.StartTime,
                     EndTime = b.EndTime,
-                    BookingStatus = b.BookingStatus,
-                    PaymentDeadline = b.PaymentDeadline,
-                    CustomSetupNote = b.CustomSetupNote,
-                    SnapshotBasePrice = b.SnapshotBasePrice,
-                    SnapshotPriceModifier = b.SnapshotPriceModifier,
+                    BookingStatus = isUser && b.UserId != userId ? "Confirmed" : b.BookingStatus,
+                    PaymentDeadline = isUser && b.UserId != userId ? null : b.PaymentDeadline,
+                    CustomSetupNote = isUser && b.UserId != userId ? null : b.CustomSetupNote,
+                    SnapshotBasePrice = isUser && b.UserId != userId ? 0m : b.SnapshotBasePrice,
+                    SnapshotPriceModifier = isUser && b.UserId != userId ? 0m : b.SnapshotPriceModifier,
                     CreatedAt = b.CreatedAt,
-                    BookingCode = b.BookingCode,
-                    CustomerName = b.CustomerName,
-                    CustomerPhone = b.CustomerPhone,
-                    CreatedByUserId = b.CreatedByUserId,
-                    SetupTaskStatus = b.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS").TaskStatus
+                    BookingCode = isUser && b.UserId != userId ? "MASKED" : b.BookingCode,
+                    CustomerName = isUser && b.UserId != userId ? "Đã được đặt" : b.CustomerName,
+                    CustomerPhone = isUser && b.UserId != userId ? "Liên hệ lễ tân" : b.CustomerPhone,
+                    CreatedByUserId = isUser && b.UserId != userId ? null : b.CreatedByUserId,
+                    SetupTaskStatus = isUser && b.UserId != userId ? null : (b.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS") != null ? b.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS").TaskStatus : "Unassigned")
                 }).ToListAsync();
 
             return Ok(bookings);
@@ -529,6 +526,139 @@ namespace backend.Controllers
                     OvertimeFee = overtimeFee
                 }
             });
+        }
+
+        [HttpGet("{id}/checkin-eligibility")]
+        [Authorize(Roles = "USER,STAFF,ADMIN")]
+        public async Task<IActionResult> GetCheckInEligibility(int id)
+        {
+            var result = await EvaluateCheckInEligibilityAsync(id);
+            return Ok(result);
+        }
+
+        public async Task<CheckInEligibilityDto> EvaluateCheckInEligibilityAsync(int id)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.SpaceAsset)
+                .Include(b => b.RoomLayout)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (booking == null)
+            {
+                return new CheckInEligibilityDto
+                {
+                    CanCheckIn = false,
+                    ReasonCode = "INVALID_STATUS",
+                    UserFriendlyMessage = "Không tìm thấy thông tin đặt chỗ.",
+                    RequiredActionRole = "None"
+                };
+            }
+
+            // Layer 1: Booking Status
+            if (booking.BookingStatus != "Confirmed")
+            {
+                string statusMsg = "Chưa thể Check-in: Đơn đặt chỗ chưa thanh toán cọc hoặc đã kết thúc.";
+                if (booking.BookingStatus == "Checked_In") statusMsg = "Phòng đã được check-in.";
+                else if (booking.BookingStatus == "Checked_Out") statusMsg = "Đơn đặt chỗ đã hoàn thành và trả phòng.";
+                else if (booking.BookingStatus == "Cancelled") statusMsg = "Đơn đặt chỗ đã bị hủy.";
+
+                return new CheckInEligibilityDto
+                {
+                    CanCheckIn = false,
+                    ReasonCode = "INVALID_STATUS",
+                    UserFriendlyMessage = statusMsg,
+                    RequiredActionRole = "None"
+                };
+            }
+
+            // Layer 2: Task Preparation (LOGISTICS tasks)
+            var setupTask = await _context.InternalTasks
+                .FirstOrDefaultAsync(t => t.BookingId == id && t.TaskCategory == "LOGISTICS");
+            
+            if (setupTask == null || setupTask.TaskStatus != "Completed")
+            {
+                return new CheckInEligibilityDto
+                {
+                    CanCheckIn = false,
+                    ReasonCode = "TASK_NOT_COMPLETED",
+                    UserFriendlyMessage = "Chưa thể Check-in: Phòng đang trong quá trình dọn dẹp/bố trí.",
+                    RequiredActionRole = "Staff",
+                    ActionTaskHintId = setupTask?.Id
+                };
+            }
+
+            // Layer 3: Time Window
+            var nowLocal = backend.Helpers.TimeHelper.GetVietnamTime();
+            if (nowLocal < booking.StartTime.AddMinutes(-15))
+            {
+                return new CheckInEligibilityDto
+                {
+                    CanCheckIn = false,
+                    ReasonCode = "TOO_EARLY",
+                    UserFriendlyMessage = $"Chưa thể Check-in: Chưa đến giờ hẹn (chỉ check-in trước tối đa 15 phút, bắt đầu từ {booking.StartTime.AddMinutes(-15):HH:mm}).",
+                    RequiredActionRole = "Admin"
+                };
+            }
+            if (nowLocal > booking.EndTime)
+            {
+                return new CheckInEligibilityDto
+                {
+                    CanCheckIn = false,
+                    ReasonCode = "EXPIRED",
+                    UserFriendlyMessage = "Chưa thể Check-in: Đơn hàng đã quá giờ kết thúc sử dụng.",
+                    RequiredActionRole = "None"
+                };
+            }
+
+            // Layer 4: Arrival Flag
+            if (!booking.Arrived)
+            {
+                return new CheckInEligibilityDto
+                {
+                    CanCheckIn = false,
+                    ReasonCode = "NOT_ARRIVED",
+                    UserFriendlyMessage = "Chờ khách xác nhận: Khách chưa báo có mặt tại quầy lễ tân.",
+                    RequiredActionRole = "Staff"
+                };
+            }
+
+            // Layer 5: Asset Status (Maintenance)
+            var isMaintenance = await _context.AssetUnavailabilities
+                .AnyAsync(u => u.AssetId == booking.AssetId && u.StartTime <= nowLocal && nowLocal <= u.EndTime);
+            
+            if (isMaintenance)
+            {
+                return new CheckInEligibilityDto
+                {
+                    CanCheckIn = false,
+                    ReasonCode = "MAINTENANCE_LOCK",
+                    UserFriendlyMessage = "Phòng họp đang khóa bảo trì sự cố. Vui lòng thực hiện Chuyển phòng khẩn cấp.",
+                    RequiredActionRole = "Staff"
+                };
+            }
+
+            // Layer 6: Payment / Debt (Dư nợ phạt cọc)
+            var hasUnpaidDebt = await _context.Invoices
+                .AnyAsync(i => i.Booking.UserId == booking.UserId && i.InvoiceType == "Final" && i.PaymentStatus == "Unpaid" && i.BookingId != id);
+
+            if (hasUnpaidDebt)
+            {
+                return new CheckInEligibilityDto
+                {
+                    CanCheckIn = false,
+                    ReasonCode = "UNPAID_DEBT",
+                    UserFriendlyMessage = "Khách còn dư nợ phạt từ phiên trước. Cần thanh toán trước khi vào phòng.",
+                    RequiredActionRole = "Staff"
+                };
+            }
+
+            return new CheckInEligibilityDto
+            {
+                CanCheckIn = true,
+                ReasonCode = "SUCCESS",
+                UserFriendlyMessage = "Đủ điều kiện Check-in.",
+                RequiredActionRole = "None"
+            };
         }
     }
 }

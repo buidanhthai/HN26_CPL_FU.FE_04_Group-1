@@ -74,3 +74,32 @@
 ### Quy tắc 7: Nguyên tắc Tương thích ngược (Non-Breaking Changes)
 - Cấm sửa đổi API Contract cũ: Không xóa trường, đổi tên trường DTO hoặc đổi tên API Endpoint cũ đang hoạt động.
 - Mở rộng an toàn: Bổ sung trường nullable/optional DTO hoặc tạo API version mới (`v2/...`).
+
+---
+
+## 6. QUY TẮC PHỦ KÍN HOÀN TOÀN LUỒNG NGHIỆP VỤ (FULL-PROCESS & EDGE-CASE RULES)
+
+### Rule 8: Quản lý Trạng thái Khóa Phòng & Bảo trì (Asset Lock & Maintenance)
+- Không gian vật lý (`Space_Asset`) phải hỗ trợ trạng thái `IsMaintenance` hoặc bảng `AssetUnavailabilities` (chứa `StartDate`, `EndDate`, `Reason`).
+- Mọi API kiểm tra phòng trống / Render Map (`SCR_BOOK_04`) BẮT BUỘC phải loại trừ các không gian đang trong thời gian bảo trì.
+
+### Rule 9: Đồng bộ Dịch vụ Phát sinh từ Yêu cầu Hỗ trợ (Request-to-Billing Synergy)
+- Khi Staff xử lý yêu cầu loại "🛎️ Gọi dịch vụ" tại `SCR_REQ_01` và đổi trạng thái sang `Resolved`:
+  - Backend BẮT BUỘC phải tự động sinh bản ghi `BookingServiceDetail` (`IsIncurred = true`, `PaymentStatus = "Unpaid"`) gắn liền với `BookingId` hiện tại của phòng đó.
+  - Tuyệt đối không để xảy ra tình trạng tạo Yêu cầu hỗ trợ thành công nhưng không ghi nhận hóa đơn.
+
+### Rule 10: Xử lý Đơn Quá Hạn & Cưỡng Chế Checkout (Force Checkout & No-Show)
+- Khách không check-in sau 30 phút kể từ `StartTime`: Background Service tự động chuyển sang `No_Show` và giải phóng phòng (áp dụng chính sách giữ cọc).
+- Trường hợp khách ngồi lỳ quá hạn: Cung cấp API `POST /api/bookings/{id}/force-checkout` bảo vệ bởi `[Authorize(Roles = "Staff,Admin")]`.
+  - API này tự động chốt giờ hiện tại (`ActualEndTime`), tính Overtime Fee (1.5x) tại Backend, chuyển trạng thái đơn sang `Awaiting_Payment_PostUse` hoặc ghi nhận nợ, đồng thời giải phóng phòng để phục vụ khách tiếp theo.
+
+### Rule 11: Luồng Gia Hạn & Chuyển Phòng (Extend & Switch Room)
+- **Gia hạn (Extend):** API `POST /api/bookings/{id}/extend` phải kiểm tra khung giờ tiếp theo. Nếu xung đột lịch đặt khác -> Trả về `409 Conflict` kèm thông báo *"Khung giờ kế tiếp đã được đặt"*. Nếu trống -> Cập nhật `EndTime` mới và cộng tiền phát sinh vào `Final Invoice`.
+- **Chuyển phòng (Switch Room):** API `POST /api/bookings/{id}/switch-asset` đóng đơn hiện tại ở thời điểm thực tế, tính chi phí sử dụng theo tỷ lệ (pro-rata), và tạo đơn mới cho phòng mới mà không thu lại cọc cơ bản.
+
+### Rule 12: Kế hoạch Bán tự động cho AI Agent thực hiện (AI Agent Execution Rules)
+- Khi refactor hoặc bổ sung feature mới, AI Agent BẮT BUỘC tuân thủ:
+  1. **Kiểm tra File Size Limit:** Controller/Service < 250 dòng, UI Component < 150 dòng. Tách CQRS Handlers / Sub-components nếu vượt quá.
+  2. **Backward Compatibility:** Không sửa Enum gốc trong Database, sử dụng Virtual Status / Derived Status cho các trạng thái cảnh báo trên UI.
+  3. **DataSeeder Update:** Bổ sung mock scenario cho các edge-case mới (No-Show, Force Checkout, Maintenance) vào thư mục `Data/Seeders/`.
+

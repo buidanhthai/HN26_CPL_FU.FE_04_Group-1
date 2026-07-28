@@ -25,6 +25,12 @@ namespace backend.Entities
         public string? CustomerPhone { get; set; }
         public int? CreatedByUserId { get; set; }
 
+        public DateTime? ActualEndTime { get; set; }
+        public int NoShowTimeoutMinutes { get; set; } = 30;
+        public bool Arrived { get; set; } = false;
+        public decimal RefundAmount { get; set; } = 0.0m;
+        public string? CancellationReason { get; set; }
+
         // Navigation properties
         public User? User { get; set; }
         public User? CheckedInByAdmin { get; set; }
@@ -34,5 +40,6 @@ namespace backend.Entities
         public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
         public ICollection<InternalTask> InternalTasks { get; set; } = new List<InternalTask>();
         public ICollection<BookingLog> BookingLogs { get; set; } = new List<BookingLog>();
+        public ICollection<ServiceRequest> ServiceRequests { get; set; } = new List<ServiceRequest>();
     }
 }

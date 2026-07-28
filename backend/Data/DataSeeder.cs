@@ -20,6 +20,8 @@ namespace backend.Data
                 await SeedActiveDashboardBookingAsync(context);
                 await SeedBobOverdueBookingAsync(context);
                 await SeedStaffOperationalTasksAsync(context);
+                await Seeders.MaintenanceSeeder.SeedMaintenanceDataAsync(context);
+                await Seeders.OverdueBookingSeeder.SeedOverdueBookingAsync(context);
 
                 await context.SaveChangesAsync();
             }
@@ -167,6 +169,7 @@ namespace backend.Data
                 // --- COMPLETED (đã hoàn thành, dùng để test filter) ---
                 new { Desc = "[SEED] Vệ sinh phòng họp A2 sau checkout Bob (Hoàn thành 11:30)", Category = "CLEANING", BookingId = 2, Staff = 1, Status = "Completed" },
                 new { Desc = "[SEED] Kiểm tra mạng Wi-Fi tầng 2 (Hoàn thành 09:00)", Category = "TECHNICAL", BookingId = 1, Staff = 1, Status = "Completed" },
+                new { Desc = "[SEED] Bố trí bàn ghế hoàn tất - Phòng 102 (Sẵn sàng dùng)", Category = "LOGISTICS", BookingId = 5, Staff = 1, Status = "Completed" },
             };
 
             foreach (var seed in taskSeeds)
@@ -189,10 +192,11 @@ namespace backend.Data
         // Helper: Đảm bảo các Booking giả tồn tại để tasks không bị FK error
         private static async Task EnsureTestBookingsExistAsync(AppDbContext context)
         {
-            var now = DateTime.UtcNow;
+            var now = backend.Helpers.TimeHelper.GetVietnamTime();
 
-            // Booking #1 - nếu chưa có (có thể bị xóa hoặc chưa seed)
-            if (!await context.Bookings.AnyAsync(b => b.Id == 1))
+            // Booking #1 - Alice (Bị chặn dọn dẹp vì LOGISTICS task is Unassigned/In_Progress)
+            var aliceBooking = await context.Bookings.FirstOrDefaultAsync(b => b.Id == 1);
+            if (aliceBooking == null)
             {
                 context.Bookings.Add(new Booking
                 {
@@ -200,15 +204,53 @@ namespace backend.Data
                     UserId = 3,
                     AssetId = 1,
                     CustomerName = "Alice User",
-                    StartTime = now.AddHours(3),
-                    EndTime = now.AddHours(5),
+                    StartTime = now.AddMinutes(-5),
+                    EndTime = now.AddHours(2),
                     BookingStatus = "Confirmed",
                     BookingCode = "BK-SEED-001",
                     SnapshotBasePrice = 300000m,
                     SnapshotPriceModifier = 0m,
-                    CreatedAt = now.AddHours(-1)
+                    CreatedAt = now.AddHours(-1),
+                    Arrived = true
                 });
                 await context.SaveChangesAsync();
+            }
+            else
+            {
+                aliceBooking.StartTime = now.AddMinutes(-5);
+                aliceBooking.EndTime = now.AddHours(2);
+                aliceBooking.BookingStatus = "Confirmed";
+                aliceBooking.Arrived = true;
+            }
+
+            // Booking #5 - Khách B (Sẵn sàng Check-in vì LOGISTICS task is Completed)
+            var readyBooking = await context.Bookings.FirstOrDefaultAsync(b => b.Id == 5);
+            if (readyBooking == null)
+            {
+                context.Bookings.Add(new Booking
+                {
+                    Id = 5,
+                    UserId = 3, // Alice User
+                    AssetId = 2,
+                    CustomerName = "Khách Hàng B",
+                    LayoutId = 1,
+                    StartTime = now.AddMinutes(5),
+                    EndTime = now.AddHours(2),
+                    BookingStatus = "Confirmed",
+                    BookingCode = "BK-SEED-005",
+                    SnapshotBasePrice = 400000m,
+                    SnapshotPriceModifier = 0m,
+                    CreatedAt = now.AddHours(-1),
+                    Arrived = true
+                });
+                await context.SaveChangesAsync();
+            }
+            else
+            {
+                readyBooking.StartTime = now.AddMinutes(5);
+                readyBooking.EndTime = now.AddHours(2);
+                readyBooking.BookingStatus = "Confirmed";
+                readyBooking.Arrived = true;
             }
         }
     }

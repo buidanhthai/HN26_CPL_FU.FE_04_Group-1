@@ -2,6 +2,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using backend.Data;
+using backend.Entities;
 using System;
 using System.Linq;
 using System.Threading;
@@ -30,6 +31,7 @@ namespace backend.Services
                 try
                 {
                     await CancelExpiredBookings();
+                    await CheckNoShowBookings();
                     await CheckOverdueBookings();
                 }
                 catch (Exception ex)
@@ -67,6 +69,44 @@ namespace backend.Services
 
                     await dbContext.SaveChangesAsync();
                     _logger.LogInformation("Expired bookings have been cancelled successfully.");
+                }
+            }
+        }
+
+        private async Task CheckNoShowBookings()
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var nowLocal = backend.Helpers.TimeHelper.GetVietnamTime();
+
+                var noShowBookings = await dbContext.Bookings
+                    .Where(b => b.BookingStatus == "Confirmed" 
+                                && !b.Arrived 
+                                && b.StartTime.AddMinutes(b.NoShowTimeoutMinutes) < nowLocal)
+                    .ToListAsync();
+
+                if (noShowBookings.Any())
+                {
+                    _logger.LogInformation($"Found {noShowBookings.Count} No-Show bookings. Processing...");
+
+                    foreach (var booking in noShowBookings)
+                    {
+                        booking.BookingStatus = "No_Show";
+                        
+                        // Log to BookingLog
+                        var log = new BookingLog
+                        {
+                            BookingId = booking.Id,
+                            UserFullName = "Hệ thống",
+                            ActionDescription = $"Đơn đặt chỗ tự động hủy chuyển No_Show do quá 30 phút chưa nhận phòng.",
+                            Timestamp = nowLocal
+                        };
+                        dbContext.BookingLogs.Add(log);
+                    }
+
+                    await dbContext.SaveChangesAsync();
+                    _logger.LogInformation("No-Show bookings have been cancelled and processed successfully.");
                 }
             }
         }
