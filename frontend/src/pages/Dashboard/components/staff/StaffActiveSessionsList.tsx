@@ -24,9 +24,9 @@ export const StaffActiveSessionsList: React.FC<StaffActiveSessionsListProps> = (
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-xl font-serif text-white flex items-center gap-2">
+        <h3 className="text-xl font-serif text-[var(--primary-text)] flex items-center gap-2">
           <span>🟢 Phiên Đặt Chỗ Đang Hoạt Động</span>
-          <span className="text-xs font-sans bg-stone-800 text-stone-300 px-2.5 py-0.5 rounded-full">
+          <span className="text-xs font-sans bg-[var(--surface-color)] text-[var(--secondary-text)] px-2.5 py-0.5 rounded-full border border-[var(--border-color)]">
             Real-time
           </span>
         </h3>

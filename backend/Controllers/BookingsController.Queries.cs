@@ -44,7 +44,7 @@ namespace backend.Controllers
                     CustomerName = isUser && b.UserId != userId ? "Đã được đặt" : b.CustomerName,
                     CustomerPhone = isUser && b.UserId != userId ? "Liên hệ lễ tân" : b.CustomerPhone,
                     CreatedByUserId = isUser && b.UserId != userId ? null : b.CreatedByUserId,
-                    SetupTaskStatus = isUser && b.UserId != userId ? null : (b.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS") != null ? b.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS").TaskStatus : "Unassigned"),
+                    SetupTaskStatus = isUser && b.UserId != userId ? null : (b.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS") != null ? b.InternalTasks.FirstOrDefault(t => t.TaskCategory == "LOGISTICS")!.TaskStatus : "Unassigned"),
                     Rating = isUser && b.UserId != userId ? null : b.Rating,
                     ReviewComment = isUser && b.UserId != userId ? null : b.ReviewComment
                 }).ToListAsync();
@@ -645,7 +645,7 @@ namespace backend.Controllers
 
             // Layer 6: Payment / Debt (Dư nợ phạt cọc)
             var hasUnpaidDebt = await _context.Invoices
-                .AnyAsync(i => i.Booking.UserId == booking.UserId && i.InvoiceType == "Final" && i.PaymentStatus == "Unpaid" && i.BookingId != id);
+                .AnyAsync(i => i.Booking!.UserId == booking.UserId && i.InvoiceType == "Final" && i.PaymentStatus == "Unpaid" && i.BookingId != id);
 
             if (hasUnpaidDebt)
             {

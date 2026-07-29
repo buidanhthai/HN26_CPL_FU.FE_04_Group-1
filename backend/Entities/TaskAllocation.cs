@@ -7,6 +7,9 @@ namespace backend.Entities
         public int TaskId { get; set; }
         public int StaffId { get; set; }
         public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? CompletedAt { get; set; }
+        public string? CompletionNote { get; set; }
+        public string? EvidenceImageUrl { get; set; }
 
         // Navigation properties
         public InternalTask? InternalTask { get; set; }

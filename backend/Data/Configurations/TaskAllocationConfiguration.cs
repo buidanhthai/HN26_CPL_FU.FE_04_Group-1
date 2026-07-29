@@ -11,6 +11,9 @@ namespace backend.Data.Configurations
             builder.ToTable("Task_Allocations");
             builder.HasKey(e => new { e.TaskId, e.StaffId });
             builder.Property(e => e.JoinedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            builder.Property(e => e.CompletedAt);
+            builder.Property(e => e.CompletionNote).HasMaxLength(500);
+            builder.Property(e => e.EvidenceImageUrl).HasMaxLength(255);
 
             builder.HasOne(e => e.InternalTask)
                   .WithMany(t => t.TaskAllocations)

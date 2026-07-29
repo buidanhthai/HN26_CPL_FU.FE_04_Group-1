@@ -76,6 +76,29 @@ namespace backend.Data.Seeders
                 context.InternalTasks.Add(setupTask);
                 await context.SaveChangesAsync();
 
+                // Log task logs for setupTask
+                context.TaskLogs.Add(new TaskLog
+                {
+                    TaskId = setupTask.Id,
+                    UserFullName = "Hệ thống",
+                    ActionDescription = "Nhiệm vụ được tạo tự động.",
+                    Timestamp = now.AddHours(-3)
+                });
+                context.TaskLogs.Add(new TaskLog
+                {
+                    TaskId = setupTask.Id,
+                    UserFullName = "John Staff",
+                    ActionDescription = "Nhân viên John Staff đã nhận nhiệm vụ.",
+                    Timestamp = now.AddHours(-3).AddMinutes(5)
+                });
+                context.TaskLogs.Add(new TaskLog
+                {
+                    TaskId = setupTask.Id,
+                    UserFullName = "John Staff",
+                    ActionDescription = "Nhiệm vụ đã hoàn thành. Ghi chú nghiệm thu: Đã sắp xếp 8 ghế chữ U.",
+                    Timestamp = now.AddHours(-2).AddMinutes(-30)
+                });
+
                 // Phân bổ nhân sự cho Setup Task
                 context.TaskAllocations.Add(new TaskAllocation
                 {
@@ -205,7 +228,16 @@ namespace backend.Data.Seeders
                     CreatedAt = now.AddMinutes(-5)
                 };
                 context.InternalTasks.Add(cleanupTask);
+                await context.SaveChangesAsync();
 
+                // Log task log for cleanupTask
+                context.TaskLogs.Add(new TaskLog
+                {
+                    TaskId = cleanupTask.Id,
+                    UserFullName = "Hệ thống",
+                    ActionDescription = "Nhiệm vụ dọn dẹp được tự động kích hoạt sau checkout.",
+                    Timestamp = now.AddMinutes(-5)
+                });
                 await context.SaveChangesAsync();
             }
         }

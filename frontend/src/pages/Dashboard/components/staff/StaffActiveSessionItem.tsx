@@ -55,62 +55,63 @@ export const StaffActiveSessionItem: React.FC<StaffActiveSessionItemProps> = ({
 
   return (
     <div
-      className={`bg-[#2b201c] rounded-xl p-5 border border-[#3d2e29] space-y-4 ${borderClass}`}
+      className={`bg-[var(--surface-color)] rounded-xl p-5 border border-[var(--border-color)] space-y-4 ${borderClass}`}
+      style={{ boxShadow: 'var(--shadow)' }}
     >
-      <div className="flex justify-between items-start">
+      <div className="flex justify-between items-start flex-wrap gap-2">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="text-lg font-bold text-white">
+            <h4 className="text-lg font-bold text-[var(--primary-text)] m-0">
               Khách hàng: {booking.customerFullName || booking.customerName || `Khách #${booking.userId}`} (Booking #{booking.id})
             </h4>
             {isOverdue ? (
-              <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-[#4a1919] text-[#ff8080] border border-[#7a2828] animate-pulse">
+              <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-700 border border-red-200 animate-pulse">
                 ⚠️ Quá hạn {overdueMinutes} phút
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-[#1c3b2b] text-[#6ee7b7] border border-[#28573f]">
+              <span className="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
                 {booking.bookingStatus === 'Awaiting_Checkout' ? 'Chờ Checkout' : 'Đang sử dụng'}
               </span>
             )}
             {booking.cleaningStatus && (
               <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full border ${
                 booking.cleaningStatus === 'Completed'
-                  ? 'bg-[#1c3b2b] text-[#6ee7b7] border-[#28573f]'
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
                   : booking.cleaningStatus === 'In_Progress'
-                  ? 'bg-[#3b2b1c] text-[#fcd34d] border-[#573f28]'
-                  : 'bg-[#4a1919] text-[#ff8080] border-[#7a2828]'
+                  ? 'bg-amber-100 text-amber-800 border-amber-200'
+                  : 'bg-red-100 text-red-700 border-red-200'
               }`}>
                 {booking.cleaningStatus === 'Completed' ? '✨ Sạch' : booking.cleaningStatus === 'In_Progress' ? '🧹 Đang dọn' : '🧹 Cần dọn'}
               </span>
             )}
           </div>
-          <p className="text-stone-400 text-sm mt-0.5">
-            Vị trí: <strong>{getAssetName(booking.assetId)}</strong> • Loại: {booking.assetId === 2 ? 'Gói Theo Giờ' : 'Linh hoạt'}
+          <p className="text-[var(--secondary-text)] text-sm mt-1 mb-0">
+            Vị trí: <strong className="text-[var(--primary-text)]">{getAssetName(booking.assetId)}</strong> • Loại: {booking.assetId === 2 ? 'Gói Theo Giờ' : 'Linh hoạt'}
           </p>
         </div>
-        <span className="text-xs text-stone-400 bg-stone-900 px-3 py-1 rounded-lg border border-stone-800">
+        <span className="text-xs text-[var(--secondary-text)] bg-[var(--background-color)] px-3 py-1 rounded-lg border border-[var(--border-color)] font-medium">
           {formatTime(booking.startTime)} - {formatTime(booking.endTime)} (Hôm nay)
         </span>
       </div>
 
       {/* Services Included & Incurred Box */}
-      <div className="bg-[#201815] p-3 rounded-lg text-xs space-y-1.5 border border-stone-800">
-        <div className="text-stone-400 font-medium">
+      <div className="bg-[var(--background-color)] p-3 rounded-lg text-xs space-y-1.5 border border-[var(--border-color)]">
+        <div className="text-[var(--secondary-text)] font-semibold mb-1">
           {hasIncurred ? 'Dịch vụ đính kèm & Phát sinh:' : 'Dịch vụ đính kèm:'}
         </div>
         {!booking.services || booking.services.length === 0 ? (
-          <div className="flex justify-between text-stone-300">
+          <div className="flex justify-between text-[var(--primary-text)] font-medium">
             <span>• {booking.assetId === 2 ? 'Trà đá & Cà phê (x3)' : 'Trà sữa Matcha (x2)'}</span>
-            <span className="text-emerald-400">Đã thanh toán</span>
+            <span className="text-emerald-700">Đã thanh toán</span>
           </div>
         ) : (
           booking.services.map((sd, idx) => (
-            <div key={idx} className="flex justify-between text-stone-300">
+            <div key={idx} className="flex justify-between text-[var(--primary-text)] font-medium">
               <span>• {sd.serviceName} (x{sd.quantity})</span>
               {sd.paymentStatus === 'Paid' ? (
-                <span className="text-emerald-400 font-medium">Đã thanh toán</span>
+                <span className="text-emerald-700 font-semibold">Đã thanh toán</span>
               ) : (
-                <span className="text-amber-400 font-semibold">Chưa thanh toán (Phát sinh)</span>
+                <span className="text-amber-700 font-semibold">Chưa thanh toán (Phát sinh)</span>
               )}
             </div>
           ))
@@ -118,34 +119,34 @@ export const StaffActiveSessionItem: React.FC<StaffActiveSessionItemProps> = ({
       </div>
 
       {/* Action Buttons for Staff */}
-      <div className="flex justify-between items-center pt-2 border-t border-stone-800 flex-wrap gap-2">
-        <div className="text-xs font-medium">
+      <div className="flex justify-between items-center pt-3 border-t border-[var(--border-color)] flex-wrap gap-2">
+        <div className="text-xs font-semibold">
           {isOverdue ? (
-            <span className="text-red-400 font-medium">
+            <span className="text-red-600 font-semibold">
               Phạt Overtime (1.5x): <strong>+{formatCurrency(overtimeFee)}</strong>
             </span>
           ) : (
-            <span className="text-emerald-400 font-medium">
+            <span className="text-emerald-700 font-semibold">
               Còn lại: <strong>{remHours > 0 ? `${remHours} giờ ${remMins} phút` : `${remMins} phút`}</strong>
             </span>
           )}
         </div>
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 flex-wrap gap-y-2">
           <button
             onClick={() => onOpenAddService(booking.id)}
-            className="px-3 py-1.5 text-xs bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition border border-stone-700 cursor-pointer"
+            className="px-3 py-1.5 text-xs bg-[var(--surface-color)] hover:bg-[var(--border-color)] text-[var(--primary-text)] rounded-lg transition border border-[var(--border-color)] cursor-pointer font-semibold"
           >
             + Dịch vụ
           </button>
           <button
             onClick={() => onOpenExtend(booking.id)}
-            className="px-3 py-1.5 text-xs bg-amber-800 hover:bg-amber-700 text-stone-200 rounded-lg transition border border-[#5c3e1e] cursor-pointer"
+            className="px-3 py-1.5 text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-lg transition border border-amber-300 cursor-pointer font-semibold"
           >
             ⏰ Gia hạn
           </button>
           <button
             onClick={() => onOpenSwitch(booking.id, booking.assetId)}
-            className="px-3 py-1.5 text-xs bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg transition border border-stone-700 cursor-pointer"
+            className="px-3 py-1.5 text-xs bg-[var(--surface-color)] hover:bg-[var(--border-color)] text-[var(--primary-text)] rounded-lg transition border border-[var(--border-color)] cursor-pointer font-semibold"
           >
             🔄 Đổi phòng
           </button>
@@ -161,16 +162,16 @@ export const StaffActiveSessionItem: React.FC<StaffActiveSessionItemProps> = ({
                 }
               }
             }}
-            className="px-3 py-1.5 text-xs bg-[#5a1c1c] hover:bg-[#7a2828] text-red-200 rounded-lg transition border border-[#7a2828] cursor-pointer font-bold"
+            className="px-3 py-1.5 text-xs bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition border border-red-200 cursor-pointer font-bold"
           >
             🚨 Cưỡng chế Checkout
           </button>
           <button
             onClick={() => onCheckout(booking.id)}
-            className={`px-4 py-1.5 text-xs text-white font-medium rounded-lg transition shadow-lg cursor-pointer ${
+            className={`px-4 py-1.5 text-xs text-white font-semibold rounded-lg transition shadow-md cursor-pointer ${
               isOverdue
-                ? 'bg-red-600 hover:bg-red-500 shadow-red-950'
-                : 'bg-amber-700 hover:bg-amber-600'
+                ? 'bg-red-600 hover:bg-red-500'
+                : 'bg-amber-600 hover:bg-amber-500'
             }`}
           >
             {isOverdue ? 'Checkout & Quyết toán' : 'Checkout'}

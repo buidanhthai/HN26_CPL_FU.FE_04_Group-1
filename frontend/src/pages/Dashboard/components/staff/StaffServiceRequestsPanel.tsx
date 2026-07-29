@@ -34,11 +34,11 @@ export const StaffServiceRequestsPanel: React.FC<StaffServiceRequestsPanelProps>
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'Pending':
-        return 'bg-amber-950/20 text-amber-500 border-amber-800';
+        return 'bg-amber-100 text-amber-800 border-amber-200';
       case 'In_Progress':
-        return 'bg-sky-950/20 text-sky-500 border-sky-800';
+        return 'bg-sky-100 text-sky-800 border-sky-200';
       default:
-        return 'bg-emerald-950/20 text-emerald-500 border-emerald-800';
+        return 'bg-emerald-100 text-emerald-850 border-emerald-200';
     }
   };
 
@@ -54,43 +54,43 @@ export const StaffServiceRequestsPanel: React.FC<StaffServiceRequestsPanelProps>
   };
 
   return (
-    <div className="bg-[#2b201c] p-6 rounded-2xl border border-[#3d2e29] shadow-lg">
-      <h3 className="text-xl font-serif text-white mb-4 flex items-center gap-2">
+    <div className="bg-[var(--surface-color)] p-6 rounded-2xl border border-[var(--border-color)] shadow-md">
+      <h3 className="text-xl font-serif text-[var(--primary-text)] mb-4 flex items-center gap-2 m-0">
         🛎️ Yêu cầu hỗ trợ & Dịch vụ ({requests.filter(r => r.requestStatus !== 'Resolved').length} yêu cầu chờ)
       </h3>
 
       {sortedRequests.length === 0 ? (
-        <p className="text-stone-400 text-sm">Chưa có yêu cầu hỗ trợ nào trên hệ thống.</p>
+        <p className="text-[var(--secondary-text)] text-sm m-0">Chưa có yêu cầu hỗ trợ nào trên hệ thống.</p>
       ) : (
-        <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2">
+        <div className="space-y-4 max-h-[450px] overflow-y-auto pr-2 mt-4">
           {sortedRequests.map((req) => (
             <div
               key={req.id}
               className={`p-4 rounded-xl border transition-all ${
                 req.requestStatus === 'Resolved'
-                  ? 'bg-stone-900/40 border-stone-800/80 opacity-75'
-                  : 'bg-stone-900/70 border-stone-800 hover:border-stone-700'
+                  ? 'bg-[var(--background-color)] border-[var(--border-color)] opacity-70'
+                  : 'bg-[var(--background-color)] border-[var(--border-color)] hover:border-[var(--accent-color)] shadow-sm'
               }`}
             >
               <div className="flex justify-between items-start flex-wrap gap-2">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`text-[0.7rem] uppercase font-bold px-2 py-0.5 rounded border ${
-                      req.requestType === 'SERVICE' ? 'bg-indigo-950/20 text-indigo-400 border-indigo-800' : 'bg-red-950/20 text-red-400 border-red-800'
+                      req.requestType === 'SERVICE' ? 'bg-indigo-100 text-indigo-800 border-indigo-200' : 'bg-red-100 text-red-800 border-red-200'
                     }`}>
                       {req.requestType === 'SERVICE' ? '🛎️ Dịch vụ' : '⚠️ Sự cố'}
                     </span>
                     <span className={`text-[0.7rem] px-2 py-0.5 rounded border font-semibold ${getStatusBadgeClass(req.requestStatus)}`}>
                       {getStatusText(req.requestStatus)}
                     </span>
-                    <span className="text-stone-400 text-xs font-semibold">
-                      Phòng: <strong className="text-white">{req.roomName}</strong>
+                    <span className="text-[var(--secondary-text)] text-xs font-semibold">
+                      Phòng: <strong className="text-[var(--primary-text)]">{req.roomName}</strong>
                     </span>
                   </div>
-                  <h4 className="text-sm font-bold text-white mt-2">{req.title}</h4>
-                  {req.detail && <p className="text-xs text-stone-400 mt-1">{req.detail}</p>}
-                  <p className="text-[0.7rem] text-stone-500 mt-2">
-                    Gửi bởi: <strong className="text-stone-400">{req.userFullName || `User ID: ${req.userId}`}</strong> &bull; {new Date(req.createdAt).toLocaleString()}
+                  <h4 className="text-sm font-bold text-[var(--primary-text)] mt-2 mb-1">{req.title}</h4>
+                  {req.detail && <p className="text-xs text-[var(--secondary-text)] mt-1 mb-0">{req.detail}</p>}
+                  <p className="text-[0.7rem] text-stone-500 mt-2 mb-0">
+                    Gửi bởi: <strong className="text-[var(--primary-text)]">{req.userFullName || `User ID: ${req.userId}`}</strong> &bull; {new Date(req.createdAt).toLocaleString()}
                   </p>
                 </div>
 
@@ -99,13 +99,13 @@ export const StaffServiceRequestsPanel: React.FC<StaffServiceRequestsPanelProps>
                     <>
                       <button
                         onClick={() => onUpdateRequestStatus(req.id, 'In_Progress')}
-                        className="px-3 py-1 bg-sky-950 border border-sky-800 text-sky-400 rounded-lg text-xs font-bold hover:bg-sky-900 transition-colors"
+                        className="px-3 py-1 bg-sky-50 border border-sky-200 text-sky-700 rounded-lg text-xs font-bold hover:bg-sky-100 transition-colors cursor-pointer"
                       >
                         Tiếp nhận
                       </button>
                       <button
                         onClick={() => onUpdateRequestStatus(req.id, 'Resolved')}
-                        className="px-3 py-1 bg-emerald-950 border border-emerald-800 text-emerald-400 rounded-lg text-xs font-bold hover:bg-emerald-900 transition-colors"
+                        className="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors cursor-pointer"
                       >
                         Giải quyết
                       </button>
@@ -114,13 +114,13 @@ export const StaffServiceRequestsPanel: React.FC<StaffServiceRequestsPanelProps>
                   {req.requestStatus === 'In_Progress' && (
                     <button
                       onClick={() => onUpdateRequestStatus(req.id, 'Resolved')}
-                      className="px-3 py-1 bg-emerald-950 border border-emerald-800 text-emerald-400 rounded-lg text-xs font-bold hover:bg-emerald-900 transition-colors"
+                      className="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors cursor-pointer"
                     >
                       Hoàn thành
                     </button>
                   )}
                   {req.requestStatus === 'Resolved' && (
-                    <span className="text-emerald-500 text-xs font-bold flex items-center gap-1">
+                    <span className="text-emerald-700 text-xs font-bold flex items-center gap-1">
                       ✅ Đã xử lý
                     </span>
                   )}

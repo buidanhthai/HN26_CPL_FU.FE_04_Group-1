@@ -9,7 +9,7 @@
   --border-color: rgba(111, 78, 55, 0.15); /* Màu viền */
 
   --font-title: 'Lora', serif;
-  --font-ui: 'Inter', sans-serif;
+  --font-ui: 'Outfit', sans-serif;
   --transition: all 0.3s ease;
 
   /* Mapping for backwards compatibility with existing UI styles */
@@ -36,29 +36,6 @@
 
   @media (max-width: 1024px) {
     font-size: 15px;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background-color: #1A120B;  /* Nền chính: Espresso siêu đậm */
-    --surface-color: #2B1B15;     /* Nền phụ: Nâu Espresso nhẹ */
-    --primary-text: #F5EBE6;      /* Chữ chính: Nâu sữa nhạt */
-    --secondary-text: #D4A373;    /* Chữ phụ: Vàng cam ấm */
-    --accent-color: #D4A373;      /* Điểm nhấn: Vàng cam ấm */
-    --accent-hover: #E5C39E;
-    --nature-accent: #9AAB89;     /* Sage green sáng */
-    --border-color: rgba(212, 163, 115, 0.2);
-
-    --text: var(--secondary-text);
-    --text-h: var(--primary-text);
-    --bg: var(--background-color);
-    --border: var(--border-color);
-    --code-bg: var(--surface-color);
-    --accent-bg: rgba(212, 163, 115, 0.15);
-    --accent-border: rgba(212, 163, 115, 0.5);
-    --social-bg: rgba(255, 255, 255, 0.05);
-    --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
 }
 
@@ -766,10 +743,6 @@ code {
     z-index: 1000;
     box-sizing: border-box;
     transition: var(--transition);
-
-    @media (prefers-color-scheme: dark) {
-      background-color: rgba(26, 18, 11, 0.85);
-    }
   }
 
   .logo {
@@ -1587,6 +1560,39 @@ code {
     }
   }
 }
+
+/* Priority Badge Custom Colors */
+.priority-urgent {
+  background-color: rgba(224, 122, 95, 0.12) !important;
+  color: #e07a5f !important;
+  border: 1px solid rgba(224, 122, 95, 0.4) !important;
+}
+.priority-high {
+  background-color: rgba(212, 163, 115, 0.15) !important;
+  color: #c59262 !important;
+  border: 1px solid rgba(212, 163, 115, 0.4) !important;
+}
+.priority-medium {
+  background-color: rgba(122, 134, 106, 0.15) !important;
+  color: #7a866a !important;
+  border: 1px solid rgba(122, 134, 106, 0.4) !important;
+}
+.priority-low {
+  background-color: rgba(100, 110, 120, 0.1) !important;
+  color: #55606a !important;
+  border: 1px solid rgba(100, 110, 120, 0.3) !important;
+}
+
+/* Hover effects for Task cards to make UI look sharp and interactive */
+.task-item {
+  transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+}
+.task-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(60, 42, 33, 0.08), 0 4px 6px -2px rgba(60, 42, 33, 0.04) !important;
+  border-color: var(--accent-hover) !important;
+}
+
 
 
 

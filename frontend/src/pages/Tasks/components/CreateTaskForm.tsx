@@ -7,6 +7,8 @@ interface CreateTaskFormProps {
     taskCategory: string;
     taskDescription: string;
     requiredStaffCount: number;
+    priority: string;
+    deadline?: string;
   }) => Promise<void>;
 }
 
@@ -15,6 +17,8 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onCreate }) => {
   const [taskCategory, setTaskCategory] = useState('LOGISTICS');
   const [taskDescription, setTaskDescription] = useState('');
   const [requiredStaffCount, setRequiredStaffCount] = useState(1);
+  const [priority, setPriority] = useState('MEDIUM');
+  const [deadline, setDeadline] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,8 +37,11 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onCreate }) => {
         taskCategory,
         taskDescription: taskDescription.trim(),
         requiredStaffCount,
+        priority,
+        deadline: deadline ? new Date(deadline).toISOString() : undefined,
       });
       setTaskDescription('');
+      setDeadline('');
     } catch (err) {
       console.error(err);
       setError('Lỗi khi tạo công việc.');
@@ -44,8 +51,10 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onCreate }) => {
   };
 
   return (
-    <div className="panel-card">
-      <h2 className="panel-title">Tạo Task thủ công</h2>
+    <div className="panel-card" style={{ height: 'fit-content' }}>
+      <h2 className="panel-title" style={{ fontFamily: 'var(--font-title)', color: 'var(--primary-text)' }}>
+        Tạo Task thủ công
+      </h2>
 
       {error && (
         <div className="alert-box alert-error">
@@ -53,13 +62,15 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onCreate }) => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="form-container">
+      <form onSubmit={handleSubmit} className="form-container" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {/* Category selection */}
         <div className="form-group">
           <label className="form-label">Phân loại nhiệm vụ</label>
           <select 
             value={taskCategory} 
             onChange={(e) => setTaskCategory(e.target.value)}
             className="form-select"
+            style={{ width: '100%', boxSizing: 'border-box' }}
           >
             <option value="FRONT DESK">FRONT DESK (Lễ tân)</option>
             <option value="TECHNICAL">TECHNICAL (Kỹ thuật)</option>
@@ -68,6 +79,23 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onCreate }) => {
           </select>
         </div>
 
+        {/* Priority selection */}
+        <div className="form-group">
+          <label className="form-label">Độ ưu tiên</label>
+          <select 
+            value={priority} 
+            onChange={(e) => setPriority(e.target.value)}
+            className="form-select"
+            style={{ width: '100%', boxSizing: 'border-box' }}
+          >
+            <option value="URGENT">🚨 URGENT (Khẩn cấp)</option>
+            <option value="HIGH">HIGH (Cao)</option>
+            <option value="MEDIUM">MEDIUM (Thường)</option>
+            <option value="LOW">LOW (Thấp)</option>
+          </select>
+        </div>
+
+        {/* Task description */}
         <div className="form-group">
           <label className="form-label">Mô tả chi tiết</label>
           <textarea 
@@ -75,38 +103,57 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({ onCreate }) => {
             onChange={(e) => setTaskDescription(e.target.value)}
             placeholder="Ví dụ: Chuẩn bị trà, set up máy chiếu..."
             className="form-textarea"
+            rows={4}
             required
+            style={{ width: '100%', boxSizing: 'border-box', resize: 'vertical' }}
           />
         </div>
 
-        <div className="grid-2">
-          <div className="form-group">
-            <label className="form-label">Mã Booking ID</label>
-            <input 
-              type="number"
-              value={bookingId}
-              onChange={(e) => setBookingId(Number(e.target.value))}
-              className="form-input"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Số NV cần thiết</label>
-            <input 
-              type="number"
-              min={1}
-              value={requiredStaffCount}
-              onChange={(e) => setRequiredStaffCount(Number(e.target.value))}
-              className="form-input"
-              required
-            />
-          </div>
+        {/* Deadline */}
+        <div className="form-group">
+          <label className="form-label">Hạn chót hoàn thành (Deadline)</label>
+          <input 
+            type="datetime-local"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            className="form-input"
+            style={{ width: '100%', boxSizing: 'border-box' }}
+          />
         </div>
 
-        <Button type="submit" className="mt-2" disabled={submitting}>
+        {/* Booking ID */}
+        <div className="form-group">
+          <label className="form-label">Mã Booking ID</label>
+          <input 
+            type="number"
+            value={bookingId}
+            onChange={(e) => setBookingId(Number(e.target.value))}
+            className="form-input"
+            required
+            style={{ width: '100%', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        {/* Required staff count */}
+        <div className="form-group">
+          <label className="form-label">Số NV cần thiết</label>
+          <input 
+            type="number"
+            min={1}
+            value={requiredStaffCount}
+            onChange={(e) => setRequiredStaffCount(Number(e.target.value))}
+            className="form-input"
+            required
+            style={{ width: '100%', boxSizing: 'border-box' }}
+          />
+        </div>
+
+        <Button type="submit" className="mt-2 w-full" disabled={submitting}>
           {submitting ? 'Đang tạo...' : 'Tạo công việc'}
         </Button>
       </form>
     </div>
   );
 };
+
+export default CreateTaskForm;

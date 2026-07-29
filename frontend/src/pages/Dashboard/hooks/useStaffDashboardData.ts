@@ -182,6 +182,15 @@ export function useStaffDashboardData() {
     }
   };
 
+  const claimTask = async (id: number) => {
+    try {
+      await taskService.claimTask(id);
+      await fetchData();
+    } catch (err) {
+      console.error('Error claiming task:', err);
+    }
+  };
+
   return {
     bookings,
     activeSessions: activeSessionsDetailed,
@@ -196,6 +205,7 @@ export function useStaffDashboardData() {
     refreshData: fetchData,
     toggleTaskStatus,
     updateRequestStatus,
-    createQuickTask
+    createQuickTask,
+    claimTask
   };
 }

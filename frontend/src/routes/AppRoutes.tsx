@@ -12,9 +12,10 @@ import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import Bookings from '../pages/Bookings';
 import Tasks from '../pages/Tasks';
-
 import Profile from '../pages/Profile';
 import SpaceAssets from '../pages/SpaceAssets';
+import ServiceRequests from '../pages/ServiceRequests';
+import HistoryReviews from '../pages/HistoryReviews';
 
 // Guards
 import ProtectedRoute from './ProtectedRoute';
@@ -37,6 +38,8 @@ const AppRoutes: React.FC = () => {
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/bookings" element={<Bookings />} />
+          <Route path="/service-requests" element={<ServiceRequests />} />
+          <Route path="/history-reviews" element={<HistoryReviews />} />
           <Route path="/profile" element={<Profile />} />
 
           {/* STAFF & ADMIN: Trang điều phối công việc nội bộ */}
@@ -53,4 +56,4 @@ const AppRoutes: React.FC = () => {
   );
 };
 
-export default AppRoutes;
+export default AppRoutes;

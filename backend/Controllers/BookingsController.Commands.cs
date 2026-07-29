@@ -83,7 +83,7 @@ namespace backend.Controllers
                     .Where(b => !(b.BookingStatus == "Awaiting_Payment" && b.PaymentDeadline.HasValue && b.PaymentDeadline.Value < nowLocal))
                     .Where(b => 
                         (realStartTime < b.EndTime) && 
-                        (b.StartTime.AddMinutes(-b.RoomLayout.SetupDurationMinutes) < realEndTime)
+                        (b.StartTime.AddMinutes(-b.RoomLayout!.SetupDurationMinutes) < realEndTime)
                     )
                     .FirstOrDefaultAsync();
 
@@ -535,7 +535,7 @@ namespace backend.Controllers
                     .Where(b => !(b.BookingStatus == "Awaiting_Payment" && b.PaymentDeadline.HasValue && b.PaymentDeadline.Value < nowLocal))
                     .Where(b => 
                         (booking.EndTime < b.EndTime) && 
-                        (b.StartTime.AddMinutes(-b.RoomLayout.SetupDurationMinutes) < newEndTime)
+                        (b.StartTime.AddMinutes(-b.RoomLayout!.SetupDurationMinutes) < newEndTime)
                     )
                     .FirstOrDefaultAsync();
 
@@ -604,7 +604,7 @@ namespace backend.Controllers
                     .Where(b => !(b.BookingStatus == "Awaiting_Payment" && b.PaymentDeadline.HasValue && b.PaymentDeadline.Value < nowLocal))
                     .Where(b => 
                         (nowLocal < b.EndTime) && 
-                        (b.StartTime.AddMinutes(-b.RoomLayout.SetupDurationMinutes) < booking.EndTime)
+                        (b.StartTime.AddMinutes(-b.RoomLayout!.SetupDurationMinutes) < booking.EndTime)
                     )
                     .FirstOrDefaultAsync();
 

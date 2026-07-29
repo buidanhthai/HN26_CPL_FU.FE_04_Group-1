@@ -35,6 +35,36 @@ namespace backend.Data
             }
         }
 
+        private static async Task SeedTaskLogAsync(AppDbContext context, int taskId, string user, string action, int minutesAgo)
+        {
+            var taskLog = await context.TaskLogs.FirstOrDefaultAsync(l => l.TaskId == taskId && l.ActionDescription == action);
+            if (taskLog == null)
+            {
+                context.TaskLogs.Add(new TaskLog
+                {
+                    TaskId = taskId,
+                    UserFullName = user,
+                    ActionDescription = action,
+                    Timestamp = DateTime.UtcNow.AddMinutes(-minutesAgo)
+                });
+            }
+        }
+
+        private static async Task SeedBookingLogAsync(AppDbContext context, int bookingId, string user, string action, int minutesAgo)
+        {
+            var bookingLog = await context.BookingLogs.FirstOrDefaultAsync(l => l.BookingId == bookingId && l.ActionDescription == action);
+            if (bookingLog == null)
+            {
+                context.BookingLogs.Add(new BookingLog
+                {
+                    BookingId = bookingId,
+                    UserFullName = user,
+                    ActionDescription = action,
+                    Timestamp = DateTime.UtcNow.AddMinutes(-minutesAgo)
+                });
+            }
+        }
+
         // Kịch bản 1: Nguyễn Văn A (Booking ID 3 - Đang sử dụng)
         private static async Task SeedActiveDashboardBookingAsync(AppDbContext context)
         {
@@ -46,7 +76,7 @@ namespace backend.Data
                 activeBooking = new Booking
                 {
                     UserId = 3,
-                    CustomerName = "Nguyễn Văn A",
+                    CustomerName = "Alice User",
                     AssetId = 3,
                     LayoutId = 1,
                     StartTime = now.AddHours(-1),
@@ -55,36 +85,117 @@ namespace backend.Data
                     BookingCode = "BK-260716-03",
                     SnapshotBasePrice = 300000m,
                     SnapshotPriceModifier = 0m,
-                    CreatedAt = now.AddHours(-2)
+                    CustomSetupNote = "Yêu cầu setup bàn họp chữ U, chuẩn bị máy chiếu (Projector) kết nối HDMI sẵn, thêm 2 ghế phụ, 1 bảng viết di động, 2 bút viết lông và 10 chai nước khoáng đặt sẵn.",
+                    CreatedAt = now.AddHours(-2),
+                    Arrived = true,
+                    CheckedInAt = now.AddHours(-1)
                 };
                 context.Bookings.Add(activeBooking);
                 await context.SaveChangesAsync();
             }
             else
             {
-                activeBooking.CustomerName = "Nguyễn Văn A";
+                activeBooking.CustomerName = "Alice User";
                 activeBooking.StartTime = now.AddHours(-1);
                 activeBooking.EndTime = now.AddHours(1).AddMinutes(45);
                 activeBooking.BookingStatus = "Checked_In";
+                activeBooking.CustomSetupNote = "Yêu cầu setup bàn họp chữ U, chuẩn bị máy chiếu (Projector) kết nối HDMI sẵn, thêm 2 ghế phụ, 1 bảng viết di động, 2 bút viết lông và 10 chai nước khoáng đặt sẵn.";
+                activeBooking.Arrived = true;
+                activeBooking.CheckedInAt = now.AddHours(-1);
             }
 
-            // Dịch vụ: Trà sữa Matcha (x2) - Đã thanh toán
-            var matchaService = await context.AddOnServices.FirstOrDefaultAsync(s => s.ServiceName.Contains("Matcha") || s.Id == 3);
-            int serviceId = matchaService?.Id ?? 3;
+            // Seed logs for booking #3
+            await SeedBookingLogAsync(context, activeBooking.Id, "Alice User", "Đã tạo đơn đặt chỗ.", 120);
+            await SeedBookingLogAsync(context, activeBooking.Id, "Hệ thống", "Đã xác nhận thanh toán đặt trước.", 90);
+            await SeedBookingLogAsync(context, activeBooking.Id, "John Staff", "Đã hoàn tất xác nhận Check-in.", 60);
 
-            var existingMatcha = await context.BookingServiceDetails
-                .FirstOrDefaultAsync(d => d.BookingId == activeBooking.Id && d.ServiceId == serviceId);
-
-            if (existingMatcha == null)
+            // 1. Dịch vụ: Cà phê sữa đá (x2) - Đã thanh toán (Prepaid)
+            if (!await context.BookingServiceDetails.AnyAsync(d => d.BookingId == activeBooking.Id && d.ServiceId == 3))
             {
                 context.BookingServiceDetails.Add(new BookingServiceDetail
                 {
                     BookingId = activeBooking.Id,
-                    ServiceId = serviceId,
+                    ServiceId = 3,
                     Quantity = 2,
-                    SnapshotUnitPrice = 45000m,
+                    SnapshotUnitPrice = 25000m,
                     IsIncurred = false,
                     PaymentStatus = "Paid"
+                });
+            }
+
+            // 2. Dịch vụ: Bảng di động & Bút viết (x1) - Đã thanh toán (Prepaid)
+            if (!await context.BookingServiceDetails.AnyAsync(d => d.BookingId == activeBooking.Id && d.ServiceId == 8))
+            {
+                context.BookingServiceDetails.Add(new BookingServiceDetail
+                {
+                    BookingId = activeBooking.Id,
+                    ServiceId = 8,
+                    Quantity = 1,
+                    SnapshotUnitPrice = 30000m,
+                    IsIncurred = false,
+                    PaymentStatus = "Paid"
+                });
+            }
+
+            // 3. Dịch vụ: Trà đào cam sả (x1) - Chưa thanh toán (Incurred)
+            if (!await context.BookingServiceDetails.AnyAsync(d => d.BookingId == activeBooking.Id && d.ServiceId == 5))
+            {
+                context.BookingServiceDetails.Add(new BookingServiceDetail
+                {
+                    BookingId = activeBooking.Id,
+                    ServiceId = 5,
+                    Quantity = 1,
+                    SnapshotUnitPrice = 35000m,
+                    IsIncurred = true,
+                    PaymentStatus = "Unpaid"
+                });
+            }
+
+            // 4. Dịch vụ: Bánh mì sừng bò (Croissant) (x1) - Chưa thanh toán (Incurred)
+            if (!await context.BookingServiceDetails.AnyAsync(d => d.BookingId == activeBooking.Id && d.ServiceId == 6))
+            {
+                context.BookingServiceDetails.Add(new BookingServiceDetail
+                {
+                    BookingId = activeBooking.Id,
+                    ServiceId = 6,
+                    Quantity = 1,
+                    SnapshotUnitPrice = 30000m,
+                    IsIncurred = true,
+                    PaymentStatus = "Unpaid"
+                });
+            }
+
+            // 5. Yêu cầu hỗ trợ 1: INCIDENT (Báo sự cố) - Đang xử lý
+            if (!await context.ServiceRequests.AnyAsync(r => r.BookingId == activeBooking.Id && r.RequestType == "INCIDENT"))
+            {
+                context.ServiceRequests.Add(new ServiceRequest
+                {
+                    BookingId = activeBooking.Id,
+                    UserId = 3,
+                    RequestType = "INCIDENT",
+                    RoomName = "Tiếp Khách VIP 103",
+                    Title = "Báo sự cố: Điều hòa chảy nước",
+                    Detail = "Nhiệt độ phòng hơi nóng và điều hòa góc cửa ra vào bị rò rỉ nước nhẹ. Nhờ hỗ trợ kỹ thuật xử lý.",
+                    RequestStatus = "In_Progress",
+                    CreatedAt = now.AddMinutes(-30)
+                });
+            }
+
+            // 6. Yêu cầu hỗ trợ 2: SERVICE (Gọi dịch vụ) - Đã giải quyết (Resolved)
+            if (!await context.ServiceRequests.AnyAsync(r => r.BookingId == activeBooking.Id && r.RequestType == "SERVICE"))
+            {
+                context.ServiceRequests.Add(new ServiceRequest
+                {
+                    BookingId = activeBooking.Id,
+                    UserId = 3,
+                    RequestType = "SERVICE",
+                    RoomName = "Tiếp Khách VIP 103",
+                    Title = "Yêu cầu gọi nước & bánh ngọt thêm",
+                    Detail = "Vui lòng đem thêm 1 ly Trà đào cam sả và 1 Bánh sừng bò lên phòng Tiếp Khách VIP 103.",
+                    ServiceId = 5,
+                    Quantity = 1,
+                    RequestStatus = "Resolved",
+                    CreatedAt = now.AddMinutes(-45)
                 });
             }
         }
@@ -121,6 +232,11 @@ namespace backend.Data
                 bobBooking.EndTime = now.AddMinutes(-10); // Quá hạn 10 phút
                 bobBooking.BookingStatus = "Checked_In";
             }
+
+            // Seed logs for Bob
+            await SeedBookingLogAsync(context, bobBooking.Id, "Bob", "Đã tạo đơn đặt chỗ.", 240);
+            await SeedBookingLogAsync(context, bobBooking.Id, "Hệ thống", "Đã xác nhận thanh toán đặt trước.", 210);
+            await SeedBookingLogAsync(context, bobBooking.Id, "John Staff", "Đã hoàn tất xác nhận Check-in.", 180);
 
             // 1. Trà đá & Cà phê (x3) - Đã thanh toán
             if (!await context.BookingServiceDetails.AnyAsync(d => d.BookingId == bobBooking.Id && d.ServiceId == 1))
@@ -178,9 +294,10 @@ namespace backend.Data
 
             foreach (var seed in taskSeeds)
             {
-                if (!await context.InternalTasks.AnyAsync(t => t.TaskDescription == seed.Desc))
+                var task = await context.InternalTasks.FirstOrDefaultAsync(t => t.TaskDescription == seed.Desc);
+                if (task == null)
                 {
-                    context.InternalTasks.Add(new InternalTask
+                    task = new InternalTask
                     {
                         BookingId = seed.BookingId,
                         TaskCategory = seed.Category,
@@ -188,7 +305,26 @@ namespace backend.Data
                         RequiredStaffCount = seed.Staff,
                         TaskStatus = seed.Status,
                         CreatedAt = DateTime.UtcNow.AddMinutes(-new Random().Next(5, 120))
-                    });
+                    };
+                    context.InternalTasks.Add(task);
+                    await context.SaveChangesAsync();
+                }
+
+                // Seed logs for this task
+                if (seed.Status == "Unassigned")
+                {
+                    await SeedTaskLogAsync(context, task.Id, "Hệ thống", "Nhiệm vụ được tạo tự động.", 60);
+                }
+                else if (seed.Status == "In_Progress")
+                {
+                    await SeedTaskLogAsync(context, task.Id, "Hệ thống", "Nhiệm vụ được tạo tự động.", 90);
+                    await SeedTaskLogAsync(context, task.Id, "Nguyễn Văn B", "Nhân viên Nguyễn Văn B đã nhận nhiệm vụ.", 45);
+                }
+                else if (seed.Status == "Completed")
+                {
+                    await SeedTaskLogAsync(context, task.Id, "Hệ thống", "Nhiệm vụ được tạo tự động.", 120);
+                    await SeedTaskLogAsync(context, task.Id, "John Staff", "Nhân viên John Staff đã nhận nhiệm vụ.", 90);
+                    await SeedTaskLogAsync(context, task.Id, "John Staff", "Nhiệm vụ đã hoàn thành. Ghi chú nghiệm thu: Đã hoàn tất setup dọn dẹp.", 30);
                 }
             }
         }
@@ -198,7 +334,7 @@ namespace backend.Data
         {
             var now = backend.Helpers.TimeHelper.GetVietnamTime();
 
-            // Booking #1 - Alice (Bị chặn dọn dẹp vì LOGISTICS task is Unassigned/In_Progress)
+            // Booking #1 - Alice
             var aliceBooking = await context.Bookings.FirstOrDefaultAsync(b => b.Id == 1);
             if (aliceBooking == null)
             {
@@ -217,7 +353,7 @@ namespace backend.Data
                     CreatedAt = now.AddHours(-1),
                     Arrived = true
                 });
-                
+
                 using var transaction = await context.Database.BeginTransactionAsync();
                 try
                 {
@@ -241,14 +377,14 @@ namespace backend.Data
                 await context.SaveChangesAsync();
             }
 
-            // Booking #5 - Khách B (Sẵn sàng Check-in vì LOGISTICS task is Completed)
+            // Booking #5 - Khách B
             var readyBooking = await context.Bookings.FirstOrDefaultAsync(b => b.Id == 5);
             if (readyBooking == null)
             {
                 context.Bookings.Add(new Booking
                 {
                     Id = 5,
-                    UserId = 3, // Alice User
+                    UserId = 3,
                     AssetId = 2,
                     CustomerName = "Khách Hàng B",
                     LayoutId = 1,
@@ -261,7 +397,7 @@ namespace backend.Data
                     CreatedAt = now.AddHours(-1),
                     Arrived = true
                 });
-                
+
                 using var transaction = await context.Database.BeginTransactionAsync();
                 try
                 {

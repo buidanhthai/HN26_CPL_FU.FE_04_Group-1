@@ -15,7 +15,8 @@ builder.Services.AddHostedService<backend.Services.BookingSetupTaskService>();
 // Configure EF Core MySQL Database Connection
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString)
+    options.UseSqlServer(connectionString, sqlOptions =>
+        sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery))
 );
 
 // Cấu hình JWT Authentication
