@@ -86,5 +86,10 @@ export const bookingService = {
   async calculateEstimate(assetId: number, layoutId: number, duration: number, selectedAddonIds: number[]): Promise<any> {
     const response = await api.post<any>('/bookings/calculate-estimate', { assetId, layoutId, duration, selectedAddonIds });
     return response.data;
+  },
+
+  async submitReview(bookingId: number, rating: number, comment: string): Promise<any> {
+    const response = await api.post(`/bookings/${bookingId}/review`, { rating, reviewComment: comment });
+    return response.data;
   }
 };

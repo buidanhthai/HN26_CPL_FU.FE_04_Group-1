@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const Navbar: React.FC = () => {
@@ -10,87 +10,51 @@ const Navbar: React.FC = () => {
   const { user, logout } = authContext;
 
   return (
-    <nav className="navbar">
-      <NavLink to="/" className="nav-brand">
-        CozySpace.
-      </NavLink>
+    <header style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '16px 24px',
+      borderBottom: '1px solid var(--border-color)',
+      backgroundColor: 'var(--surface-color)',
+      height: '70px',
+      boxSizing: 'border-box'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+          <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary-text)', fontFamily: 'var(--font-title)' }}>
+            CozySpace Workspace Portal
+          </span>
+        </Link>
+      </div>
+
 
       {user && (
-        <div className="nav-menu">
-          <NavLink
-            to="/dashboard"
-            end
-            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-          >
-            📊 Bảng điều khiển
-          </NavLink>
-          <NavLink
-            to="/bookings"
-            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-          >
-            📅 Lịch đặt chỗ
-          </NavLink>
-
-          {/* USER → trang gửi yêu cầu dịch vụ */}
-          {user.role === 'USER' && (
-            <NavLink
-              to="/my-requests"
-              className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-            >
-              📩 Yêu cầu của tôi
-            </NavLink>
-          )}
-
-          {/* STAFF / ADMIN → trang điều phối nội bộ & giải quyết khiếu nại/yêu cầu */}
-          {(user.role === 'STAFF' || user.role === 'ADMIN') && (
-            <>
-              <NavLink
-                to="/tasks"
-                className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-              >
-                📋 Công việc
-              </NavLink>
-              <NavLink
-                to="/user-requests"
-                className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-              >
-                🎧 Yêu cầu khách hàng
-              </NavLink>
-              <NavLink
-                to="/space-assets"
-                className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-              >
-                🏢 Quản lý Tài sản
-              </NavLink>
-            </>
-          )}
-
-          <NavLink
-            to="/profile"
-            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-          >
-            👤 Hồ sơ
-          </NavLink>
-        </div>
-
-      )}
-
-      {user && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '0.95rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.9rem' }}>
           <span style={{ color: 'var(--secondary-text)' }}>
             Xin chào, <strong style={{ color: 'var(--primary-text)' }}>{user.fullName}</strong>
           </span>
           <button
             onClick={logout}
             className="btn btn-danger hover-lift"
-            style={{ padding: '8px 16px', fontSize: '0.85rem' }}
+            style={{ 
+              padding: '6px 14px', 
+              fontSize: '0.8rem', 
+              borderRadius: '8px', 
+              backgroundColor: '#e07a5f',
+              border: 'none',
+              color: 'white',
+              cursor: 'pointer',
+              fontWeight: '600'
+            }}
           >
             Đăng xuất
           </button>
         </div>
       )}
-    </nav>
+    </header>
   );
 };
 
 export default Navbar;
+

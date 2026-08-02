@@ -16,6 +16,8 @@ namespace backend.Data.Configurations
             builder.Property(e => e.RefundAmount).HasPrecision(12, 2).HasDefaultValue(0);
             builder.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
             builder.Property(e => e.BookingCode).IsRequired().HasMaxLength(50);
+            builder.Property(e => e.Rating).IsRequired(false);
+            builder.Property(e => e.ReviewComment).IsRequired(false).HasMaxLength(1000);
             builder.HasIndex(e => e.BookingCode).IsUnique();
 
             builder.HasOne(e => e.User)

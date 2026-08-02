@@ -12,10 +12,10 @@ import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import Bookings from '../pages/Bookings';
 import Tasks from '../pages/Tasks';
-import MyRequests from '../pages/MyRequests';
-import UserRequestsManagement from '../pages/UserRequestsManagement';
 import Profile from '../pages/Profile';
 import SpaceAssets from '../pages/SpaceAssets';
+import ServiceRequests from '../pages/ServiceRequests';
+import HistoryReviews from '../pages/HistoryReviews';
 
 // Guards
 import ProtectedRoute from './ProtectedRoute';
@@ -38,18 +38,15 @@ const AppRoutes: React.FC = () => {
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/bookings" element={<Bookings />} />
+          <Route path="/service-requests" element={<ServiceRequests />} />
+          <Route path="/history-reviews" element={<HistoryReviews />} />
           <Route path="/profile" element={<Profile />} />
 
-          {/* STAFF & ADMIN: Trang điều phối công việc & giải quyết yêu cầu khách */}
-          <Route element={<RoleProtectedRoute allowedRoles={['STAFF', 'ADMIN']} redirectTo="/my-requests" />}>
+          {/* STAFF & ADMIN: Trang điều phối công việc nội bộ */}
+          <Route element={<RoleProtectedRoute allowedRoles={['STAFF', 'ADMIN']} redirectTo="/dashboard" />}>
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/user-requests" element={<UserRequestsManagement />} />
             <Route path="/space-assets" element={<SpaceAssets />} />
-          </Route>
-
-          {/* USER: Trang gửi yêu cầu dịch vụ / báo sự cố */}
-          <Route element={<RoleProtectedRoute allowedRoles={['USER']} redirectTo="/tasks" />}>
-            <Route path="/my-requests" element={<MyRequests />} />
           </Route>
         </Route>
       </Route>

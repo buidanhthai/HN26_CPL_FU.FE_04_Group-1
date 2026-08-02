@@ -1,19 +1,37 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { taskService } from '../services/taskService';
 import type { Task } from '../types/task.types';
 import { AuthContext } from '../context/AuthContext';
 import { TaskPool } from './Tasks/components/TaskPool';
 import { CreateTaskForm } from './Tasks/components/CreateTaskForm';
+import { TaskToolbar } from './Tasks/components/TaskToolbar';
 
 const Tasks: React.FC = () => {
   const { user } = useContext(AuthContext) || {};
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchTasks = async () => {
+  // Filter States
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
+  const [priority, setPriority] = useState('');
+  const [category, setCategory] = useState('');
+  const [assignedToMe, setAssignedToMe] = useState(false);
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+
+  const fetchTasks = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await taskService.getTasks();
+      const data = await taskService.getTasks({
+        search: search.trim() || undefined,
+        status: status || undefined,
+        priority: priority || undefined,
+        category: category || undefined,
+        assignedToMe: assignedToMe || undefined,
+        sortBy,
+        sortOrder,
+      });
       setTasks(data);
     } catch (err: any) {
       console.error(err);
@@ -21,32 +39,51 @@ const Tasks: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, status, priority, category, assignedToMe, sortBy, sortOrder]);
 
+  // Debounce search input
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    const handler = setTimeout(() => {
+      fetchTasks();
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search, status, priority, category, assignedToMe, sortBy, sortOrder, fetchTasks]);
 
-  const handleCreate = async (taskData: {
-    bookingId: number;
-    taskCategory: string;
-    taskDescription: string;
-    requiredStaffCount: number;
-  }) => {
+  const handleCreate = async (taskData: any) => {
     const newTask = await taskService.createTask(taskData);
-    setTasks([...tasks, newTask]);
+    setTasks([newTask, ...tasks]);
   };
 
-  const handleUpdateStatus = async (task: Task, newStatus: string) => {
+  const handleClaim = async (id: number) => {
     try {
-      await taskService.updateTask(task.id, { taskStatus: newStatus as any });
-      setTasks(tasks.map((t) => (t.id === task.id ? { ...t, taskStatus: newStatus as any } : t)));
-    } catch (err) {
-      console.error(err);
+      await taskService.claimTask(id);
+      await fetchTasks(); // Refresh list to show assigned staff & status
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Có lỗi xảy ra khi nhận việc.');
+      await fetchTasks();
+    }
+  };
+
+  const handleComplete = async (id: number, completionNote?: string, evidenceImageUrl?: string) => {
+    try {
+      await taskService.completeTask(id, { completionNote, evidenceImageUrl });
+      await fetchTasks();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Có lỗi xảy ra khi hoàn thành việc.');
+    }
+  };
+
+  const handleUnassign = async (id: number) => {
+    try {
+      await taskService.unassignTask(id);
+      await fetchTasks();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Có lỗi xảy ra khi trả việc.');
     }
   };
 
   const handleDelete = async (id: number) => {
+    if (!window.confirm('Xác nhận xóa nhiệm vụ này?')) return;
     try {
       await taskService.deleteTask(id);
       setTasks(tasks.filter((t) => t.id !== id));
@@ -56,11 +93,29 @@ const Tasks: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="pb-10">
       <h1 className="page-title">Điều phối Hậu cần & Nhiệm vụ</h1>
       <p className="page-desc">
-        Quản lý và thực thi các công việc chuẩn bị cho phòng họp / chỗ ngồi.
+        Quản lý và thực thi các công việc chuẩn bị cho phòng họp / chỗ ngồi ca trực.
       </p>
+
+      {/* Filter Toolbar */}
+      <TaskToolbar
+        search={search}
+        setSearch={setSearch}
+        status={status}
+        setStatus={setStatus}
+        priority={priority}
+        setPriority={setPriority}
+        category={category}
+        setCategory={setCategory}
+        assignedToMe={assignedToMe}
+        setAssignedToMe={setAssignedToMe}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+      />
 
       <div className="layout-grid-sidebar">
         {/* Tasks List */}
@@ -68,7 +123,10 @@ const Tasks: React.FC = () => {
           tasks={tasks}
           loading={loading}
           userRole={user?.role}
-          onUpdateStatus={handleUpdateStatus}
+          userId={user?.id}
+          onClaim={handleClaim}
+          onComplete={handleComplete}
+          onUnassign={handleUnassign}
           onDelete={handleDelete}
         />
 

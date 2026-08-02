@@ -22,6 +22,8 @@ namespace backend.DTOs
         public string? CustomerPhone { get; set; }
         public int? CreatedByUserId { get; set; }
         public string? SetupTaskStatus { get; set; }
+        public int? Rating { get; set; }
+        public string? ReviewComment { get; set; }
     }
 
     public class CreateBookingDto

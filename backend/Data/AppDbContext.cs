@@ -27,6 +27,7 @@ namespace backend.Data
         public DbSet<BookingLog> BookingLogs { get; set; }
         public DbSet<AssetUnavailability> AssetUnavailabilities { get; set; }
         public DbSet<ServiceRequest> ServiceRequests { get; set; }
+        public DbSet<TaskLog> TaskLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

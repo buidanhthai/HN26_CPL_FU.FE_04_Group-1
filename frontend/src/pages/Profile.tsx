@@ -50,85 +50,62 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '40px auto', padding: '0 20px' }}>
-      <h2 style={{ color: 'var(--primary-text)', marginBottom: '30px', fontFamily: 'var(--font-title)' }}>
+    <div className="profile-container">
+      <h2 className="panel-title mb-6">
         Hồ sơ cá nhân
       </h2>
 
       {message.text && (
-        <div style={{
-          padding: '12px',
-          marginBottom: '20px',
-          borderRadius: '8px',
-          backgroundColor: message.type === 'success' ? 'rgba(122, 134, 106, 0.12)' : 'rgba(224, 122, 95, 0.12)',
-          color: message.type === 'success' ? 'var(--nature-accent)' : '#e07a5f',
-          border: `1px solid ${message.type === 'success' ? 'rgba(122, 134, 106, 0.4)' : 'rgba(224, 122, 95, 0.4)'}`
-        }}>
+        <div className={`alert-box ${message.type === 'success' ? 'alert-success' : 'alert-error'}`}>
           {message.text}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <label style={{ fontWeight: '600', color: 'var(--secondary-text)' }}>Họ và tên</label>
+      <form onSubmit={handleSubmit} className="form-container">
+        <div className="form-group">
+          <label className="form-label">Họ và tên</label>
           <input
             type="text"
             name="fullName"
             value={formData.fullName}
             onChange={handleChange}
             required
-            className="input-field"
-            style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+            className="form-input"
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <label style={{ fontWeight: '600', color: 'var(--secondary-text)' }}>Số điện thoại</label>
+        <div className="form-group">
+          <label className="form-label">Số điện thoại</label>
           <input
             type="tel"
             name="phoneNumber"
             value={formData.phoneNumber}
             onChange={handleChange}
-            className="input-field"
-            style={{ padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+            className="form-input"
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <label style={{ fontWeight: '600', color: 'var(--secondary-text)' }}>Email</label>
+        <div className="form-group">
+          <label className="form-label">Email</label>
           <input
             type="email"
             value={authContext?.user?.email || ''}
             disabled
-            style={{ 
-              padding: '12px', 
-              borderRadius: '8px', 
-              border: '1px solid var(--border-color)',
-              backgroundColor: '#f5f5f5',
-              color: '#888',
-              cursor: 'not-allowed'
-            }}
+            className="form-input"
           />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <label style={{ fontWeight: '600', color: 'var(--secondary-text)' }}>Vai trò</label>
+        <div className="form-group">
+          <label className="form-label">Vai trò</label>
           <input
             type="text"
             value={authContext?.user?.role || ''}
             disabled
-            style={{ 
-              padding: '12px', 
-              borderRadius: '8px', 
-              border: '1px solid var(--border-color)',
-              backgroundColor: '#f5f5f5',
-              color: '#888',
-              cursor: 'not-allowed'
-            }}
+            className="form-input"
           />
         </div>
 
-        <Button type="submit" disabled={loading} style={{ marginTop: '20px' }}>
+        <Button type="submit" disabled={loading} className="mt-4">
           {loading ? 'Đang cập nhật...' : 'Lưu thay đổi'}
         </Button>
       </form>
