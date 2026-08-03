@@ -10,6 +10,7 @@ interface BookingToolbarProps {
   searchTerm: string;
   onSearchChange: (term: string) => void;
   onCreateClick: () => void;
+  onRefresh: () => void;
 }
 
 export const BookingToolbar: React.FC<BookingToolbarProps> = ({
@@ -22,6 +23,7 @@ export const BookingToolbar: React.FC<BookingToolbarProps> = ({
   searchTerm,
   onSearchChange,
   onCreateClick,
+  onRefresh,
 }) => {
   return (
     <div style={{
@@ -123,22 +125,40 @@ export const BookingToolbar: React.FC<BookingToolbarProps> = ({
         </div>
       </div>
 
-      <button
-        onClick={onCreateClick}
-        className="btn btn-primary hover-lift"
-        style={{
-          padding: '10px 18px',
-          borderRadius: '8px',
-          fontWeight: 'bold',
-          fontSize: '0.85rem',
-          backgroundColor: 'var(--accent-color)',
-          color: 'white',
-          border: 'none',
-          cursor: 'pointer'
-        }}
-      >
-        ➕ Tạo đơn đặt mới
-      </button>
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button
+          onClick={onRefresh}
+          className="btn btn-secondary hover-lift"
+          style={{
+            padding: '10px 18px',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          🔄 Làm mới
+        </button>
+        <button
+          onClick={onCreateClick}
+          className="btn btn-primary hover-lift"
+          style={{
+            padding: '10px 18px',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            fontSize: '0.85rem',
+            backgroundColor: 'var(--accent-color)',
+            color: 'white',
+            border: 'none',
+            cursor: 'pointer'
+          }}
+        >
+          ➕ Tạo đơn đặt mới
+        </button>
+      </div>
     </div>
   );
 };

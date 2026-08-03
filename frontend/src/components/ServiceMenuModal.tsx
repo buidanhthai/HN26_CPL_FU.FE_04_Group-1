@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { bookingService } from '../services/bookingService';
+import { BookingAddonsSection } from '../pages/Bookings/components/BookingAddonsSection';
 
 interface ServiceMenuModalProps {
   isOpen: boolean;
@@ -26,44 +27,12 @@ export const ServiceMenuModal: React.FC<ServiceMenuModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleQtyChange = (serviceId: number, change: number) => {
-    setQuantities((prev) => {
-      const current = prev[serviceId] || 0;
-      const next = Math.max(0, current + change);
-      return {
-        ...prev,
-        [serviceId]: next,
-      };
-    });
-  };
-
-  const getServiceEmoji = (name: string) => {
-    const lowercase = name.toLowerCase();
-    if (lowercase.includes('croissant') || lowercase.includes('bánh mì') || lowercase.includes('bánh')) {
-      return '🥐';
-    }
-    if (lowercase.includes('trà đào') || lowercase.includes('trà sả') || lowercase.includes('nước ngọt') || lowercase.includes('sinh tố')) {
-      return '🍹';
-    }
-    if (lowercase.includes('cà phê') || lowercase.includes('coffee') || lowercase.includes('bạc xỉu') || lowercase.includes('trà')) {
-      return '☕';
-    }
-    if (
-      lowercase.includes('chiếu') ||
-      lowercase.includes('projector') ||
-      lowercase.includes('màn hình') ||
-      lowercase.includes('tivi') ||
-      lowercase.includes('tv')
-    ) {
-      return '📹';
-    }
-    if (lowercase.includes('in') || lowercase.includes('print') || lowercase.includes('photo') || lowercase.includes('sao chụp')) {
-      return '🖨️';
-    }
-    if (lowercase.includes('bảng') || lowercase.includes('board') || lowercase.includes('marker') || lowercase.includes('bút')) {
-      return '📋';
-    }
-    return '✨';
+  const handleQuantityAbsoluteChange = (serviceId: number, qty: number) => {
+    if (viewOnly) return;
+    setQuantities((prev) => ({
+      ...prev,
+      [serviceId]: qty,
+    }));
   };
 
   const formatCurrency = (val: number) => {
@@ -179,99 +148,11 @@ export const ServiceMenuModal: React.FC<ServiceMenuModalProps> = ({
             </div>
           )}
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-              gap: '16px',
-            }}
-          >
-            {addonServices.map((svc) => {
-              const qty = quantities[svc.id] || 0;
-              return (
-                <div
-                  key={svc.id}
-                  style={{
-                    backgroundColor: 'var(--background-color)',
-                    border: qty > 0 ? '2px solid var(--accent-color)' : '1px solid var(--border-color)',
-                    borderRadius: '12px',
-                    padding: '16px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    boxShadow: qty > 0 ? '0 4px 6px -1px rgba(212, 163, 115, 0.15)' : 'none',
-                    transition: 'var(--transition)',
-                  }}
-                >
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '2rem', lineHeight: '1' }}>
-                      {getServiceEmoji(svc.serviceName)}
-                    </span>
-                    <div>
-                      <h4 style={{ margin: '0 0 4px 0', fontSize: '0.95rem', fontWeight: 'bold' }}>
-                        {svc.serviceName}
-                      </h4>
-                      <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--accent-hover)', fontWeight: '600' }}>
-                        {formatCurrency(svc.unitPrice)}{' '}
-                        <span style={{ fontSize: '0.75rem', color: 'var(--secondary-text)', fontWeight: 'normal' }}>
-                          / {svc.chargeMethod === 'Fixed' ? 'Món' : 'Giờ'}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-
-                   {!viewOnly && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--secondary-text)' }}>Số lượng:</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <button
-                          onClick={() => handleQtyChange(svc.id, -1)}
-                          disabled={qty === 0}
-                          style={{
-                            width: '28px',
-                            height: '28px',
-                            borderRadius: '6px',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: 'var(--surface-color)',
-                            color: 'var(--primary-text)',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            opacity: qty === 0 ? 0.5 : 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          -
-                        </button>
-                        <span style={{ minWidth: '20px', textAlign: 'center', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                          {qty}
-                        </span>
-                        <button
-                          onClick={() => handleQtyChange(svc.id, 1)}
-                          style={{
-                            width: '28px',
-                            height: '28px',
-                            borderRadius: '6px',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: 'var(--surface-color)',
-                            color: 'var(--primary-text)',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <BookingAddonsSection
+            addonServices={addonServices}
+            selectedQuantities={quantities}
+            onQuantityChange={handleQuantityAbsoluteChange}
+          />
         </div>
 
         {/* Footer */}

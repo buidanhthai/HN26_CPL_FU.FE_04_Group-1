@@ -86,6 +86,7 @@ const Bookings: React.FC = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onCreateClick={() => setIsCreateModalOpen(true)}
+        onRefresh={fetchBookings}
       />
 
       {/* Data Table */}
@@ -155,7 +156,7 @@ const Bookings: React.FC = () => {
             borderRadius: '16px',
             border: '1px solid var(--border-color)',
             width: '90%',
-            maxWidth: '500px',
+            maxWidth: '650px',
             maxHeight: '90vh',
             overflowY: 'auto',
             position: 'relative',
@@ -200,8 +201,11 @@ const Bookings: React.FC = () => {
               setCustomerName={setCustomerName}
               customerPhone={customerPhone}
               setCustomerPhone={setCustomerPhone}
-              onSubmit={async (e) => {
-                await handleCreate(e);
+              onSubmit={async (e, payNow, addons, customSetupNote) => {
+                await handleCreate(e, payNow, addons, customSetupNote);
+                setTimeout(() => {
+                  setIsCreateModalOpen(false);
+                }, 2000);
               }}
               onOpenMapModal={() => setIsMapModalOpen(true)}
               error={error}

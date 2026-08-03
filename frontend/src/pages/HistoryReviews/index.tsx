@@ -66,7 +66,16 @@ const HistoryReviews: React.FC = () => {
 
   return (
     <div>
-      <h1 className="page-title">Lịch sử & Đánh giá</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <h1 className="page-title" style={{ margin: 0 }}>Lịch sử & Đánh giá</h1>
+        <button 
+          onClick={fetchData} 
+          className="btn btn-secondary"
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', fontSize: '0.85rem', cursor: 'pointer' }}
+        >
+          🔄 Làm mới
+        </button>
+      </div>
       <p className="page-desc">
         Xem lịch sử sử dụng không gian và các phản hồi, đánh giá chất lượng dịch vụ của bạn tại Cozy Space.
       </p>

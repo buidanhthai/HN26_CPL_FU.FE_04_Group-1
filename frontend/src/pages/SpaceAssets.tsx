@@ -75,9 +75,18 @@ const SpaceAssets: React.FC = () => {
       <div className="layout-grid-sidebar">
         {/* Assets List */}
         <div className="panel-card">
-          <h2 className="panel-title">
-            Danh sách Không gian
-          </h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 className="panel-title" style={{ margin: 0 }}>
+              Danh sách Không gian
+            </h2>
+            <button 
+              onClick={fetchAssets}
+              className="btn btn-secondary"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '0.85rem' }}
+            >
+              🔄 Làm mới
+            </button>
+          </div>
 
           {loading ? (
             <p className="page-desc">Đang tải dữ liệu...</p>

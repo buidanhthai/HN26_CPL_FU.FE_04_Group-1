@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { bookingService } from '../services/bookingService';
 import api from '../services/api';
+import { BookingForm } from './Bookings/components/BookingForm';
+import { VisualFloorMapModal } from './Bookings/components/VisualFloorMapModal';
 
 interface AddonItem {
   id: number;
@@ -98,6 +100,20 @@ const enrichAddonsWithDifferentiatedImages = (services: any[]): AddonItem[] => {
 const Home: React.FC = () => {
   const authContext = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // Booking Modal States on Homepage
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [bookingAssetId, setBookingAssetId] = useState<number>(2);
+  const [bookingLayoutId, setBookingLayoutId] = useState<number>(2);
+  const [bookingStartDate, setBookingStartDate] = useState('');
+  const [bookingStartTimeStr, setBookingStartTimeStr] = useState('09:00');
+  const [bookingEndDate, setBookingEndDate] = useState('');
+  const [bookingEndTimeStr, setBookingEndTimeStr] = useState('11:00');
+  const [bookingCustomerName, setBookingCustomerName] = useState('');
+  const [bookingCustomerPhone, setBookingCustomerPhone] = useState('');
+  const [bookingError, setBookingError] = useState('');
+  const [bookingSuccess, setBookingSuccess] = useState('');
 
   const searchRef = useRef<HTMLDivElement>(null);
   const spacesRef = useRef<HTMLDivElement>(null);
@@ -196,10 +212,107 @@ const Home: React.FC = () => {
   };
 
   const handleBookingCTA = () => {
-    if (isAuthenticated) {
-      navigate('/dashboard');
-    } else {
-      navigate('/register');
+    if (!isAuthenticated) {
+      alert('Vui lòng đăng nhập hoặc đăng ký tài khoản để thực hiện đặt chỗ.');
+      navigate('/login');
+      return;
+    }
+
+    setBookingAssetId(calcSelectedRoomId);
+    
+    const today = new Date().toISOString().split('T')[0];
+    setBookingStartDate(today);
+    setBookingEndDate(today);
+    
+    const now = new Date();
+    now.setHours(now.getHours() + 1);
+    now.setMinutes(0);
+    const startHour = now.getHours().toString().padStart(2, '0');
+    setBookingStartTimeStr(`${startHour}:00`);
+    
+    now.setHours(now.getHours() + calcDuration);
+    const endHour = now.getHours().toString().padStart(2, '0');
+    setBookingEndTimeStr(`${endHour}:00`);
+
+    setBookingLayoutId(calcSelectedRoomId === 2 ? 1 : 2);
+    setBookingCustomerName(authContext?.user?.fullName ?? '');
+    setBookingCustomerPhone('');
+    setBookingError('');
+    setBookingSuccess('');
+    
+    setIsBookingModalOpen(true);
+  };
+
+  const handleBookingSubmit = async (
+    e: React.FormEvent,
+    payNow: boolean,
+    addons: { serviceId: number; quantity: number }[],
+    customSetupNote: string
+  ) => {
+    e.preventDefault();
+    setBookingError('');
+    setBookingSuccess('');
+
+    if (!bookingStartDate || !bookingStartTimeStr || !bookingEndDate || !bookingEndTimeStr) {
+      setBookingError('Vui lòng chọn đầy đủ thời gian.');
+      return;
+    }
+
+    const startDateTime = new Date(`${bookingStartDate}T${bookingStartTimeStr}:00`);
+    const endDateTime = new Date(`${bookingEndDate}T${bookingEndTimeStr}:00`);
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - 1);
+    if (startDateTime < now) {
+      setBookingError('Thời gian đặt phòng không được nằm trong quá khứ.');
+      return;
+    }
+
+    if (startDateTime >= endDateTime) {
+      setBookingError('Thời gian kết thúc phải sau thời gian bắt đầu.');
+      return;
+    }
+
+    const selectedAsset = spaceAssets.find((a) => a.id === bookingAssetId);
+    const basePrice = selectedAsset ? selectedAsset.basePrice : 250000;
+    const isStaffOrAdmin = authContext?.user?.role === 'ADMIN' || authContext?.user?.role === 'STAFF';
+
+    const request = {
+      userId: authContext?.user?.id || 0,
+      assetId: bookingAssetId,
+      layoutId: bookingLayoutId,
+      startTime: `${bookingStartDate}T${bookingStartTimeStr}:00`,
+      endTime: `${bookingEndDate}T${bookingEndTimeStr}:00`,
+      snapshotBasePrice: basePrice,
+      snapshotPriceModifier: bookingLayoutId === 1 ? 50000 : 0,
+      customerName: isStaffOrAdmin ? bookingCustomerName : undefined,
+      customerPhone: isStaffOrAdmin ? bookingCustomerPhone : undefined,
+      createdByUserId: isStaffOrAdmin ? authContext?.user?.id : undefined,
+      customSetupNote: customSetupNote || undefined,
+    };
+
+    try {
+      const newBooking = await bookingService.createBooking(request);
+      
+      if (addons.length > 0) {
+        await bookingService.orderAddonServices(newBooking.id, addons);
+      }
+
+      if (payNow) {
+        await bookingService.confirmPayment(newBooking.id);
+        setBookingSuccess('Đặt chỗ và thanh toán đặt trước thành công!');
+      } else {
+        setBookingSuccess('Đặt chỗ thành công! Đơn đặt ở trạng thái Chờ thanh toán. Vui lòng thanh toán trong vòng 10 phút.');
+      }
+
+      setTimeout(() => {
+        setIsBookingModalOpen(false);
+        navigate('/bookings');
+      }, 2000);
+    } catch (err: any) {
+      console.error(err);
+      setBookingError(err.response?.data?.message || 'Có lỗi xảy ra khi đặt chỗ.');
+      throw err;
     }
   };
 
@@ -631,6 +744,91 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Quick Booking Modal */}
+      {isBookingModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--surface-color)',
+            padding: '24px',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color)',
+            width: '90%',
+            maxWidth: '650px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            position: 'relative',
+            boxShadow: 'var(--shadow)'
+          }}>
+            <button
+              onClick={() => setIsBookingModalOpen(false)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: 'var(--secondary-text)'
+              }}
+            >
+              ×
+            </button>
+            <h3 style={{ margin: '0 0 16px 0', fontFamily: 'var(--font-title)', color: 'var(--primary-text)' }}>
+              ➕ Đăng ký đặt phòng trực tuyến
+            </h3>
+            
+            <BookingForm
+              user={authContext?.user}
+              spaceAssets={spaceAssets}
+              assetId={bookingAssetId}
+              setAssetId={setBookingAssetId}
+              layoutId={bookingLayoutId}
+              setLayoutId={setBookingLayoutId}
+              startDate={bookingStartDate}
+              setStartDate={setBookingStartDate}
+              startTimeStr={bookingStartTimeStr}
+              setStartTimeStr={setBookingStartTimeStr}
+              endDate={bookingEndDate}
+              setEndDate={setBookingEndDate}
+              endTimeStr={bookingEndTimeStr}
+              setEndTimeStr={setBookingEndTimeStr}
+              customerName={bookingCustomerName}
+              setCustomerName={setBookingCustomerName}
+              customerPhone={bookingCustomerPhone}
+              setCustomerPhone={setBookingCustomerPhone}
+              onSubmit={handleBookingSubmit}
+              onOpenMapModal={() => setIsMapModalOpen(true)}
+              error={bookingError}
+              success={bookingSuccess}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Visual map selector modal */}
+      <VisualFloorMapModal
+        isOpen={isMapModalOpen}
+        onClose={() => setIsMapModalOpen(false)}
+        spaceAssets={spaceAssets}
+        onSelectRoom={(room) => {
+          setBookingAssetId(room.id || room.Id);
+          setIsMapModalOpen(false);
+        }}
+      />
     </div>
   );
 };

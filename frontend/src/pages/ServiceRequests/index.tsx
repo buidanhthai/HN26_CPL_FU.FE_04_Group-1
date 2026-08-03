@@ -154,6 +154,7 @@ const ServiceRequests: React.FC = () => {
           <RequestTimeline
             requests={requests}
             loading={loadingRequests}
+            onRefresh={fetchRequests}
           />
         </div>
       )}

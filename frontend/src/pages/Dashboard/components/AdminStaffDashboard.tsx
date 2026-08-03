@@ -112,11 +112,20 @@ const AdminStaffDashboard: React.FC<AdminStaffDashboardProps> = ({ userFullName,
   return (
     <div className="space-y-8 pb-10">
       {/* Title & Welcome Section */}
-      <div>
-        <h2 className="text-3xl font-serif text-[var(--primary-text)]">Bảng điều khiển Vận hành</h2>
-        <p className="text-[var(--secondary-text)] text-sm mt-1">
-          Xin chào, <strong className="text-[var(--primary-text)]">{userFullName || 'Staff'}</strong>! Trung tâm theo dõi phiên làm việc thời gian thực và điều phối công việc ca trực.
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-serif text-[var(--primary-text)] m-0">Bảng điều khiển Vận hành</h2>
+          <p className="text-[var(--secondary-text)] text-sm mt-1 mb-0">
+            Xin chào, <strong className="text-[var(--primary-text)]">{userFullName || 'Staff'}</strong>! Trung tâm theo dõi phiên làm việc thời gian thực và điều phối công việc ca trực.
+          </p>
+        </div>
+        <button
+          onClick={() => refreshData()}
+          className="btn btn-secondary text-xs"
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' }}
+        >
+          🔄 Làm mới dữ liệu
+        </button>
       </div>
 
       {/* 4 Stat Cards as Interactive Filters */}

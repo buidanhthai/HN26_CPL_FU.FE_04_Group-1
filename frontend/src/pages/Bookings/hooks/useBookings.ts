@@ -81,7 +81,12 @@ export function useBookings() {
 
   // --- Handlers ---
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreate = async (
+    e: React.FormEvent,
+    payNow: boolean,
+    addons: { serviceId: number; quantity: number }[],
+    customSetupNote: string
+  ) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -121,19 +126,32 @@ export function useBookings() {
       customerName: isStaffOrAdmin ? customerName : undefined,
       customerPhone: isStaffOrAdmin ? customerPhone : undefined,
       createdByUserId: isStaffOrAdmin ? user?.id : undefined,
+      customSetupNote: customSetupNote || undefined,
     };
 
     try {
       const newBooking = await bookingService.createBooking(request);
-      setBookings([...bookings, newBooking]);
-      setSuccess('Đặt chỗ thành công! Vui lòng thanh toán trong vòng 10 phút.');
+      
+      if (addons.length > 0) {
+        await bookingService.orderAddonServices(newBooking.id, addons);
+      }
+
+      if (payNow) {
+        await bookingService.confirmPayment(newBooking.id);
+        setSuccess('Đặt chỗ và thanh toán đặt trước thành công!');
+      } else {
+        setSuccess('Đặt chỗ thành công! Đơn đặt ở trạng thái Chờ thanh toán. Vui lòng thanh toán trong vòng 10 phút.');
+      }
+
       setStartDate('');
       setEndDate('');
       setCustomerName('');
       setCustomerPhone('');
+      fetchBookings();
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.message || 'Có lỗi xảy ra khi đặt chỗ.');
+      throw err;
     }
   };
 
