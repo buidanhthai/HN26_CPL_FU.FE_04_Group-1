@@ -115,6 +115,7 @@ const Tasks: React.FC = () => {
         setSortBy={setSortBy}
         sortOrder={sortOrder}
         setSortOrder={setSortOrder}
+        onRefresh={fetchTasks}
       />
 
       <div className="layout-grid-sidebar">

@@ -331,7 +331,31 @@ namespace backend.Controllers
             decimal spaceCost = (basePrice + priceModifier) * dto.Duration;
             decimal addonsCost = 0;
 
-            if (dto.SelectedAddonIds != null && dto.SelectedAddonIds.Any())
+            if (dto.SelectedAddonQuantities != null && dto.SelectedAddonQuantities.Any())
+            {
+                var serviceIds = dto.SelectedAddonQuantities.Select(q => q.ServiceId).ToList();
+                var services = await _context.AddOnServices
+                    .Where(s => serviceIds.Contains(s.Id) && s.IsAvailable)
+                    .ToListAsync();
+
+                foreach (var item in dto.SelectedAddonQuantities)
+                {
+                    var service = services.FirstOrDefault(s => s.Id == item.ServiceId);
+                    if (service == null) continue;
+
+                    int quantity = item.Quantity > 0 ? item.Quantity : 1;
+
+                    if (service.ChargeMethod == "By_Hour")
+                    {
+                        addonsCost += service.UnitPrice * dto.Duration * quantity;
+                    }
+                    else
+                    {
+                        addonsCost += service.UnitPrice * quantity;
+                    }
+                }
+            }
+            else if (dto.SelectedAddonIds != null && dto.SelectedAddonIds.Any())
             {
                 var services = await _context.AddOnServices
                     .Where(s => dto.SelectedAddonIds.Contains(s.Id) && s.IsAvailable)

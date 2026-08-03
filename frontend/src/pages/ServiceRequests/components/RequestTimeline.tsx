@@ -13,9 +13,10 @@ interface ServiceRequest {
 interface RequestTimelineProps {
   requests: ServiceRequest[];
   loading: boolean;
+  onRefresh?: () => void;
 }
 
-export const RequestTimeline: React.FC<RequestTimelineProps> = ({ requests, loading }) => {
+export const RequestTimeline: React.FC<RequestTimelineProps> = ({ requests, loading, onRefresh }) => {
   const getBadgeStyles = (status: string) => {
     switch (status) {
       case 'Pending':
@@ -49,9 +50,20 @@ export const RequestTimeline: React.FC<RequestTimelineProps> = ({ requests, load
 
   return (
     <div className="panel-card" style={{ backgroundColor: 'var(--surface-color)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', height: '100%', boxSizing: 'border-box' }}>
-      <h3 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', fontFamily: 'var(--font-title)' }}>
-        Dòng thời gian yêu cầu (Timeline)
-      </h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <h3 style={{ margin: 0, fontSize: '1.2rem', fontFamily: 'var(--font-title)' }}>
+          Dòng thời gian yêu cầu (Timeline)
+        </h3>
+        {onRefresh && (
+          <button 
+            onClick={onRefresh}
+            className="btn btn-secondary"
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '0.8rem', height: 'auto', minWidth: 'auto', cursor: 'pointer' }}
+          >
+            🔄 Làm mới
+          </button>
+        )}
+      </div>
 
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>

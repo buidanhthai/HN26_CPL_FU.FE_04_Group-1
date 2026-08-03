@@ -15,6 +15,7 @@ interface TaskToolbarProps {
   setSortBy: (val: string) => void;
   sortOrder: 'asc' | 'desc';
   setSortOrder: (val: 'asc' | 'desc') => void;
+  onRefresh: () => void;
 }
 
 export const TaskToolbar: React.FC<TaskToolbarProps> = ({
@@ -32,6 +33,7 @@ export const TaskToolbar: React.FC<TaskToolbarProps> = ({
   setSortBy,
   sortOrder,
   setSortOrder,
+  onRefresh,
 }) => {
   return (
     <div className="panel-card mb-6" style={{ padding: '16px' }}>
@@ -124,6 +126,14 @@ export const TaskToolbar: React.FC<TaskToolbarProps> = ({
               title={sortOrder === 'asc' ? 'Tăng dần' : 'Giảm dần'}
             >
               {sortOrder === 'asc' ? '▲' : '▼'}
+            </button>
+            <button
+              onClick={onRefresh}
+              className="btn btn-secondary text-xs"
+              style={{ padding: '4px 8px', minWidth: 'auto', height: 'auto', display: 'flex', alignItems: 'center', gap: '4px' }}
+              title="Làm mới danh sách"
+            >
+              🔄 Làm mới
             </button>
           </div>
         </div>

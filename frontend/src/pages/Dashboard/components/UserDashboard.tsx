@@ -50,11 +50,20 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userFullName, userRole })
 
   return (
     <div style={{ paddingBottom: '40px' }}>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 className="page-title">Xin chào, {userFullName}!</h1>
-        <p className="page-desc" style={{ margin: 0 }}>
-          Chào mừng bạn quay trở lại với Cozy Space. Quản lý các đơn đặt chỗ và dịch vụ của bạn tại đây.
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div>
+          <h1 className="page-title" style={{ margin: 0 }}>Xin chào, {userFullName}!</h1>
+          <p className="page-desc" style={{ margin: '4px 0 0 0' }}>
+            Chào mừng bạn quay trở lại với Cozy Space. Quản lý các đơn đặt chỗ và dịch vụ của bạn tại đây.
+          </p>
+        </div>
+        <button 
+          onClick={() => refreshData()}
+          className="btn btn-secondary"
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', fontSize: '0.85rem', height: 'fit-content', cursor: 'pointer' }}
+        >
+          🔄 Làm mới
+        </button>
       </div>
 
       <DashboardStats

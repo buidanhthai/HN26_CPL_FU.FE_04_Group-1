@@ -83,8 +83,20 @@ export const bookingService = {
     return response.data;
   },
 
-  async calculateEstimate(assetId: number, layoutId: number, duration: number, selectedAddonIds: number[]): Promise<any> {
-    const response = await api.post<any>('/bookings/calculate-estimate', { assetId, layoutId, duration, selectedAddonIds });
+  async calculateEstimate(
+    assetId: number, 
+    layoutId: number, 
+    duration: number, 
+    selectedAddonIds: number[], 
+    selectedAddonQuantities?: { serviceId: number; quantity: number }[]
+  ): Promise<any> {
+    const response = await api.post<any>('/bookings/calculate-estimate', { 
+      assetId, 
+      layoutId, 
+      duration, 
+      selectedAddonIds, 
+      selectedAddonQuantities 
+    });
     return response.data;
   },
 

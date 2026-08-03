@@ -8,6 +8,13 @@ namespace backend.DTOs
         public int LayoutId { get; set; }
         public int Duration { get; set; }
         public List<int> SelectedAddonIds { get; set; } = new();
+        public List<AddonQuantityDto>? SelectedAddonQuantities { get; set; }
+    }
+
+    public class AddonQuantityDto
+    {
+        public int ServiceId { get; set; }
+        public int Quantity { get; set; }
     }
 
     public class EstimateResultDto
