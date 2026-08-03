@@ -20,6 +20,7 @@ import HistoryReviews from '../pages/HistoryReviews';
 // Guards
 import ProtectedRoute from './ProtectedRoute';
 import RoleProtectedRoute from './RoleProtectedRoute';
+import UserRequestsManagement from '../pages/UserRequestsManagement';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -38,11 +39,15 @@ const AppRoutes: React.FC = () => {
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/bookings" element={<Bookings />} />
-          <Route path="/service-requests" element={<ServiceRequests />} />
           <Route path="/history-reviews" element={<HistoryReviews />} />
           <Route path="/profile" element={<Profile />} />
 
-          {/* STAFF & ADMIN: Trang điều phối công việc nội bộ */}
+          {/* USER: Trang gửi yêu cầu dịch vụ / báo sự cố */}
+          <Route element={<RoleProtectedRoute allowedRoles={['USER']} redirectTo="/user-requests" />}>
+            <Route path="/service-requests" element={<ServiceRequests />} />
+          </Route>
+
+          {/* STAFF & ADMIN: Trang điều phối công việc nội bộ & giải quyết yêu cầu */}
           <Route element={<RoleProtectedRoute allowedRoles={['STAFF', 'ADMIN']} redirectTo="/dashboard" />}>
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/user-requests" element={<UserRequestsManagement />} />

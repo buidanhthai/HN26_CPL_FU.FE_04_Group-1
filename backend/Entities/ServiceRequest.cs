@@ -14,6 +14,7 @@ namespace backend.Entities
         public int? ServiceId { get; set; }
         public int Quantity { get; set; } = 1;
         public string RequestStatus { get; set; } = "Pending"; // Pending, In_Progress, Resolved
+        public string? ResolvedNote { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties

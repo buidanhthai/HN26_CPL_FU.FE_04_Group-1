@@ -120,8 +120,8 @@ export const ItemizedInvoiceTable: React.FC<ItemizedInvoiceTableProps> = ({
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', paddingTop: '6px', borderTop: '1px dashed rgba(0,0,0,0.08)', fontSize: '0.95rem' }}>
               <span style={{ fontWeight: 'bold' }}>Còn lại phải thu (Final Due):</span>
-              <strong style={{ color: invoiceDetail.finalDue > 0 ? '#e07a5f' : 'var(--nature-accent)', fontSize: '1.05rem' }}>
-                {invoiceDetail.finalDue?.toLocaleString()}đ
+              <strong style={{ color: (invoiceDetail.paymentStatus === 'Paid' || invoiceDetail.finalDue <= 0) ? 'var(--nature-accent)' : '#e07a5f', fontSize: '1.05rem' }}>
+                {invoiceDetail.paymentStatus === 'Paid' ? '0đ (Đã thanh toán đủ)' : `${invoiceDetail.finalDue?.toLocaleString()}đ`}
               </strong>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', fontSize: '0.8rem' }}>

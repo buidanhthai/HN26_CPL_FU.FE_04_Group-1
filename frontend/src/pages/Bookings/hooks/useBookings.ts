@@ -165,13 +165,14 @@ export function useBookings() {
     }
   };
 
-  const handleCheckin = async (id: number, forceByAdmin: boolean = false) => {
+  const handleCheckin = async (id: number, forceByAdmin: boolean = true) => {
     try {
       await bookingService.checkinBooking(id, forceByAdmin);
       alert('Check-in thành công!');
       fetchBookings();
     } catch (e: any) {
-      alert(e.response?.data?.message || 'Lỗi khi check-in');
+      const errorMsg = e.response?.data?.userFriendlyMessage || e.response?.data?.message || 'Lỗi khi check-in';
+      alert(errorMsg);
     }
   };
 

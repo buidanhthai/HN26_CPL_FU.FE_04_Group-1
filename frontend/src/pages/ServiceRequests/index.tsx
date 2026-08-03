@@ -66,9 +66,18 @@ const ServiceRequests: React.FC = () => {
     
     setLoadingRequests(true);
     try {
-      const res = await api.get<ServiceRequest[]>('/my-requests');
+      const res = await api.get<any[]>('/my-requests');
       const roomName = currentBooking.spaceAsset?.assetName || `Phòng #${currentBooking.assetId}`;
-      const filtered = (res.data || []).filter(
+      const mapped: ServiceRequest[] = (res.data || []).map((r: any) => ({
+        id: r.id,
+        type: (r.type || r.requestType || 'SERVICE').toUpperCase() as 'SERVICE' | 'INCIDENT',
+        title: r.title,
+        detail: r.detail || '',
+        roomName: r.roomName,
+        status: r.status || r.requestStatus || 'Pending',
+        createdAt: r.createdAt
+      }));
+      const filtered = mapped.filter(
         (r) => r.roomName.toLowerCase().trim() === roomName.toLowerCase().trim()
       );
       setRequests(filtered);

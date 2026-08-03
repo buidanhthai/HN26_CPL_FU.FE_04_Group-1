@@ -105,7 +105,7 @@ export const BookingDataTable: React.FC<BookingDataTableProps> = ({
                         Chi tiết
                       </button>
 
-                      {b.bookingStatus === 'Checked_In' && (
+                      {b.bookingStatus === 'Checked_In' && user?.role === 'USER' && (
                         <button
                           onClick={() => navigate('/service-requests')}
                           className="btn btn-secondary"

@@ -78,19 +78,24 @@ const UserRequestsManagement: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   // ─── Fetch ────────────────────────────────────────────────────────────────
+  const fetchRequests = async (showLoading = false) => {
+    if (showLoading) setLoading(true);
+    try {
+      const res = await api.get<UserRequest[]>('/user-requests');
+      setRequests(res.data || []);
+    } catch (err) {
+      console.error('Error fetching user requests:', err);
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchRequests = async () => {
-      setLoading(true);
-      try {
-        const res = await api.get<UserRequest[]>('/user-requests');
-        setRequests(res.data || []);
-      } catch (err) {
-        console.error('Error fetching user requests:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchRequests();
+    fetchRequests(true);
+    const interval = setInterval(() => {
+      fetchRequests(false);
+    }, 4000);
+    return () => clearInterval(interval);
   }, []);
 
   // ─── Cập nhật trạng thái nhanh ────────────────────────────────────────────
@@ -147,7 +152,16 @@ const UserRequestsManagement: React.FC = () => {
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div>
-      <h1 className="page-title">🎧 Giải quyết Yêu cầu Khách</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <h1 className="page-title" style={{ margin: 0 }}>🎧 Giải quyết Yêu cầu Khách</h1>
+        <button
+          onClick={() => fetchRequests(true)}
+          className="btn btn-secondary"
+          style={{ padding: '8px 16px', fontSize: '0.85rem', cursor: 'pointer', borderRadius: '8px' }}
+        >
+          🔄 Làm mới
+        </button>
+      </div>
       <p className="page-desc">
         Theo dõi và xử lý toàn bộ yêu cầu dịch vụ &amp; sự cố do khách gửi trong phiên làm việc.
       </p>

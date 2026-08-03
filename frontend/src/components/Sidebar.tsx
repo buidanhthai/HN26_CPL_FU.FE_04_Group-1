@@ -89,9 +89,11 @@ const Sidebar: React.FC = () => {
           <NavLink to="/bookings" style={linkStyle}>
             <span>📅</span> Quản lý Đơn đặt
           </NavLink>
-          <NavLink to="/service-requests" style={linkStyle}>
-            <span>🛎️</span> Dịch vụ & Hỗ trợ
-          </NavLink>
+          {user && user.role === 'USER' && (
+            <NavLink to="/service-requests" style={linkStyle}>
+              <span>🛎️</span> Dịch vụ & Hỗ trợ
+            </NavLink>
+          )}
           <NavLink to="/history-reviews" style={linkStyle}>
             <span>⭐</span> Lịch sử & Đánh giá
           </NavLink>
@@ -114,6 +116,9 @@ const Sidebar: React.FC = () => {
               </div>
               <NavLink to="/tasks" style={linkStyle}>
                 <span>📋</span> Quản lý công việc
+              </NavLink>
+              <NavLink to="/user-requests" style={linkStyle}>
+                <span>🎧</span> Yêu cầu khách hàng
               </NavLink>
               <NavLink to="/space-assets" style={linkStyle}>
                 <span>🏢</span> Thiết lập tài sản
