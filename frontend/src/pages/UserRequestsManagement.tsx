@@ -27,40 +27,7 @@ const TYPE_CONFIG: Record<string, { label: string; emoji: string; borderColor: s
   INCIDENT: { label: 'Báo sự cố',        emoji: '⚠️', borderColor: '#e07a5f' },
 };
 
-// Mock data — dùng khi API chưa tồn tại
-const MOCK_REQUESTS: UserRequest[] = [
-  {
-    id: 1, type: 'SERVICE', title: 'Gọi thêm cà phê sữa đá x2',
-    detail: 'Phòng cần thêm 2 ly cà phê sữa đá, không đường.',
-    roomName: 'Họp Chiến Lược 102', customerName: 'Alice User',
-    status: 'Pending', createdAt: new Date(Date.now() - 600000).toISOString(),
-  },
-  {
-    id: 2, type: 'INCIDENT', title: 'Điều hòa không lạnh',
-    detail: 'Nhiệt độ phòng vẫn cao dù đã bật điều hòa 30 phút.',
-    roomName: 'Tiếp Khách VIP 103', customerName: 'Bob User',
-    status: 'In_Progress', createdAt: new Date(Date.now() - 1800000).toISOString(),
-  },
-  {
-    id: 3, type: 'SERVICE', title: 'Mượn bảng di động + 2 bút',
-    detail: 'Cần bảng di động cho buổi brainstorm nhóm 8 người.',
-    roomName: 'Phòng Dự Án 201', customerName: 'Alice User',
-    status: 'Pending', createdAt: new Date(Date.now() - 300000).toISOString(),
-  },
-  {
-    id: 4, type: 'INCIDENT', title: 'Micro không nhận tín hiệu',
-    detail: 'Micro trên bàn họp bị mất kết nối, khách đang chờ.',
-    roomName: 'Hội Trường Lớn 101', customerName: 'Bob User',
-    status: 'Pending', createdAt: new Date(Date.now() - 120000).toISOString(),
-  },
-  {
-    id: 5, type: 'SERVICE', title: 'Bổ sung thêm nước lọc (6 chai)',
-    detail: '',
-    roomName: 'Họp Nhóm A', customerName: 'Alice User',
-    status: 'Resolved', createdAt: new Date(Date.now() - 5400000).toISOString(),
-    resolvedNote: 'Đã mang thêm 6 chai nước lạnh lúc 09:30.',
-  },
-];
+
 
 // ─── Component ─────────────────────────────────────────────────────────────────
 const UserRequestsManagement: React.FC = () => {

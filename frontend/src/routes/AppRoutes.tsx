@@ -16,6 +16,7 @@ import Profile from '../pages/Profile';
 import SpaceAssets from '../pages/SpaceAssets';
 import ServiceRequests from '../pages/ServiceRequests';
 import HistoryReviews from '../pages/HistoryReviews';
+import UserRequestsManagement from '../pages/UserRequestsManagement';
 
 // Guards
 import ProtectedRoute from './ProtectedRoute';

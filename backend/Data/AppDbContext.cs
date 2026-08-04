@@ -28,6 +28,7 @@ namespace backend.Data
         public DbSet<AssetUnavailability> AssetUnavailabilities { get; set; }
         public DbSet<ServiceRequest> ServiceRequests { get; set; }
         public DbSet<TaskLog> TaskLogs { get; set; }
+        public DbSet<CustomerRequest> CustomerRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
