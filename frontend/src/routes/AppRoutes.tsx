@@ -21,7 +21,6 @@ import UserRequestsManagement from '../pages/UserRequestsManagement';
 // Guards
 import ProtectedRoute from './ProtectedRoute';
 import RoleProtectedRoute from './RoleProtectedRoute';
-import UserRequestsManagement from '../pages/UserRequestsManagement';
 
 const AppRoutes: React.FC = () => {
   return (
