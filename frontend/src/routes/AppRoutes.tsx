@@ -45,6 +45,7 @@ const AppRoutes: React.FC = () => {
           {/* STAFF & ADMIN: Trang điều phối công việc nội bộ */}
           <Route element={<RoleProtectedRoute allowedRoles={['STAFF', 'ADMIN']} redirectTo="/dashboard" />}>
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/user-requests" element={<UserRequestsManagement />} />
             <Route path="/space-assets" element={<SpaceAssets />} />
           </Route>
         </Route>
@@ -56,4 +57,4 @@ const AppRoutes: React.FC = () => {
   );
 };
 
-export default AppRoutes;
+export default AppRoutes;

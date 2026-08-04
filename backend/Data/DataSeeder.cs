@@ -421,5 +421,95 @@ namespace backend.Data
                 await context.SaveChangesAsync();
             }
         }
+
+        // Kịch bản 4: Seed các Yêu cầu & Sự cố từ Khách hàng (User Requests & Incidents)
+        private static async Task SeedCustomerRequestsAsync(AppDbContext context)
+        {
+            try
+            {
+                // Tự động kiểm tra và tạo bảng CustomerRequests trong SQL Server nếu chưa có
+                var createTableSql = @"
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CustomerRequests')
+                    BEGIN
+                        CREATE TABLE [CustomerRequests] (
+                            [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                            [UserId] INT NOT NULL,
+                            [RequestType] NVARCHAR(50) NOT NULL DEFAULT 'SERVICE',
+                            [Title] NVARCHAR(255) NOT NULL,
+                            [Detail] NVARCHAR(MAX) NULL,
+                            [RoomName] NVARCHAR(255) NOT NULL,
+                            [Status] NVARCHAR(50) NOT NULL DEFAULT 'Pending',
+                            [ResolvedNote] NVARCHAR(MAX) NULL,
+                            [CreatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+                            CONSTRAINT [FK_CustomerRequests_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+                        );
+                    END";
+                await context.Database.ExecuteSqlRawAsync(createTableSql);
+
+                if (!await context.CustomerRequests.AnyAsync())
+                {
+                    var now = DateTime.UtcNow;
+                    context.CustomerRequests.AddRange(
+                        new CustomerRequest
+                        {
+                            UserId = 3, // Alice
+                            RequestType = "SERVICE",
+                            Title = "Gọi thêm cà phê sữa đá x2",
+                            Detail = "Phòng cần thêm 2 ly cà phê sữa đá, không đường.",
+                            RoomName = "Họp Chiến Lược 102",
+                            Status = "Pending",
+                            CreatedAt = now.AddMinutes(-20)
+                        },
+                        new CustomerRequest
+                        {
+                            UserId = 4, // Bob
+                            RequestType = "INCIDENT",
+                            Title = "Điều hòa không lạnh",
+                            Detail = "Nhiệt độ phòng vẫn cao dù đã bật điều hòa 30 phút.",
+                            RoomName = "Tiếp Khách VIP 103",
+                            Status = "In_Progress",
+                            CreatedAt = now.AddMinutes(-45)
+                        },
+                        new CustomerRequest
+                        {
+                            UserId = 3, // Alice
+                            RequestType = "SERVICE",
+                            Title = "Mượn bảng di động + 2 bút",
+                            Detail = "Cần bảng di động cho buổi brainstorm nhóm 8 người.",
+                            RoomName = "Phòng Dự Án 201",
+                            Status = "Pending",
+                            CreatedAt = now.AddMinutes(-5)
+                        },
+                        new CustomerRequest
+                        {
+                            UserId = 4, // Bob
+                            RequestType = "INCIDENT",
+                            Title = "Micro không nhận tín hiệu",
+                            Detail = "Micro trên bàn họp bị mất kết nối, khách đang chờ.",
+                            RoomName = "Hội Trường Lớn 101",
+                            Status = "Pending",
+                            CreatedAt = now.AddMinutes(-2)
+                        },
+                        new CustomerRequest
+                        {
+                            UserId = 3, // Alice
+                            RequestType = "SERVICE",
+                            Title = "Bổ sung thêm nước lọc (6 chai)",
+                            Detail = "",
+                            RoomName = "Họp Nhóm A",
+                            Status = "Resolved",
+                            ResolvedNote = "Đã mang thêm 6 chai nước lạnh lúc 09:30.",
+                            CreatedAt = now.AddHours(-2)
+                        }
+                    );
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CustomerRequests Seeder Warning]: {ex.Message}");
+            }
+        }
     }
 }
+
