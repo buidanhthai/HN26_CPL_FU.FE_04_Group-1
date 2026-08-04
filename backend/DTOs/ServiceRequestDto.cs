@@ -14,6 +14,7 @@ namespace backend.DTOs
         public int? ServiceId { get; set; }
         public int Quantity { get; set; }
         public string RequestStatus { get; set; } = string.Empty;
+        public string? ResolvedNote { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? UserFullName { get; set; }
     }

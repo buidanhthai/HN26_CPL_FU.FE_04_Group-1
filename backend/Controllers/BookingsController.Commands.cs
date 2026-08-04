@@ -219,14 +219,13 @@ namespace backend.Controllers
         {
             var eligibility = await EvaluateCheckInEligibilityAsync(id);
 
+            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
+            bool isStaffOrAdmin = string.Equals(userRole, "ADMIN", System.StringComparison.OrdinalIgnoreCase) || string.Equals(userRole, "STAFF", System.StringComparison.OrdinalIgnoreCase);
+
             bool bypassEnabled = false;
-            if (!eligibility.CanCheckIn && forceByAdmin && eligibility.ReasonCode == "TOO_EARLY")
+            if (!eligibility.CanCheckIn && isStaffOrAdmin && (forceByAdmin || eligibility.ReasonCode == "TOO_EARLY" || eligibility.ReasonCode == "TASK_NOT_COMPLETED"))
             {
-                var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
-                if (string.Equals(userRole, "ADMIN", System.StringComparison.OrdinalIgnoreCase))
-                {
-                    bypassEnabled = true;
-                }
+                bypassEnabled = true;
             }
 
             if (!eligibility.CanCheckIn && !bypassEnabled)

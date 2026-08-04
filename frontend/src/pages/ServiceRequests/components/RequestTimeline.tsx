@@ -33,13 +33,13 @@ export const RequestTimeline: React.FC<RequestTimelineProps> = ({ requests, load
   const getStatusText = (status: string) => {
     switch (status) {
       case 'Pending':
-        return 'Chờ xử lý';
+        return '⏳ Chờ xử lý';
       case 'In_Progress':
-        return 'Đang xử lý';
+        return '🔄 Đang xử lý';
       case 'Resolved':
-        return 'Đã xong';
+        return '✅ Hoàn thành';
       default:
-        return status;
+        return status || '⏳ Chờ xử lý';
     }
   };
 
@@ -95,8 +95,10 @@ export const RequestTimeline: React.FC<RequestTimelineProps> = ({ requests, load
             zIndex: 1
           }} />
 
-          {sortedRequests.map((r) => {
-            const badge = getBadgeStyles(r.status);
+          {sortedRequests.map((r: any) => {
+            const reqType = (r.type || r.requestType || 'SERVICE').toUpperCase();
+            const reqStatus = r.status || r.requestStatus || 'Pending';
+            const badge = getBadgeStyles(reqStatus);
             const timeStr = new Date(r.createdAt).toLocaleString('vi-VN', {
               hour: '2-digit',
               minute: '2-digit',
@@ -119,7 +121,7 @@ export const RequestTimeline: React.FC<RequestTimelineProps> = ({ requests, load
                   width: '12px',
                   height: '12px',
                   borderRadius: '50%',
-                  backgroundColor: r.status === 'Resolved' ? '#6bbf7e' : 'var(--accent-color)',
+                  backgroundColor: reqStatus === 'Resolved' ? '#6bbf7e' : 'var(--accent-color)',
                   border: '4px solid var(--surface-color)',
                   marginLeft: '6px',
                   marginTop: '15px'
@@ -139,7 +141,7 @@ export const RequestTimeline: React.FC<RequestTimelineProps> = ({ requests, load
                       fontSize: '0.85rem',
                       color: 'var(--primary-text)'
                     }}>
-                      {r.type === 'SERVICE' ? '🛎️ Gọi dịch vụ' : '⚠️ Báo sự cố'}
+                      {reqType === 'SERVICE' ? '🛎️ Gọi dịch vụ' : '⚠️ Báo sự cố'}
                     </span>
                     <span style={{
                       padding: '3px 8px',
@@ -148,7 +150,7 @@ export const RequestTimeline: React.FC<RequestTimelineProps> = ({ requests, load
                       fontWeight: 'bold',
                       ...badge
                     }}>
-                      {getStatusText(r.status)}
+                      {getStatusText(reqStatus)}
                     </span>
                   </div>
                   <div style={{ fontSize: '0.9rem', fontWeight: '500', color: 'var(--primary-text)', marginBottom: '4px' }}>

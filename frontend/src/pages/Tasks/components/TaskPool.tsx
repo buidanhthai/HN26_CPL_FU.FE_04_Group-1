@@ -162,7 +162,7 @@ export const TaskPool: React.FC<TaskPoolProps> = ({
         </div>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end', minWidth: '120px' }}>
-          {t.taskStatus === 'Unassigned' && userRole === 'STAFF' && (
+          {t.taskStatus === 'Unassigned' && (userRole === 'STAFF' || userRole === 'ADMIN') && (
             <button 
               onClick={() => onClaim(t.id)}
               className="btn btn-primary text-xs cursor-pointer font-bold"

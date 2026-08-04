@@ -90,9 +90,9 @@ namespace backend.Controllers
 
             if (booking == null) return NotFound();
 
-            if (booking.BookingStatus != "Awaiting_Checkout")
+            if (booking.BookingStatus != "Checked_In" && booking.BookingStatus != "Awaiting_Checkout")
             {
-                return BadRequest(new { message = "Chỉ có thể thanh toán hóa đơn cuối cho đơn đang chờ checkout (Awaiting_Checkout)." });
+                return BadRequest(new { message = "Chỉ có thể thanh toán hóa đơn cuối cho đơn đang hoạt động hoặc đang chờ checkout." });
             }
 
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value;
@@ -110,10 +110,29 @@ namespace backend.Controllers
             var invoice = booking.Invoices.FirstOrDefault(i => i.InvoiceType == "Final");
             if (invoice == null)
             {
-                return BadRequest(new { message = "Không tìm thấy hóa đơn cuối cho đơn đặt chỗ này." });
-            }
+                var nowLocal = backend.Helpers.TimeHelper.GetVietnamTime();
+                decimal overtimeFee = CalculateOvertimeFee(booking, nowLocal);
+                decimal incurredTotal = booking.BookingServiceDetails
+                    .Where(s => s.IsIncurred && s.PaymentStatus == "Unpaid")
+                    .Sum(s => s.SnapshotUnitPrice * s.Quantity);
+                decimal upfrontTotal = booking.SnapshotBasePrice + booking.SnapshotPriceModifier;
 
-            invoice.PaymentStatus = "Paid";
+                invoice = new Invoice
+                {
+                    BookingId = booking.Id,
+                    TotalAmount = upfrontTotal + incurredTotal + overtimeFee,
+                    PaidUpfront = upfrontTotal,
+                    FinalDue = 0,
+                    InvoiceType = "Final",
+                    PaymentStatus = "Paid"
+                };
+                _context.Invoices.Add(invoice);
+            }
+            else
+            {
+                invoice.PaymentStatus = "Paid";
+                invoice.FinalDue = 0;
+            }
 
             foreach (var service in booking.BookingServiceDetails.Where(s => s.IsIncurred))
             {

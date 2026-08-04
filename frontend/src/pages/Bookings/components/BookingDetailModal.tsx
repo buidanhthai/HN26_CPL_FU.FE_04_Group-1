@@ -153,7 +153,7 @@ export const BookingDetailModal: React.FC<BookingDetailModalProps> = ({
 
         {/* Close/Action Buttons */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '15px' }}>
-          {(invoiceDetail ? invoiceDetail.finalDue > 0 : false) && (
+          {(invoiceDetail && invoiceDetail.paymentStatus !== 'Paid' && invoiceDetail.finalDue > 0 && (booking.BookingStatus === 'Checked_In' || booking.BookingStatus === 'Awaiting_Checkout')) && (
             <button
               onClick={handleConfirmPayment}
               disabled={isProcessing}

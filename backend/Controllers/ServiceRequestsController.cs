@@ -46,6 +46,7 @@ namespace backend.Controllers
                     ServiceId = r.ServiceId,
                     Quantity = r.Quantity,
                     RequestStatus = r.RequestStatus,
+                    ResolvedNote = r.ResolvedNote,
                     CreatedAt = r.CreatedAt
                 }).ToListAsync();
 
@@ -126,6 +127,7 @@ namespace backend.Controllers
                     ServiceId = r.ServiceId,
                     Quantity = r.Quantity,
                     RequestStatus = r.RequestStatus,
+                    ResolvedNote = r.ResolvedNote,
                     CreatedAt = r.CreatedAt,
                     UserFullName = r.User != null ? r.User.FullName : "Khách hàng"
                 }).ToListAsync();

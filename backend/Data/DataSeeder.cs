@@ -17,9 +17,27 @@ namespace backend.Data
             {
                 await context.Database.MigrateAsync();
 
+                try
+                {
+                    var alterColumnSql = @"
+                        IF OBJECT_ID('dbo.ServiceRequests', 'U') IS NOT NULL
+                        BEGIN
+                            IF COL_LENGTH('dbo.ServiceRequests', 'ResolvedNote') IS NULL
+                            BEGIN
+                                ALTER TABLE dbo.ServiceRequests ADD ResolvedNote NVARCHAR(MAX) NULL;
+                            END
+                        END";
+                    await context.Database.ExecuteSqlRawAsync(alterColumnSql);
+                }
+                catch (Exception sqlEx)
+                {
+                    Console.WriteLine($"[Seeder Column Migration Warning]: {sqlEx.Message}");
+                }
+
                 await SeedActiveDashboardBookingAsync(context);
                 await SeedBobOverdueBookingAsync(context);
                 await SeedStaffOperationalTasksAsync(context);
+                await SeedCustomerRequestsAsync(context);
                 await Seeders.MaintenanceSeeder.SeedMaintenanceDataAsync(context);
                 await Seeders.OverdueBookingSeeder.SeedOverdueBookingAsync(context);
                 await Seeders.HappyPathSeeder.SeedHappyPathAsync(context);
@@ -445,6 +463,65 @@ namespace backend.Data
                         );
                     END";
                 await context.Database.ExecuteSqlRawAsync(createTableSql);
+
+                if (!await context.ServiceRequests.AnyAsync(r => r.Title == "Gọi thêm cà phê sữa đá x2"))
+                {
+                    var now = backend.Helpers.TimeHelper.GetVietnamTime();
+                    context.ServiceRequests.AddRange(
+                        new ServiceRequest
+                        {
+                            UserId = 3, // Alice
+                            RequestType = "SERVICE",
+                            Title = "Gọi thêm cà phê sữa đá x2",
+                            Detail = "Phòng cần thêm 2 ly cà phê sữa đá, không đường.",
+                            RoomName = "Họp Chiến Lược 102",
+                            RequestStatus = "Pending",
+                            CreatedAt = now.AddMinutes(-20)
+                        },
+                        new ServiceRequest
+                        {
+                            UserId = 4, // Bob
+                            RequestType = "INCIDENT",
+                            Title = "Điều hòa không lạnh",
+                            Detail = "Nhiệt độ phòng vẫn cao dù đã bật điều hòa 30 phút.",
+                            RoomName = "Tiếp Khách VIP 103",
+                            RequestStatus = "In_Progress",
+                            CreatedAt = now.AddMinutes(-45)
+                        },
+                        new ServiceRequest
+                        {
+                            UserId = 3, // Alice
+                            RequestType = "SERVICE",
+                            Title = "Mượn bảng di động + 2 bút",
+                            Detail = "Cần bảng di động cho buổi brainstorm nhóm 8 người.",
+                            RoomName = "Phòng Dự Án 201",
+                            RequestStatus = "Pending",
+                            CreatedAt = now.AddMinutes(-5)
+                        },
+                        new ServiceRequest
+                        {
+                            UserId = 4, // Bob
+                            RequestType = "INCIDENT",
+                            Title = "Micro không nhận tín hiệu",
+                            Detail = "Micro trên bàn họp bị mất kết nối, khách đang chờ.",
+                            RoomName = "Hội Trường Lớn 101",
+                            RequestStatus = "Pending",
+                            CreatedAt = now.AddMinutes(-2)
+                        },
+                        new ServiceRequest
+                        {
+                            UserId = 3, // Alice
+                            RequestType = "SERVICE",
+                            Title = "Bổ sung thêm nước lọc (6 chai)",
+                            Detail = "",
+                            RoomName = "Họp Nhóm A",
+                            RequestStatus = "Resolved",
+                            ResolvedNote = "Đã mang thêm 6 chai nước lạnh lúc 09:30.",
+                            CreatedAt = now.AddHours(-2)
+                        }
+                    );
+                    await context.SaveChangesAsync();
+                }
 
                 if (!await context.CustomerRequests.AnyAsync())
                 {
