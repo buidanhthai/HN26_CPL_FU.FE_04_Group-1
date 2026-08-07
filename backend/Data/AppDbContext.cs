@@ -27,9 +27,6 @@ namespace backend.Data
         public DbSet<BookingLog> BookingLogs { get; set; }
         public DbSet<AssetUnavailability> AssetUnavailabilities { get; set; }
         public DbSet<ServiceRequest> ServiceRequests { get; set; }
-// Đổi dòng ServiceRequests cũ thành CustomerRequest:
-public DbSet<CustomerRequest> CustomerRequests { get; set; }
-        
         public DbSet<TaskLog> TaskLogs { get; set; }
         public DbSet<CustomerRequest> CustomerRequests { get; set; }
 

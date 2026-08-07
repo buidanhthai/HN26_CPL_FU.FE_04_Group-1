@@ -58,11 +58,28 @@ export const StaffTasksPanel: React.FC<StaffTasksPanelProps> = ({
     return b.id - a.id;
   });
 
+  // Group active tasks by booking code
+  const groupedActiveTasks = (() => {
+    const groups: Record<string, { bookingCode?: string; roomNumber?: string; tasks: Task[] }> = {};
+    sortedActiveTasks.forEach((t) => {
+      const key = t.bookingCode || 'GENERAL';
+      if (!groups[key]) {
+        groups[key] = {
+          bookingCode: t.bookingCode,
+          roomNumber: t.roomNumber,
+          tasks: []
+        };
+      }
+      groups[key].tasks.push(t);
+    });
+    return Object.entries(groups);
+  })();
+
   const renderTaskRow = (task: Task) => {
     const isDone = task.taskStatus === 'Completed';
     const isUnassigned = task.taskStatus === 'Unassigned';
     const isAssignedToMe = task.assignedStaff?.id === userId;
-    
+
     // Deadline warning borders
     let borderClass = 'border-[var(--border-color)]';
     let delayText = '';
@@ -83,9 +100,8 @@ export const StaffTasksPanel: React.FC<StaffTasksPanelProps> = ({
     return (
       <div
         key={task.id}
-        className={`p-3 bg-[var(--background-color)] rounded-lg border ${borderClass} flex items-start space-x-3 transition ${
-          isDone ? 'opacity-60' : ''
-        }`}
+        className={`p-3 bg-[var(--background-color)] rounded-lg border ${borderClass} flex items-start space-x-3 transition ${isDone ? 'opacity-60' : ''
+          }`}
         style={{
           boxShadow: isDone ? 'none' : '0 2px 4px rgba(60,42,33,0.02)',
           transition: 'all 0.2s ease'
@@ -106,9 +122,8 @@ export const StaffTasksPanel: React.FC<StaffTasksPanelProps> = ({
 
         <div className="space-y-1 flex-1 text-left">
           <p
-            className={`text-sm font-semibold leading-snug m-0 ${
-              isDone ? 'text-[var(--secondary-text)] line-through opacity-70' : 'text-[var(--primary-text)]'
-            }`}
+            className={`text-sm font-semibold leading-snug m-0 ${isDone ? 'text-[var(--secondary-text)] line-through opacity-70' : 'text-[var(--primary-text)]'
+              }`}
           >
             {task.taskDescription || `Nhiệm vụ #${task.id}`}
             {delayText && <span className="text-xs font-bold block mt-0.5 text-red-650">{delayText}</span>}
@@ -179,8 +194,54 @@ export const StaffTasksPanel: React.FC<StaffTasksPanelProps> = ({
         {sortedActiveTasks.length === 0 ? (
           <p className="text-xs text-[var(--secondary-text)] italic py-2 m-0 text-center">🎉 Không có task nào cần làm.</p>
         ) : (
-          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-            {sortedActiveTasks.map(renderTaskRow)}
+          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+            {groupedActiveTasks.map(([key, group]) => {
+              if (key === 'GENERAL') {
+                return (
+                  <div key={key} className="p-4 bg-[var(--background-color)] rounded-xl border border-[var(--border-color)] space-y-3" style={{ textAlign: 'left' }}>
+                    <h4 className="text-xs font-bold m-0 text-[var(--secondary-text)] flex items-center gap-1.5 uppercase tracking-wider">
+                      📌 Nhiệm vụ chung / ca trực
+                    </h4>
+                    <div className="space-y-2">
+                      {group.tasks.map(renderTaskRow)}
+                    </div>
+                  </div>
+                );
+              }
+
+              // Booking group: get the highest priority in the group
+              const highestPriority = group.tasks.reduce((highest, t) => {
+                const currentWeight = getPriorityWeight(t.priority);
+                const highestWeight = getPriorityWeight(highest);
+                return currentWeight > highestWeight ? t.priority : highest;
+              }, 'LOW');
+
+              return (
+                <div 
+                  key={key} 
+                  className="bg-[var(--surface-color)] rounded-xl p-4 border border-[var(--border-color)] space-y-3 shadow-sm hover:shadow-md transition"
+                  style={{ textAlign: 'left', borderLeft: '4px solid var(--accent-color, #8b5a2b)' }}
+                >
+                  <div className="flex justify-between items-start flex-wrap gap-2 pb-2 border-b border-[var(--border-color)]">
+                    <div>
+                      <h4 className="text-sm font-bold text-[var(--primary-text)] m-0 flex items-center gap-2">
+                        🔑 {group.roomNumber || 'Phòng họp / Không gian'}
+                      </h4>
+                      <p className="text-[var(--secondary-text)] text-[10px] m-0 mt-0.5">
+                        Mã Booking: <strong className="text-[var(--primary-text)]">{key}</strong>
+                      </p>
+                    </div>
+                    <span className={`badge text-[10px] priority-${highestPriority.toLowerCase()} font-bold px-2 py-0.5 rounded border`}>
+                      {highestPriority}
+                    </span>
+                  </div>
+
+                  <div className="space-y-3 pt-1">
+                    {group.tasks.map(renderTaskRow)}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 

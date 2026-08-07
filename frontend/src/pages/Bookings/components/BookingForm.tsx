@@ -3,6 +3,7 @@ import Button from '../../../components/Button';
 import { bookingService } from '../../../services/bookingService';
 import { AddonsModal } from './AddonsModal';
 import { BookingPriceEstimate } from './BookingPriceEstimate';
+import { BookingAvailabilityTimeline } from './BookingAvailabilityTimeline';
 
 interface BookingFormProps {
   user: any;
@@ -259,6 +260,20 @@ export const BookingForm: React.FC<BookingFormProps> = ({
               <input type="time" value={endTimeStr} onChange={(e) => setEndTimeStr(e.target.value)} className="form-input" required />
             </div>
           </div>
+
+          <BookingAvailabilityTimeline
+            assetId={assetId}
+            selectedDate={startDate}
+            startTimeStr={startTimeStr}
+            endTimeStr={endTimeStr}
+            onSelectTime={(start, end) => {
+              setStartTimeStr(start);
+              setEndTimeStr(end);
+              if (!endDate || endDate !== startDate) {
+                setEndDate(startDate);
+              }
+            }}
+          />
         </div>
 
         {/* SECTION 3: Layout configuration (Only for rooms that support layouts) */}

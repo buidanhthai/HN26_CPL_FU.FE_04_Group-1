@@ -22,7 +22,7 @@ namespace backend.Controllers
             _context = context;
         }
 
-        [HttpPost]
+        [HttpPost("add-single")]
         [Authorize(Roles = "USER,STAFF,ADMIN")]
         public async Task<IActionResult> AddIncurredService(int bookingId, [FromBody] AddServiceDto dto)
         {

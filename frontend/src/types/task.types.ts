@@ -3,6 +3,7 @@ export interface Task {
   bookingId: number;
   spaceAssetId?: number;
   roomNumber?: string;
+  bookingCode?: string;
   taskCategory: string;
   taskDescription?: string;
   requiredStaffCount: number;

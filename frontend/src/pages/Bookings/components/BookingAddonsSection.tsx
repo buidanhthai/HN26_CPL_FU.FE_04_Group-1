@@ -190,7 +190,7 @@ export const BookingAddonsSection: React.FC<BookingAddonsSectionProps> = ({
                   backgroundColor: qty > 0 ? 'rgba(212, 163, 115, 0.04)' : 'var(--surface-color)',
                   overflow: 'hidden',
                   padding: '10px',
-                  alignItems: 'center',
+                  alignItems: 'stretch',
                   gap: '12px',
                   transition: 'var(--transition)',
                   boxShadow: qty > 0 ? '0 4px 8px rgba(212, 163, 115, 0.1)' : 'none'
@@ -207,29 +207,29 @@ export const BookingAddonsSection: React.FC<BookingAddonsSectionProps> = ({
                 </div>
 
                 {/* Details */}
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, height: '70px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '4px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between', minWidth: 0 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '8px' }}>
                     <h5 style={{ margin: '0', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary-text)', lineHeight: '1.2' }}>
                       {item.name}
                     </h5>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--secondary-text)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.3' }}>
+                      {item.desc}
+                    </span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', gap: '8px' }}>
                     <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--accent-hover)', flexShrink: 0 }}>
                       {item.price.toLocaleString('vi-VN')}đ
                       <span style={{ fontSize: '0.65rem', fontWeight: 'normal', color: 'var(--secondary-text)' }}>/{item.unit}</span>
                     </div>
-                  </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', gap: '8px' }}>
-                    <span style={{ fontSize: '0.7rem', color: 'var(--secondary-text)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}>
-                      {item.desc}
-                    </span>
                     
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                       <button
                         type="button"
                         onClick={() => onQuantityChange(item.id, Math.max(0, qty - 1))}
                         style={{
-                          width: '22px',
-                          height: '22px',
+                          width: '24px',
+                          height: '24px',
                           borderRadius: '4px',
                           border: '1px solid var(--border-color)',
                           backgroundColor: 'var(--background-color)',
@@ -239,7 +239,7 @@ export const BookingAddonsSection: React.FC<BookingAddonsSectionProps> = ({
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontWeight: 'bold',
-                          fontSize: '0.8rem'
+                          fontSize: '0.85rem'
                         }}
                       >
                         -
@@ -251,8 +251,8 @@ export const BookingAddonsSection: React.FC<BookingAddonsSectionProps> = ({
                         type="button"
                         onClick={() => onQuantityChange(item.id, Math.min(20, qty + 1))}
                         style={{
-                          width: '22px',
-                          height: '22px',
+                          width: '24px',
+                          height: '24px',
                           borderRadius: '4px',
                           border: '1px solid var(--border-color)',
                           backgroundColor: 'var(--background-color)',
@@ -262,7 +262,7 @@ export const BookingAddonsSection: React.FC<BookingAddonsSectionProps> = ({
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontWeight: 'bold',
-                          fontSize: '0.8rem'
+                          fontSize: '0.85rem'
                         }}
                       >
                         +
