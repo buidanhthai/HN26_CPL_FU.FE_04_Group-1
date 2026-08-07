@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: cozy-space-backend
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free
+    envVars:
+      - key: CONNECTION_STRING
+        sync: false # User will input this on Render Dashboard
+      - key: Jwt__Key
+        value: ThisIsASecretKeyForJwtAuthenticationCozySpace12345!@#
+      - key: Jwt__Issuer
+        value: https://cozy-space-backend.onrender.com # Replace with your actual Render URL
+      - key: Jwt__Audience
+        value: https://cozy-space-backend.onrender.com # Replace with your actual Render URL
+      - key: ALLOWED_ORIGINS
+        value: "*" # Or your Vercel deployment URL
+      - key: SEED_DATA
+        value: "true" # Set to "true" to seed demo data on first start

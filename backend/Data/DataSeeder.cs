@@ -53,6 +53,13 @@ namespace backend.Data
             }
         }
 
+        public static async Task MigrateDatabaseAsync(IServiceProvider serviceProvider)
+        {
+            using var scope = serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await context.Database.MigrateAsync();
+        }
+
         private static async Task SeedTaskLogAsync(AppDbContext context, int taskId, string user, string action, int minutesAgo)
         {
             var taskLog = await context.TaskLogs.FirstOrDefaultAsync(l => l.TaskId == taskId && l.ActionDescription == action);
